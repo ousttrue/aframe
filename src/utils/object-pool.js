@@ -5,18 +5,18 @@
 var EMPTY_SLOT = Object.freeze(Object.create(null));
 
 // Default object factory.
-function defaultObjectFactory () { return {}; }
+function defaultObjectFactory() { return {}; }
 
 /**
  * Create a new pool.
  */
-module.exports.createPool = function createPool (objectFactory) {
+export function createPool(objectFactory) {
   var objPool = [];
   var nextFreeSlot = null;  // Pool location to look for a free object to use.
 
   objectFactory = objectFactory || defaultObjectFactory;
 
-  function use () {
+  function use() {
     var objToUse;
     if (nextFreeSlot === null || nextFreeSlot === objPool.length) {
       grow(objPool.length || 5);
@@ -27,7 +27,7 @@ module.exports.createPool = function createPool (objectFactory) {
     return objToUse;
   }
 
-  function recycle (obj) {
+  function recycle(obj) {
     if (!(obj instanceof Object)) { return; }
     if (nextFreeSlot === null || nextFreeSlot === -1) {
       objPool[objPool.length] = obj;
@@ -36,7 +36,7 @@ module.exports.createPool = function createPool (objectFactory) {
     objPool[--nextFreeSlot] = obj;
   }
 
-  function grow (count) {
+  function grow(count) {
     var currentLength;
     var i;
 
@@ -57,7 +57,7 @@ module.exports.createPool = function createPool (objectFactory) {
     return objPool.length;
   }
 
-  function size () {
+  function size() {
     return objPool.length;
   }
 
@@ -68,16 +68,15 @@ module.exports.createPool = function createPool (objectFactory) {
     size: size,
     use: use
   };
-};
+}
 
-function clearObject (obj) {
+export function clearObject(obj) {
   var key;
   if (!obj || obj.constructor !== Object) { return; }
   for (key in obj) { obj[key] = undefined; }
 }
-module.exports.clearObject = clearObject;
 
-function removeUnusedKeys (obj, schema) {
+export function removeUnusedKeys(obj, schema) {
   var key;
   if (!obj || obj.constructor !== Object) { return; }
   for (key in obj) {
@@ -86,4 +85,3 @@ function removeUnusedKeys (obj, schema) {
     }
   }
 }
-module.exports.removeUnusedKeys = removeUnusedKeys;

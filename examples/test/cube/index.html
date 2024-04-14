@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <title>Cube</title>
     <meta name="description" content="Cube - A-Frame">
-    <script src="../../../dist/aframe-master.js"></script>
+    <script type="module" src="../../../src/index.js"></script>
     <style>
       body { background-color: black; }
     </style>
   </head>
   <body>
-    <a-scene stats>
+    <a-scene stats debug>
       <!-- Cube -->
       <a-entity position="0 0 -12" rotation="45 30 0"
                 geometry="primitive: box; height: 8; width: 8; depth: 8;"

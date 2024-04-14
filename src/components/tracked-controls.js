@@ -1,4 +1,4 @@
-var registerComponent = require('../core/component').registerComponent;
+import {registerComponent} from '../core/component';
 
 /**
  * Tracked controls.
@@ -10,7 +10,7 @@ var registerComponent = require('../core/component').registerComponent;
  * @property {number} hand - If multiple controllers found with id, choose the one with the
  *  given value for hand. If set, we ignore 'controller' property
  */
-module.exports.Component = registerComponent('tracked-controls', {
+export const Component = registerComponent('tracked-controls', {
   schema: {
     autoHide: {default: true},
     controller: {default: -1},

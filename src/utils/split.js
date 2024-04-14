@@ -1,15 +1,12 @@
 /**
  * String split with cached result.
  */
-module.exports.split = (function () {
-  var splitCache = {};
+let splitCache = {};
+export function split(str, delimiter) {
+  if (!(delimiter in splitCache)) { splitCache[delimiter] = {}; }
 
-  return function (str, delimiter) {
-    if (!(delimiter in splitCache)) { splitCache[delimiter] = {}; }
+  if (str in splitCache[delimiter]) { return splitCache[delimiter][str]; }
 
-    if (str in splitCache[delimiter]) { return splitCache[delimiter][str]; }
-
-    splitCache[delimiter][str] = str.split(delimiter);
-    return splitCache[delimiter][str];
-  };
-})();
+  splitCache[delimiter][str] = str.split(delimiter);
+  return splitCache[delimiter][str];
+}

@@ -1,7 +1,7 @@
-var registerComponent = require('../../core/component').registerComponent;
-var shouldCaptureKeyEvent = require('../../utils/').shouldCaptureKeyEvent;
+import {registerComponent} from '../../core/component';
+import {shouldCaptureKeyEvent} from '../../utils/';
 
-module.exports.Component = registerComponent('keyboard-shortcuts', {
+export const Component = registerComponent('keyboard-shortcuts', {
   schema: {
     enterVR: {default: true},
     exitVR: {default: true}

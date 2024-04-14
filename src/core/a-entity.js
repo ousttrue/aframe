@@ -1,15 +1,15 @@
 /* global customElements */
-var ANode = require('./a-node').ANode;
-var COMPONENTS = require('./component').components;
-var THREE = require('../lib/three');
-var utils = require('../utils/');
+import { ANode } from './a-node';
+import { components as COMPONENTS } from './component';
+import * as THREE from 'three';
+import * as utils from '../utils/';
 
 var debug = utils.debug('core:a-entity:debug');
 var warn = utils.debug('core:a-entity:warn');
 
 var MULTIPLE_COMPONENT_DELIMITER = '__';
 var OBJECT3D_COMPONENTS = ['position', 'rotation', 'scale', 'visible'];
-var ONCE = {once: true};
+var ONCE = { once: true };
 
 /**
  * Entity is a container object that components are plugged into to comprise everything in
@@ -22,8 +22,8 @@ var ONCE = {once: true};
  * @member {array} states.
  * @member {boolean} isPlaying - false if dynamic behavior of the entity is paused.
  */
-class AEntity extends ANode {
-  constructor () {
+export class AEntity extends ANode {
+  constructor() {
     super();
     this.components = {};
     // To avoid double initializations and infinite loops.
@@ -43,7 +43,7 @@ class AEntity extends ANode {
   /**
    * Handle changes coming from the browser DOM inspector.
    */
-  attributeChangedCallback (attr, oldVal, newVal) {
+  attributeChangedCallback(attr, oldVal, newVal) {
     var component = this.components[attr];
 
     super.attributeChangedCallback();
@@ -58,7 +58,7 @@ class AEntity extends ANode {
     this.setEntityAttribute(attr, oldVal, newVal);
   }
 
-  doConnectedCallback () {
+  doConnectedCallback() {
     var self = this;  // Component.
     var assetsEl;  // Asset management system element.
     var sceneEl;
@@ -82,7 +82,7 @@ class AEntity extends ANode {
     // Wait for asset management system to finish before loading.
     assetsEl = sceneEl.querySelector('a-assets');
     if (assetsEl && !assetsEl.hasLoaded) {
-      assetsEl.addEventListener('loaded', function () { self.load(); });
+      assetsEl.addEventListener('loaded', function() { self.load(); });
       return;
     }
     this.load();
@@ -92,7 +92,7 @@ class AEntity extends ANode {
    * Tell parent to remove this element's object3D from its object3D.
    * Do not call on scene element because that will cause a call to document.body.remove().
    */
-  disconnectedCallback () {
+  disconnectedCallback() {
     var componentName;
 
     if (!this.parentEl) { return; }
@@ -111,7 +111,7 @@ class AEntity extends ANode {
     this.object3D.el = null;
   }
 
-  getObject3D (type) {
+  getObject3D(type) {
     return this.object3DMap[type];
   }
 
@@ -121,7 +121,7 @@ class AEntity extends ANode {
    * @param {string} type - Developer-set name of the type of object, will be unique per type.
    * @param {object} obj - A THREE.Object3D.
    */
-  setObject3D (type, obj) {
+  setObject3D(type, obj) {
     var oldObj;
     var self = this;
 
@@ -139,7 +139,7 @@ class AEntity extends ANode {
     // Set references to A-Frame entity.
     obj.el = this;
     if (obj.children.length) {
-      obj.traverse(function bindEl (child) {
+      obj.traverse(function bindEl(child) {
         child.el = self;
       });
     }
@@ -147,13 +147,13 @@ class AEntity extends ANode {
     // Add.
     this.object3D.add(obj);
     this.object3DMap[type] = obj;
-    this.emit('object3dset', {object: obj, type: type});
+    this.emit('object3dset', { object: obj, type: type });
   }
 
   /**
    * Remove object from scene and entity object3D map.
    */
-  removeObject3D (type) {
+  removeObject3D(type) {
     var obj = this.getObject3D(type);
     if (!obj) {
       warn('Tried to remove `Object3D` of type:', type, 'which was not defined.');
@@ -161,7 +161,7 @@ class AEntity extends ANode {
     }
     this.object3D.remove(obj);
     delete this.object3DMap[type];
-    this.emit('object3dremove', {type: type});
+    this.emit('object3dremove', { type: type });
   }
 
   /**
@@ -171,14 +171,14 @@ class AEntity extends ANode {
    * @param {string} Constructor - Constructor to use to create the object3D if needed.
    * @returns {object}
    */
-  getOrCreateObject3D (type, Constructor) {
+  getOrCreateObject3D(type, Constructor) {
     var object3D = this.getObject3D(type);
     if (!object3D && Constructor) {
       object3D = new Constructor();
       this.setObject3D(type, object3D);
     }
     warn('`getOrCreateObject3D` has been deprecated. Use `setObject3D()` ' +
-         'and `object3dset` event instead.');
+      'and `object3dset` event instead.');
     return object3D;
   }
 
@@ -187,18 +187,18 @@ class AEntity extends ANode {
    *
    * @param {Element} el - Child entity.
    */
-  add (el) {
+  add(el) {
     if (!el.object3D) {
       throw new Error("Trying to add an element that doesn't have an `object3D`");
     }
     this.object3D.add(el.object3D);
-    this.emit('child-attached', {el: el});
+    this.emit('child-attached', { el: el });
   }
 
   /**
    * Tell parentNode to add this entity to itself.
    */
-  addToParent () {
+  addToParent() {
     var parentNode = this.parentEl = this.parentNode;
 
     // `!parentNode` check primarily for unit tests.
@@ -211,20 +211,20 @@ class AEntity extends ANode {
   /**
    * Tell parentNode to remove this entity from itself.
    */
-  removeFromParent () {
+  removeFromParent() {
     var parentEl = this.parentEl;
     this.parentEl.remove(this);
     this.attachedToParent = false;
     this.parentEl = null;
-    parentEl.emit('child-detached', {el: this});
+    parentEl.emit('child-detached', { el: this });
   }
 
-  load () {
+  load() {
     var self = this;
 
     if (this.hasLoaded || !this.parentEl) { return; }
 
-    super.load.call(this, function entityLoadCallback () {
+    super.load.call(this, function entityLoadCallback() {
       // Check if entity was detached while it was waiting to load.
       if (!self.parentEl) { return; }
 
@@ -238,7 +238,7 @@ class AEntity extends ANode {
    *
    * @param {Element} el - Child entity.
    */
-  remove (el) {
+  remove(el) {
     if (el) {
       this.object3D.remove(el.object3D);
     } else {
@@ -249,7 +249,7 @@ class AEntity extends ANode {
   /**
    * @returns {array} Direct children that are entities.
    */
-  getChildEntities () {
+  getChildEntities() {
     var children = this.children;
     var childEntities = [];
 
@@ -270,7 +270,7 @@ class AEntity extends ANode {
    * @param {object} data - Component data
    * @param {boolean} isDependency - True if the component is a dependency.
    */
-  initComponent (attrName, data, isDependency) {
+  initComponent(attrName, data, isDependency) {
     var component;
     var componentId;
     var componentInfo;
@@ -284,12 +284,13 @@ class AEntity extends ANode {
       : componentInfo[1];
 
     // Not a registered component.
+    console.assert(COMPONENTS[componentName], componentName);
     if (!COMPONENTS[componentName]) { return; }
 
     // Component is not a dependency and is undefined.
     // If a component is a dependency, then it is okay to have no data.
     isComponentDefined = checkComponentDefined(this, attrName) ||
-                         data !== undefined;
+      data !== undefined;
     if (!isComponentDefined && !isDependency) { return; }
 
     // Component already initialized.
@@ -319,7 +320,7 @@ class AEntity extends ANode {
    *
    * @param {string} name - Root component name.
    */
-  initComponentDependencies (name) {
+  initComponentDependencies(name) {
     var self = this;
     var component = COMPONENTS[name];
     var dependencies;
@@ -344,7 +345,7 @@ class AEntity extends ANode {
     }
   }
 
-  removeComponent (name, destroy) {
+  removeComponent(name, destroy) {
     var component;
 
     component = this.components[name];
@@ -352,7 +353,7 @@ class AEntity extends ANode {
 
     // Wait for component to initialize.
     if (!component.initialized) {
-      this.addEventListener('componentinitialized', function tryRemoveLater (evt) {
+      this.addEventListener('componentinitialized', function tryRemoveLater(evt) {
         if (evt.detail.name !== name) { return; }
         this.removeComponent(name, destroy);
         this.removeEventListener('componentinitialized', tryRemoveLater);
@@ -384,7 +385,7 @@ class AEntity extends ANode {
    * @member {function} getExtraComponents - Can be implemented to include component data
    *   from other sources (e.g., implemented by primitives).
    */
-  updateComponents () {
+  updateComponents() {
     var data;
     var extraComponents;
     var i;
@@ -425,7 +426,7 @@ class AEntity extends ANode {
     // Initialize or update rest of components.
     for (name in componentsToUpdate) {
       data = mergeComponentData(this.getDOMAttribute(name),
-                                extraComponents && extraComponents[name]);
+        extraComponents && extraComponents[name]);
       this.updateComponent(name, data);
       delete componentsToUpdate[name];
     }
@@ -440,7 +441,7 @@ class AEntity extends ANode {
    * @param {object} attrValue - Value of the DOM attribute.
    * @param {boolean} clobber - If new attrValue completely replaces previous properties.
    */
-  updateComponent (attr, attrValue, clobber) {
+  updateComponent(attr, attrValue, clobber) {
     var component = this.components[attr];
 
     if (component) {
@@ -466,7 +467,7 @@ class AEntity extends ANode {
    * @param {string} attr - Attribute name, which could also be a component name.
    * @param {string} propertyName - Component prop name, if resetting an individual prop.
    */
-  removeAttribute (attr, propertyName) {
+  removeAttribute(attr, propertyName) {
     var component = this.components[attr];
 
     // Remove component.
@@ -492,7 +493,7 @@ class AEntity extends ANode {
    * Start dynamic behavior associated with entity such as dynamic components and animations.
    * Tell all children entities to also play.
    */
-  play () {
+  play() {
     var entities;
     var i;
     var key;
@@ -515,7 +516,7 @@ class AEntity extends ANode {
    * Pause dynamic behavior associated with entity such as dynamic components and animations.
    * Tell all children entities to also pause.
    */
-  pause () {
+  pause() {
     var entities;
     var i;
     var key;
@@ -540,7 +541,7 @@ class AEntity extends ANode {
    * @param {string} oldVal
    * @param {string|object} newVal
    */
-  setEntityAttribute (attr, oldVal, newVal) {
+  setEntityAttribute(attr, oldVal, newVal) {
     if (COMPONENTS[attr] || this.components[attr]) {
       this.updateComponent(attr, newVal);
       return;
@@ -555,7 +556,7 @@ class AEntity extends ANode {
   /**
    * When mixins updated, trigger init or optimized-update of relevant components.
    */
-  mixinUpdate (newMixins, oldMixins, deferred) {
+  mixinUpdate(newMixins, oldMixins, deferred) {
     var componentsUpdated = AEntity.componentsUpdated;
 
     var component;
@@ -567,7 +568,7 @@ class AEntity extends ANode {
     if (!deferred) { oldMixins = oldMixins || this.getAttribute('mixin'); }
 
     if (!this.hasLoaded) {
-      this.addEventListener('loaded-private', function () {
+      this.addEventListener('loaded-private', function() {
         self.mixinUpdate(newMixins, oldMixins, true);
       }, ONCE);
       return;
@@ -626,7 +627,7 @@ class AEntity extends ANode {
    * @param {*|bool} arg2 - If arg1 is a property name, this should be a value. Otherwise,
    *   it is a boolean indicating whether to clobber previous values (defaults to false).
    */
-  setAttribute (attrName, arg1, arg2) {
+  setAttribute(attrName, arg1, arg2) {
     var singlePropUpdate = AEntity.singlePropUpdate;
 
     var newAttrValue;
@@ -655,9 +656,9 @@ class AEntity extends ANode {
 
     // Determine new attributes from the arguments
     if (typeof arg2 !== 'undefined' &&
-        typeof arg1 === 'string' &&
-        arg1.length > 0 &&
-        typeof utils.styleParser.parse(arg1) === 'string') {
+      typeof arg1 === 'string' &&
+      arg1.length > 0 &&
+      typeof utils.styleParser.parse(arg1) === 'string') {
       // Update a single property of a multi-property component
       for (key in singlePropUpdate) { delete singlePropUpdate[key]; }
       newAttrValue = singlePropUpdate;
@@ -683,7 +684,7 @@ class AEntity extends ANode {
    *
    * @param {bool} recursive - Also flushToDOM on the children.
    **/
-  flushToDOM (recursive) {
+  flushToDOM(recursive) {
     var components = this.components;
     var child;
     var children = this.children;
@@ -713,7 +714,7 @@ class AEntity extends ANode {
    * @param {string} attr
    * @returns {object|string} Object if component, else string.
    */
-  getAttribute (attr) {
+  getAttribute(attr) {
     // If component, return component data.
     var component;
     if (attr === 'position') { return this.object3D.position; }
@@ -735,20 +736,20 @@ class AEntity extends ANode {
    * @param {string} attr
    * @returns {object|string} Object if component, else string.
    */
-  getDOMAttribute (attr) {
+  getDOMAttribute(attr) {
     // If cached value exists, return partial component data.
     var component = this.components[attr];
     if (component) { return component.attrValue; }
     return window.HTMLElement.prototype.getAttribute.call(this, attr);
   }
 
-  addState (state) {
+  addState(state) {
     if (this.is(state)) { return; }
     this.states.push(state);
     this.emit('stateadded', state);
   }
 
-  removeState (state) {
+  removeState(state) {
     var stateIndex = this.states.indexOf(state);
     if (stateIndex === -1) { return; }
     this.states.splice(stateIndex, 1);
@@ -759,21 +760,21 @@ class AEntity extends ANode {
    * Checks if the element is in a given state. e.g. el.is('alive');
    * @type {string} state - Name of the state we want to check
    */
-  is (state) {
+  is(state) {
     return this.states.indexOf(state) !== -1;
   }
 
   /**
    * Open Inspector to this entity.
    */
-  inspect () {
+  inspect() {
     this.sceneEl.components.inspector.openInspector(this);
   }
 
   /**
    * Clean up memory and return memory to object pools.
    */
-  destroy () {
+  destroy() {
     var key;
     if (this.parentNode) {
       warn('Entity can only be destroyed if detached from scenegraph.');
@@ -793,7 +794,7 @@ class AEntity extends ANode {
  * @param {string} name - Component name.
  * @returns {boolean}
  */
-function checkComponentDefined (el, name) {
+function checkComponentDefined(el, name) {
   // Check if element contains the component.
   if (el.components[name] && el.components[name].attrValue) { return true; }
 
@@ -806,7 +807,7 @@ function checkComponentDefined (el, name) {
  * @param {string} name - Component name.
  * @param {array} mixinEls - Array of <a-mixin>s.
  */
-function isComponentMixedIn (name, mixinEls) {
+function isComponentMixedIn(name, mixinEls) {
   var i;
   var inMixin = false;
   for (i = 0; i < mixinEls.length; ++i) {
@@ -823,20 +824,20 @@ function isComponentMixedIn (name, mixinEls) {
  * @param {string} attrValue - Entity data.
  * @param extraData - Entity data from another source to merge in.
  */
-function mergeComponentData (attrValue, extraData) {
+function mergeComponentData(attrValue, extraData) {
   // Extra data not defined, just return attrValue.
   if (!extraData) { return attrValue; }
 
   // Merge multi-property data.
   if (extraData.constructor === Object) {
-    return utils.extend(extraData, utils.styleParser.parse(attrValue || {}));
+    return Object.assign(extraData, utils.styleParser.parse(attrValue || {}));
   }
 
   // Return data, precedence to the defined value.
   return attrValue || extraData;
 }
 
-function isComponent (componentName) {
+function isComponent(componentName) {
   if (componentName.indexOf(MULTIPLE_COMPONENT_DELIMITER) !== -1) {
     componentName = utils.split(componentName, MULTIPLE_COMPONENT_DELIMITER)[0];
   }
@@ -844,7 +845,7 @@ function isComponent (componentName) {
   return true;
 }
 
-function getRotation (entityEl) {
+function getRotation(entityEl) {
   var radToDeg = THREE.MathUtils.radToDeg;
   var rotation = entityEl.object3D.rotation;
   var rotationObj = entityEl.rotationObj;
@@ -858,5 +859,3 @@ AEntity.componentsUpdated = [];
 AEntity.singlePropUpdate = {};
 
 customElements.define('a-entity', AEntity);
-
-module.exports.AEntity = AEntity;

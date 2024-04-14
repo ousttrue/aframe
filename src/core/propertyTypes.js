@@ -1,12 +1,12 @@
-var coordinates = require('../utils/coordinates');
-var debug = require('debug');
+import * as coordinates from '../utils/coordinates';
+import debug from 'debug';
 
-var error = debug('core:propertyTypes:warn');
-var warn = debug('core:propertyTypes:warn');
+const error = debug('core:propertyTypes:warn');
+const warn = debug('core:propertyTypes:warn');
 
-var propertyTypes = module.exports.propertyTypes = {};
-var nonCharRegex = /[,> .[\]:]/;
-var urlRegex = /url\((.+)\)/;
+export const propertyTypes = {};
+const nonCharRegex = /[,> .[\]:]/;
+const urlRegex = /url\((.+)\)/;
 
 // Built-in property types.
 registerPropertyType('audio', '', assetParse);
@@ -23,9 +23,9 @@ registerPropertyType('selectorAll', null, selectorAllParse, selectorAllStringify
 registerPropertyType('src', '', srcParse);
 registerPropertyType('string', '', defaultParse, defaultStringify);
 registerPropertyType('time', 0, intParse);
-registerPropertyType('vec2', {x: 0, y: 0}, vecParse, coordinates.stringify, coordinates.equals);
-registerPropertyType('vec3', {x: 0, y: 0, z: 0}, vecParse, coordinates.stringify, coordinates.equals);
-registerPropertyType('vec4', {x: 0, y: 0, z: 0, w: 1}, vecParse, coordinates.stringify, coordinates.equals);
+registerPropertyType('vec2', { x: 0, y: 0 }, vecParse, coordinates.stringify, coordinates.equals);
+registerPropertyType('vec3', { x: 0, y: 0, z: 0 }, vecParse, coordinates.stringify, coordinates.equals);
+registerPropertyType('vec4', { x: 0, y: 0, z: 0, w: 1 }, vecParse, coordinates.stringify, coordinates.equals);
 
 /**
  * Register a parser for re-use such that when someone uses `type` in the schema,
@@ -38,7 +38,7 @@ registerPropertyType('vec4', {x: 0, y: 0, z: 0, w: 1}, vecParse, coordinates.str
  * @param {function} [stringify=defaultStringify] - Stringify to DOM function.
  * @param {function} [equals=defaultEquals] - Equality comparator.
  */
-function registerPropertyType (type, defaultValue, parse, stringify, equals) {
+export function registerPropertyType(type, defaultValue, parse, stringify, equals) {
   if (type in propertyTypes) {
     throw new Error('Property type ' + type + ' is already registered.');
   }
@@ -50,20 +50,19 @@ function registerPropertyType (type, defaultValue, parse, stringify, equals) {
     equals: equals || defaultEquals
   };
 }
-module.exports.registerPropertyType = registerPropertyType;
 
-function arrayParse (value) {
+function arrayParse(value) {
   if (Array.isArray(value)) { return value; }
   if (!value || typeof value !== 'string') { return []; }
   return value.split(',').map(trim);
-  function trim (str) { return str.trim(); }
+  function trim(str) { return str.trim(); }
 }
 
-function arrayStringify (value) {
+function arrayStringify(value) {
   return value.join(', ');
 }
 
-function arrayEquals (a, b) {
+function arrayEquals(a, b) {
   if (!Array.isArray(a) || !Array.isArray(b)) {
     return a === b;
   }
@@ -90,7 +89,7 @@ function arrayEquals (a, b) {
  * @returns {string} Parsed value from `url(<value>)`, src from `<someasset src>`, or
  *   just string.
  */
-function assetParse (value) {
+function assetParse(value) {
   var el;
   var parsedUrl;
 
@@ -120,32 +119,32 @@ function assetParse (value) {
   return value;
 }
 
-function defaultParse (value) {
+function defaultParse(value) {
   return value;
 }
 
-function defaultStringify (value) {
+function defaultStringify(value) {
   if (value === null) { return 'null'; }
   return value.toString();
 }
 
-function defaultEquals (a, b) {
+function defaultEquals(a, b) {
   return a === b;
 }
 
-function boolParse (value) {
+function boolParse(value) {
   return value !== 'false' && value !== false;
 }
 
-function intParse (value) {
+function intParse(value) {
   return parseInt(value, 10);
 }
 
-function numberParse (value) {
+function numberParse(value) {
   return parseFloat(value, 10);
 }
 
-function selectorParse (value) {
+function selectorParse(value) {
   if (!value) { return null; }
   if (typeof value !== 'string') { return value; }
   if (value[0] === '#' && !nonCharRegex.test(value)) {
@@ -156,34 +155,34 @@ function selectorParse (value) {
   return document.querySelector(value);
 }
 
-function selectorAllParse (value) {
+function selectorAllParse(value) {
   if (!value) { return null; }
   if (typeof value !== 'string') { return value; }
   return Array.prototype.slice.call(document.querySelectorAll(value), 0);
 }
 
-function selectorStringify (value) {
+function selectorStringify(value) {
   if (value.getAttribute) {
     return '#' + value.getAttribute('id');
   }
   return defaultStringify(value);
 }
 
-function selectorAllStringify (value) {
+function selectorAllStringify(value) {
   if (value instanceof Array) {
-    return value.map(function (element) {
+    return value.map(function(element) {
       return '#' + element.getAttribute('id');
     }).join(', ');
   }
   return defaultStringify(value);
 }
 
-function srcParse (value) {
+function srcParse(value) {
   warn('`src` property type is deprecated. Use `asset` instead.');
   return assetParse(value);
 }
 
-function vecParse (value, defaultValue, target) {
+function vecParse(value, defaultValue, target) {
   return coordinates.parse(value, defaultValue, target);
 }
 
@@ -194,7 +193,7 @@ function vecParse (value, defaultValue, target) {
  * @param defaultVal - Property type default value.
  * @returns {boolean} Whether default value is accurate given the type.
  */
-function isValidDefaultValue (type, defaultVal) {
+export function isValidDefaultValue(type, defaultVal) {
   if (type === 'audio' && typeof defaultVal !== 'string') { return false; }
   if (type === 'array' && !Array.isArray(defaultVal)) { return false; }
   if (type === 'asset' && typeof defaultVal !== 'string') { return false; }
@@ -205,9 +204,9 @@ function isValidDefaultValue (type, defaultVal) {
   if (type === 'map' && typeof defaultVal !== 'string') { return false; }
   if (type === 'model' && typeof defaultVal !== 'string') { return false; }
   if (type === 'selector' && typeof defaultVal !== 'string' &&
-      defaultVal !== null) { return false; }
+    defaultVal !== null) { return false; }
   if (type === 'selectorAll' && typeof defaultVal !== 'string' &&
-      defaultVal !== null) { return false; }
+    defaultVal !== null) { return false; }
   if (type === 'src' && typeof defaultVal !== 'string') { return false; }
   if (type === 'string' && typeof defaultVal !== 'string') { return false; }
   if (type === 'time' && typeof defaultVal !== 'number') { return false; }
@@ -216,7 +215,6 @@ function isValidDefaultValue (type, defaultVal) {
   if (type === 'vec4') { return isValidDefaultCoordinate(defaultVal, 4); }
   return true;
 }
-module.exports.isValidDefaultValue = isValidDefaultValue;
 
 /**
  * Checks if default coordinates are valid.
@@ -225,7 +223,7 @@ module.exports.isValidDefaultValue = isValidDefaultValue;
  * @param {number} dimensions - 2 for 2D Vector, 3 for 3D vector.
  * @returns {boolean} Whether coordinates are parsed correctly.
  */
-function isValidDefaultCoordinate (possibleCoordinates, dimensions) {
+export function isValidDefaultCoordinate(possibleCoordinates, dimensions) {
   if (possibleCoordinates === null) { return true; }
   if (typeof possibleCoordinates !== 'object') { return false; }
 
@@ -244,4 +242,3 @@ function isValidDefaultCoordinate (possibleCoordinates, dimensions) {
 
   return true;
 }
-module.exports.isValidDefaultCoordinate = isValidDefaultCoordinate;

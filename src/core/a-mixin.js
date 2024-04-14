@@ -1,10 +1,10 @@
 /* global customElements */
-var ANode = require('./a-node').ANode;
-var components = require('./component').components;
-var utils = require('../utils');
-var styleParser = utils.styleParser;
+import { ANode } from './a-node';
+import { components } from './component';
+import * as utils from '../utils';
+const styleParser = utils.styleParser;
 
-var MULTIPLE_COMPONENT_DELIMITER = '__';
+const MULTIPLE_COMPONENT_DELIMITER = '__';
 
 /**
  * @member {object} componentCache - Cache of pre-parsed values. An object where the keys
@@ -12,14 +12,14 @@ var MULTIPLE_COMPONENT_DELIMITER = '__';
  * @member {object} rawAttributeCache - Cache of the raw attribute values.
  */
 class AMixin extends ANode {
-  constructor () {
+  constructor() {
     super();
     this.componentCache = {};
     this.rawAttributeCache = {};
     this.isMixin = true;
   }
 
-  doConnectedCallback () {
+  doConnectedCallback() {
     super.doConnectedCallback();
 
     this.sceneEl = this.closestScene();
@@ -29,7 +29,7 @@ class AMixin extends ANode {
     this.load();
   }
 
-  attributeChangedCallback (attr, oldVal, newVal) {
+  attributeChangedCallback(attr, oldVal, newVal) {
     super.attributeChangedCallback();
     this.cacheAttribute(attr, newVal);
     this.updateEntities();
@@ -38,7 +38,7 @@ class AMixin extends ANode {
   /**
    * setAttribute that parses and caches component values.
    */
-  setAttribute (attr, value) {
+  setAttribute(attr, value) {
     window.HTMLElement.prototype.setAttribute.call(this, attr, value);
     this.cacheAttribute(attr, value);
   }
@@ -46,7 +46,7 @@ class AMixin extends ANode {
   /**
    * If `attr` is a component, then parse the value using the schema and store it.
    */
-  cacheAttribute (attr, value) {
+  cacheAttribute(attr, value) {
     var component;
     var componentName;
 
@@ -70,7 +70,7 @@ class AMixin extends ANode {
    * @param {object} component - The component to parse for.
    * @param {string} attrValue - HTML attribute value.
    */
-  parseComponentAttrValue (component, attrValue) {
+  parseComponentAttrValue(component, attrValue) {
     var parsedValue;
     if (typeof attrValue !== 'string') { return attrValue; }
     if (component.isSingleProperty) {
@@ -88,7 +88,7 @@ class AMixin extends ANode {
    * If `attr` is a component, then grab pre-parsed value from the cache.
    * Else do a normal getAttribute.
    */
-  getAttribute (attr) {
+  getAttribute(attr) {
     return this.componentCache[attr] ||
       window.HTMLElement.prototype.getAttribute.call(this, attr);
   }
@@ -96,7 +96,7 @@ class AMixin extends ANode {
   /**
    * Parse and cache every component defined on the mixin.
    */
-  cacheAttributes () {
+  cacheAttributes() {
     var attributes = this.attributes;
     var attrName;
     var i;
@@ -110,7 +110,7 @@ class AMixin extends ANode {
    * For entities that already have been loaded by the time the mixin was attached, tell
    * those entities to register the mixin and refresh their component data.
    */
-  updateEntities () {
+  updateEntities() {
     var entity;
     var entities;
     var i;

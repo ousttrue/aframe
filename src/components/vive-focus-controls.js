@@ -1,27 +1,26 @@
-var registerComponent = require('../core/component').registerComponent;
+import {registerComponent} from '../core/component';
+import * as trackedControlsUtils from '../utils/tracked-controls';
+import {AFRAME_CDN_ROOT} from '../constants';
+import {isWebXRAvailable} from '../utils/device';
 
-var trackedControlsUtils = require('../utils/tracked-controls');
-var checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
-var emitIfAxesChanged = trackedControlsUtils.emitIfAxesChanged;
-var onButtonEvent = trackedControlsUtils.onButtonEvent;
+const checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
+const emitIfAxesChanged = trackedControlsUtils.emitIfAxesChanged;
+const onButtonEvent = trackedControlsUtils.onButtonEvent;
 
-var AFRAME_CDN_ROOT = require('../constants').AFRAME_CDN_ROOT;
-var VIVE_FOCUS_CONTROLLER_MODEL_URL = AFRAME_CDN_ROOT + 'controllers/vive/focus-controller/focus-controller.gltf';
+const VIVE_FOCUS_CONTROLLER_MODEL_URL = AFRAME_CDN_ROOT + 'controllers/vive/focus-controller/focus-controller.gltf';
 
-var isWebXRAvailable = require('../utils/').device.isWebXRAvailable;
-
-var GAMEPAD_ID_WEBXR = 'htc-vive-focus';
-var GAMEPAD_ID_WEBVR = 'HTC Vive Focus ';
+const GAMEPAD_ID_WEBXR = 'htc-vive-focus';
+const GAMEPAD_ID_WEBVR = 'HTC Vive Focus ';
 
 // Prefix for HTC Vive Focus Controllers.
-var GAMEPAD_ID_PREFIX = isWebXRAvailable ? GAMEPAD_ID_WEBXR : GAMEPAD_ID_WEBVR;
+const GAMEPAD_ID_PREFIX = isWebXRAvailable ? GAMEPAD_ID_WEBXR : GAMEPAD_ID_WEBVR;
 
 /**
  * Button IDs:
  * 0 - trackpad
  * 1 - trigger
  */
-var INPUT_MAPPING_WEBVR = {
+const INPUT_MAPPING_WEBVR = {
   axes: {trackpad: [0, 1]},
   buttons: ['trackpad', 'trigger']
 };
@@ -32,12 +31,12 @@ var INPUT_MAPPING_WEBVR = {
  * 2 - touchpad
  * 4 - menu
  */
-var INPUT_MAPPING_WEBXR = {
+const INPUT_MAPPING_WEBXR = {
   axes: {touchpad: [0, 1]},
   buttons: ['trigger', 'none', 'touchpad', 'none', 'menu']
 };
 
-var INPUT_MAPPING = isWebXRAvailable ? INPUT_MAPPING_WEBXR : INPUT_MAPPING_WEBVR;
+const INPUT_MAPPING = isWebXRAvailable ? INPUT_MAPPING_WEBXR : INPUT_MAPPING_WEBVR;
 
 /**
  * Vive Focus controls.
@@ -45,7 +44,7 @@ var INPUT_MAPPING = isWebXRAvailable ? INPUT_MAPPING_WEBXR : INPUT_MAPPING_WEBVR
  * controller buttons: trackpad, trigger
  * Load a controller model and highlight the pressed buttons.
  */
-module.exports.Component = registerComponent('vive-focus-controls', {
+export const Component = registerComponent('vive-focus-controls', {
   schema: {
     hand: {default: ''},  // This informs the degenerate arm model.
     buttonTouchedColor: {type: 'color', default: '#BBBBBB'},

@@ -1,11 +1,11 @@
-var registerShader = require('../core/shader').registerShader;
-var THREE = require('../lib/three');
-var utils = require('../utils/');
+import {registerShader} from '../core/shader';
+import * as THREE from 'three';
+import * as utils from '../utils/';
 
 /**
  * Phong shader using THREE.MeshPhongMaterial.
  */
-module.exports.Shader = registerShader('phong', {
+export const Shader = registerShader('phong', {
   schema: {
     color: { type: 'color' },
     emissive: { type: 'color', default: 'black' },

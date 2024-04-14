@@ -1,29 +1,29 @@
-var geometries = require('../core/geometry').geometries;
-var geometryNames = require('../core/geometry').geometryNames;
-var registerComponent = require('../core/component').registerComponent;
-var THREE = require('../lib/three');
+import { geometries } from '../core/geometry';
+import { geometryNames } from '../core/geometry';
+import { registerComponent } from '../core/component';
+import * as THREE from 'three';
 
-var dummyGeometry = new THREE.BufferGeometry();
+const dummyGeometry = new THREE.BufferGeometry();
 
 /**
  * Geometry component. Combined with material component to make a mesh in 3D object.
  * Extended with registered geometries.
  */
-module.exports.Component = registerComponent('geometry', {
+export const Component = registerComponent('geometry', {
   schema: {
-    buffer: {default: true},
-    primitive: {default: 'box', oneOf: geometryNames, schemaChange: true},
-    skipCache: {default: false}
+    buffer: { default: true },
+    primitive: { default: 'box', oneOf: geometryNames, schemaChange: true },
+    skipCache: { default: false }
   },
 
-  init: function () {
+  init: function() {
     this.geometry = null;
   },
 
   /**
    * Talk to geometry system to get or create geometry.
    */
-  update: function (previousData) {
+  update: function(previousData) {
     var data = this.data;
     var el = this.el;
     var mesh;
@@ -61,7 +61,7 @@ module.exports.Component = registerComponent('geometry', {
    * Tell geometry system that entity is no longer using the geometry.
    * Unset the geometry on the mesh
    */
-  remove: function () {
+  remove: function() {
     this.system.unuseGeometry(this.data);
     this.el.getObject3D('mesh').geometry = dummyGeometry;
     this.geometry = null;
@@ -70,7 +70,7 @@ module.exports.Component = registerComponent('geometry', {
   /**
    * Update geometry component schema based on geometry type.
    */
-  updateSchema: function (data) {
+  updateSchema: function(data) {
     var currentGeometryType = this.oldData && this.oldData.primitive;
     var newGeometryType = data.primitive;
     var schema = geometries[newGeometryType] && geometries[newGeometryType].schema;

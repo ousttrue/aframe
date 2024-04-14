@@ -1,19 +1,19 @@
 /* global customElements */
-var knownTags = require('../../core/a-node').knownTags;
-var AEntity = require('../../core/a-entity').AEntity;
+import { knownTags } from '../../core/a-node';
+import { AEntity } from '../../core/a-entity';
 
-var components = require('../../core/component').components;
-var utils = require('../../utils/');
+import { components } from '../../core/component';
+import * as utils from '../../utils/';
 
-var debug = utils.debug;
-var setComponentProperty = utils.entity.setComponentProperty;
-var log = debug('extras:primitives:debug');
-var warn = debug('extras:primitives:warn');
-var error = debug('extras:primitives:error');
+const debug = utils.debug;
+const setComponentProperty = utils.entity.setComponentProperty;
+const log = debug('extras:primitives:debug');
+const warn = debug('extras:primitives:warn');
+const error = debug('extras:primitives:error');
 
-var primitives = module.exports.primitives = {};
+export const primitives = {};
 
-module.exports.registerPrimitive = function registerPrimitive (name, definition) {
+export function registerPrimitive(name, definition) {
   name = name.toLowerCase();
 
   if (knownTags[name]) {
@@ -32,7 +32,7 @@ module.exports.registerPrimitive = function registerPrimitive (name, definition)
 
   var mappings = definition.mappings || {};
   var primitiveClass = class extends AEntity {
-    constructor () {
+    constructor() {
       super();
       this.defaultComponentsFromPrimitive = definition.defaultComponents || definition.defaultAttributes || {};
       this.deprecated = definition.deprecated || null;
@@ -47,10 +47,10 @@ module.exports.registerPrimitive = function registerPrimitive (name, definition)
      * If a mapping collides with a registered component name
      * it renames the mapping to componentname-property
      */
-    resolveMappingCollisions () {
+    resolveMappingCollisions() {
       var mappings = this.mappings;
       var self = this;
-      Object.keys(mappings).forEach(function resolveCollision (key) {
+      Object.keys(mappings).forEach(function resolveCollision(key) {
         var newAttribute;
         if (key !== key.toLowerCase()) { warn('Mapping keys should be specified in lower case. The mapping key ' + key + ' may not be recognized'); }
         if (components[key]) {
@@ -58,13 +58,13 @@ module.exports.registerPrimitive = function registerPrimitive (name, definition)
           mappings[newAttribute] = mappings[key];
           delete mappings[key];
           console.warn('The primitive ' + self.tagName.toLowerCase() + ' has a mapping collision. ' +
-                       'The attribute ' + key + ' has the same name as a registered component and' +
-                       ' has been renamed to ' + newAttribute);
+            'The attribute ' + key + ' has the same name as a registered component and' +
+            ' has been renamed to ' + newAttribute);
         }
       });
     }
 
-    getExtraComponents () {
+    getExtraComponents() {
       var attr;
       var data;
       var i;
@@ -79,7 +79,7 @@ module.exports.registerPrimitive = function registerPrimitive (name, definition)
       mixins = this.getAttribute('mixin');
       if (mixins) {
         mixins = utils.split(mixins.trim(), /\s+/);
-        mixins.forEach(function applyMixin (mixinId) {
+        mixins.forEach(function applyMixin(mixinId) {
           var mixinEl = document.getElementById(mixinId);
           if (!mixinEl) { return; }
           var rawAttributeCache = mixinEl.rawAttributeCache;
@@ -115,7 +115,7 @@ module.exports.registerPrimitive = function registerPrimitive (name, definition)
        * For the base to be extensible, both objects must be pure JavaScript objects.
        * The function assumes that base is undefined, or null or a pure object.
        */
-      function extend (base, extension) {
+      function extend(base, extension) {
         if (isUndefined(base)) {
           return copy(extension);
         }
@@ -128,18 +128,18 @@ module.exports.registerPrimitive = function registerPrimitive (name, definition)
         return copy(extension);
       }
 
-      function isUndefined (value) {
+      function isUndefined(value) {
         return typeof value === 'undefined';
       }
 
-      function copy (value) {
+      function copy(value) {
         if (isPureObject(value)) {
           return utils.extendDeep({}, value);
         }
         return value;
       }
 
-      function isPureObject (value) {
+      function isPureObject(value) {
         return value !== null && value.constructor === Object;
       }
     }
@@ -149,7 +149,7 @@ module.exports.registerPrimitive = function registerPrimitive (name, definition)
      * If attribute is mapped to a component property, set the component property using
      * the attribute value.
      */
-    attributeChangedCallback (attr, oldVal, value) {
+    attributeChangedCallback(attr, oldVal, value) {
       var componentName = this.mappings[attr];
 
       if (attr in this.deprecatedMappings) {
@@ -172,7 +172,7 @@ module.exports.registerPrimitive = function registerPrimitive (name, definition)
   // Store.
   primitives[name] = primitiveClass;
   return primitiveClass;
-};
+}
 
 /**
  * Sets the relevant property based on the mapping property path.
@@ -181,7 +181,7 @@ module.exports.registerPrimitive = function registerPrimitive (name, definition)
  * @param {string} attrValue - The (raw) attribute value.
  * @param {object} data - The data object to apply the mapping to.
  */
-function applyMapping (mapping, attrValue, data) {
+function applyMapping(mapping, attrValue, data) {
   var path = utils.entity.getComponentPropertyPath(mapping);
   if (path.constructor === Array) {
     data[path[0]] = data[path[0]] || {};
@@ -194,9 +194,9 @@ function applyMapping (mapping, attrValue, data) {
 /**
  * Add component mappings using schema.
  */
-function addComponentMapping (componentName, mappings) {
+function addComponentMapping(componentName, mappings) {
   var schema = components[componentName].schema;
-  Object.keys(schema).map(function (prop) {
+  Object.keys(schema).map(function(prop) {
     // Hyphenate where there is camelCase.
     var attrName = prop.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
     // If there is a mapping collision, prefix with component name and hyphen.
@@ -208,19 +208,18 @@ function addComponentMapping (componentName, mappings) {
 /**
  * Helper to define a primitive, building mappings using a component schema.
  */
-function definePrimitive (tagName, defaultComponents, mappings) {
+export function definePrimitive(tagName, defaultComponents, mappings) {
   // If no initial mappings provided, start from empty map.
   mappings = mappings || {};
 
   // From the default components, add mapping automagically.
-  Object.keys(defaultComponents).map(function buildMappings (componentName) {
+  Object.keys(defaultComponents).map(function buildMappings(componentName) {
     addComponentMapping(componentName, mappings);
   });
 
   // Register the primitive.
-  module.exports.registerPrimitive(tagName, utils.extendDeep({}, null, {
+  registerPrimitive(tagName, utils.extendDeep({}, null, {
     defaultComponents: defaultComponents,
     mappings: mappings
   }));
 }
-module.exports.definePrimitive = definePrimitive;

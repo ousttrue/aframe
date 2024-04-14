@@ -1,8 +1,8 @@
-var meshMixin = require('../getMeshMixin')();
-var registerPrimitive = require('../primitives').registerPrimitive;
-var utils = require('../../../utils/');
+import { getMeshMixin } from '../getMeshMixin';
+import { registerPrimitive } from '../primitives';
+import * as utils from '../../../utils/';
 
-registerPrimitive('a-obj-model', utils.extendDeep({}, meshMixin, {
+registerPrimitive('a-obj-model', utils.extendDeep({}, getMeshMixin(), {
   defaultComponents: {
     'obj-model': {}
   },

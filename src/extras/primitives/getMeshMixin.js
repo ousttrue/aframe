@@ -1,15 +1,15 @@
 /**
  * Common mesh defaults, mappings, and transforms.
  */
-var components = require('../../core/component').components;
-var shaders = require('../../core/shader').shaders;
-var utils = require('../../utils/');
+import { components } from '../../core/component';
+import { shaders } from '../../core/shader';
+import * as utils from '../../utils/';
 
-var materialMappings = {};
+const materialMappings = {};
 Object.keys(components.material.schema).forEach(addMapping);
 Object.keys(shaders.standard.schema).forEach(addMapping);
 
-function addMapping (prop) {
+function addMapping(prop) {
   // To hyphenated.
   var htmlAttrName = prop.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
   if (prop === 'fog') { htmlAttrName = 'material-fog'; }
@@ -17,9 +17,9 @@ function addMapping (prop) {
   materialMappings[htmlAttrName] = 'material.' + prop;
 }
 
-module.exports = function getMeshMixin () {
+export function getMeshMixin() {
   return {
-    defaultComponents: {material: {}},
-    mappings: utils.extend({}, materialMappings)
+    defaultComponents: { material: {} },
+    mappings: Object.assign({}, materialMappings)
   };
-};
+}

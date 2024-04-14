@@ -1,69 +1,67 @@
-var registerComponent = require('../core/component').registerComponent;
-var THREE = require('../lib/three');
+import { registerComponent } from '../core/component';
+import * as THREE from 'three';
+import * as trackedControlsUtils from '../utils/tracked-controls';
+import { isWebXRAvailable } from '../utils/device';
+import { AFRAME_CDN_ROOT } from '../constants';
 
-var trackedControlsUtils = require('../utils/tracked-controls');
-var checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
-var emitIfAxesChanged = trackedControlsUtils.emitIfAxesChanged;
-var onButtonEvent = trackedControlsUtils.onButtonEvent;
-
-var isWebXRAvailable = require('../utils/').device.isWebXRAvailable;
-
-var GAMEPAD_ID_WEBXR = 'oculus-touch';
-var GAMEPAD_ID_WEBVR = 'Oculus Touch';
+const checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
+const emitIfAxesChanged = trackedControlsUtils.emitIfAxesChanged;
+const onButtonEvent = trackedControlsUtils.onButtonEvent;
+const GAMEPAD_ID_WEBXR = 'oculus-touch';
+const GAMEPAD_ID_WEBVR = 'Oculus Touch';
 
 // Prefix for Gen1 and Gen2 Oculus Touch Controllers.
-var GAMEPAD_ID_PREFIX = isWebXRAvailable ? GAMEPAD_ID_WEBXR : GAMEPAD_ID_WEBVR;
+const GAMEPAD_ID_PREFIX = isWebXRAvailable ? GAMEPAD_ID_WEBXR : GAMEPAD_ID_WEBVR;
 
 // First generation model URL.
-var AFRAME_CDN_ROOT = require('../constants').AFRAME_CDN_ROOT;
-var TOUCH_CONTROLLER_MODEL_BASE_URL = AFRAME_CDN_ROOT + 'controllers/oculus/oculus-touch-controller-';
-var META_CONTROLLER_MODEL_BASE_URL = AFRAME_CDN_ROOT + 'controllers/meta/';
+const TOUCH_CONTROLLER_MODEL_BASE_URL = AFRAME_CDN_ROOT + 'controllers/oculus/oculus-touch-controller-';
+const META_CONTROLLER_MODEL_BASE_URL = AFRAME_CDN_ROOT + 'controllers/meta/';
 
-var OCULUS_TOUCH_WEBVR = {
+const OCULUS_TOUCH_WEBVR = {
   left: {
     modelUrl: TOUCH_CONTROLLER_MODEL_BASE_URL + 'left.gltf',
-    rayOrigin: {origin: {x: 0.008, y: -0.01, z: 0}, direction: {x: 0, y: -0.8, z: -1}},
+    rayOrigin: { origin: { x: 0.008, y: -0.01, z: 0 }, direction: { x: 0, y: -0.8, z: -1 } },
     modelPivotOffset: new THREE.Vector3(-0.005, 0.003, -0.055),
     modelPivotRotation: new THREE.Euler(0, 0, 0)
   },
   right: {
     modelUrl: TOUCH_CONTROLLER_MODEL_BASE_URL + 'right.gltf',
-    rayOrigin: {origin: {x: -0.008, y: -0.01, z: 0}, direction: {x: 0, y: -0.8, z: -1}},
+    rayOrigin: { origin: { x: -0.008, y: -0.01, z: 0 }, direction: { x: 0, y: -0.8, z: -1 } },
     modelPivotOffset: new THREE.Vector3(0.005, 0.003, -0.055),
     modelPivotRotation: new THREE.Euler(0, 0, 0)
   }
 };
 
-var OCULUS_TOUCH_WEBXR = {
+const OCULUS_TOUCH_WEBXR = {
   left: {
     modelUrl: TOUCH_CONTROLLER_MODEL_BASE_URL + 'left.gltf',
-    rayOrigin: {origin: {x: 0.002, y: -0.005, z: -0.03}, direction: {x: 0, y: -0.8, z: -1}},
+    rayOrigin: { origin: { x: 0.002, y: -0.005, z: -0.03 }, direction: { x: 0, y: -0.8, z: -1 } },
     modelPivotOffset: new THREE.Vector3(-0.005, 0.036, -0.037),
     modelPivotRotation: new THREE.Euler(Math.PI / 4.5, 0, 0)
   },
   right: {
     modelUrl: TOUCH_CONTROLLER_MODEL_BASE_URL + 'right.gltf',
-    rayOrigin: {origin: {x: -0.002, y: -0.005, z: -0.03}, direction: {x: 0, y: -0.8, z: -1}},
+    rayOrigin: { origin: { x: -0.002, y: -0.005, z: -0.03 }, direction: { x: 0, y: -0.8, z: -1 } },
     modelPivotOffset: new THREE.Vector3(0.005, 0.036, -0.037),
     modelPivotRotation: new THREE.Euler(Math.PI / 4.5, 0, 0)
   }
 };
 
-var OCULUS_TOUCH_CONFIG = isWebXRAvailable ? OCULUS_TOUCH_WEBXR : OCULUS_TOUCH_WEBVR;
+const OCULUS_TOUCH_CONFIG = isWebXRAvailable ? OCULUS_TOUCH_WEBXR : OCULUS_TOUCH_WEBVR;
 
-var CONTROLLER_DEFAULT = 'oculus-touch';
-var CONTROLLER_PROPERTIES = {
+const CONTROLLER_DEFAULT = 'oculus-touch';
+const CONTROLLER_PROPERTIES = {
   'oculus-touch': OCULUS_TOUCH_CONFIG,
   'oculus-touch-v2': {
     left: {
       modelUrl: TOUCH_CONTROLLER_MODEL_BASE_URL + 'gen2-left.gltf',
-      rayOrigin: {origin: {x: -0.006, y: -0.03, z: -0.04}, direction: {x: 0, y: -0.9, z: -1}},
+      rayOrigin: { origin: { x: -0.006, y: -0.03, z: -0.04 }, direction: { x: 0, y: -0.9, z: -1 } },
       modelPivotOffset: new THREE.Vector3(0, -0.007, -0.021),
       modelPivotRotation: new THREE.Euler(-Math.PI / 4, 0, 0)
     },
     right: {
       modelUrl: TOUCH_CONTROLLER_MODEL_BASE_URL + 'gen2-right.gltf',
-      rayOrigin: {origin: {x: 0.006, y: -0.03, z: -0.04}, direction: {x: 0, y: -0.9, z: -1}},
+      rayOrigin: { origin: { x: 0.006, y: -0.03, z: -0.04 }, direction: { x: 0, y: -0.9, z: -1 } },
       modelPivotOffset: new THREE.Vector3(0, -0.007, -0.021),
       modelPivotRotation: new THREE.Euler(-Math.PI / 4, 0, 0)
     }
@@ -72,8 +70,8 @@ var CONTROLLER_PROPERTIES = {
     left: {
       modelUrl: TOUCH_CONTROLLER_MODEL_BASE_URL + 'v3-left.glb',
       rayOrigin: {
-        origin: {x: 0.0065, y: -0.0186, z: -0.05},
-        direction: {x: 0.12394785839500175, y: -0.5944043672340157, z: -0.7945567170519814}
+        origin: { x: 0.0065, y: -0.0186, z: -0.05 },
+        direction: { x: 0.12394785839500175, y: -0.5944043672340157, z: -0.7945567170519814 }
       },
       modelPivotOffset: new THREE.Vector3(0, 0, 0),
       modelPivotRotation: new THREE.Euler(0, 0, 0)
@@ -81,8 +79,8 @@ var CONTROLLER_PROPERTIES = {
     right: {
       modelUrl: TOUCH_CONTROLLER_MODEL_BASE_URL + 'v3-right.glb',
       rayOrigin: {
-        origin: {x: -0.0065, y: -0.0186, z: -0.05},
-        direction: {x: -0.12394785839500175, y: -0.5944043672340157, z: -0.7945567170519814}
+        origin: { x: -0.0065, y: -0.0186, z: -0.05 },
+        direction: { x: -0.12394785839500175, y: -0.5944043672340157, z: -0.7945567170519814 }
       },
       modelPivotOffset: new THREE.Vector3(0, 0, 0),
       modelPivotRotation: new THREE.Euler(0, 0, 0)
@@ -92,8 +90,8 @@ var CONTROLLER_PROPERTIES = {
     left: {
       modelUrl: META_CONTROLLER_MODEL_BASE_URL + 'quest-touch-pro-left.glb',
       rayOrigin: {
-        origin: {x: 0.0065, y: -0.0186, z: -0.05},
-        direction: {x: 0.12394785839500175, y: -0.5944043672340157, z: -0.7945567170519814}
+        origin: { x: 0.0065, y: -0.0186, z: -0.05 },
+        direction: { x: 0.12394785839500175, y: -0.5944043672340157, z: -0.7945567170519814 }
       },
       modelPivotOffset: new THREE.Vector3(0, 0, 0),
       modelPivotRotation: new THREE.Euler(0, 0, 0)
@@ -101,8 +99,8 @@ var CONTROLLER_PROPERTIES = {
     right: {
       modelUrl: META_CONTROLLER_MODEL_BASE_URL + 'quest-touch-pro-right.glb',
       rayOrigin: {
-        origin: {x: -0.0065, y: -0.0186, z: -0.05},
-        direction: {x: -0.12394785839500175, y: -0.5944043672340157, z: -0.7945567170519814}
+        origin: { x: -0.0065, y: -0.0186, z: -0.05 },
+        direction: { x: -0.12394785839500175, y: -0.5944043672340157, z: -0.7945567170519814 }
       },
       modelPivotOffset: new THREE.Vector3(0, 0, 0),
       modelPivotRotation: new THREE.Euler(0, 0, 0)
@@ -112,8 +110,8 @@ var CONTROLLER_PROPERTIES = {
     left: {
       modelUrl: META_CONTROLLER_MODEL_BASE_URL + 'quest-touch-plus-left.glb',
       rayOrigin: {
-        origin: {x: 0.0065, y: -0.0186, z: -0.05},
-        direction: {x: 0.12394785839500175, y: -0.5944043672340157, z: -0.7945567170519814}
+        origin: { x: 0.0065, y: -0.0186, z: -0.05 },
+        direction: { x: 0.12394785839500175, y: -0.5944043672340157, z: -0.7945567170519814 }
       },
       modelPivotOffset: new THREE.Vector3(0, 0, 0),
       modelPivotRotation: new THREE.Euler(0, 0, 0)
@@ -121,8 +119,8 @@ var CONTROLLER_PROPERTIES = {
     right: {
       modelUrl: META_CONTROLLER_MODEL_BASE_URL + 'quest-touch-plus-right.glb',
       rayOrigin: {
-        origin: {x: -0.0065, y: -0.0186, z: -0.05},
-        direction: {x: -0.12394785839500175, y: -0.5944043672340157, z: -0.7945567170519814}
+        origin: { x: -0.0065, y: -0.0186, z: -0.05 },
+        direction: { x: -0.12394785839500175, y: -0.5944043672340157, z: -0.7945567170519814 }
       },
       modelPivotOffset: new THREE.Vector3(0, 0, 0),
       modelPivotRotation: new THREE.Euler(0, 0, 0)
@@ -139,13 +137,13 @@ var CONTROLLER_PROPERTIES = {
  * 4 - Y (left) or B (right)
  * 5 - surface (touch only)
  */
-var INPUT_MAPPING_WEBVR = {
+const INPUT_MAPPING_WEBVR = {
   left: {
-    axes: {thumbstick: [0, 1]},
+    axes: { thumbstick: [0, 1] },
     buttons: ['thumbstick', 'trigger', 'grip', 'xbutton', 'ybutton', 'surface']
   },
   right: {
-    axes: {thumbstick: [0, 1]},
+    axes: { thumbstick: [0, 1] },
     buttons: ['thumbstick', 'trigger', 'grip', 'abutton', 'bbutton', 'surface']
   }
 };
@@ -167,18 +165,18 @@ var INPUT_MAPPING_WEBVR = {
  * 3 - thumbstick
  * Reference: https://github.com/immersive-web/webxr-input-profiles/blob/master/packages/registry/profiles/oculus/oculus-touch.json
  */
-var INPUT_MAPPING_WEBXR = {
+const INPUT_MAPPING_WEBXR = {
   left: {
-    axes: {thumbstick: [2, 3]},
+    axes: { thumbstick: [2, 3] },
     buttons: ['trigger', 'grip', 'none', 'thumbstick', 'xbutton', 'ybutton', 'surface']
   },
   right: {
-    axes: {thumbstick: [2, 3]},
+    axes: { thumbstick: [2, 3] },
     buttons: ['trigger', 'grip', 'none', 'thumbstick', 'abutton', 'bbutton', 'surface']
   }
 };
 
-var INPUT_MAPPING = isWebXRAvailable ? INPUT_MAPPING_WEBXR : INPUT_MAPPING_WEBVR;
+const INPUT_MAPPING = isWebXRAvailable ? INPUT_MAPPING_WEBXR : INPUT_MAPPING_WEBVR;
 
 /**
  * Oculus Touch controls.
@@ -186,22 +184,22 @@ var INPUT_MAPPING = isWebXRAvailable ? INPUT_MAPPING_WEBXR : INPUT_MAPPING_WEBVR
  * controller buttons: thumbstick, trigger, grip, xbutton, ybutton, surface
  * Load a controller model and highlight the pressed buttons.
  */
-module.exports.Component = registerComponent('oculus-touch-controls', {
+export const Component = registerComponent('oculus-touch-controls', {
   schema: {
-    hand: {default: 'left'},
-    buttonColor: {type: 'color', default: '#999'},  // Off-white.
-    buttonTouchColor: {type: 'color', default: '#8AB'},
-    buttonHighlightColor: {type: 'color', default: '#2DF'},  // Light blue.
-    model: {default: true},
-    controllerType: {default: 'auto', oneOf: ['auto', 'oculus-touch', 'oculus-touch-v2', 'oculus-touch-v3']},
-    orientationOffset: {type: 'vec3', default: {x: 43, y: 0, z: 0}}
+    hand: { default: 'left' },
+    buttonColor: { type: 'color', default: '#999' },  // Off-white.
+    buttonTouchColor: { type: 'color', default: '#8AB' },
+    buttonHighlightColor: { type: 'color', default: '#2DF' },  // Light blue.
+    model: { default: true },
+    controllerType: { default: 'auto', oneOf: ['auto', 'oculus-touch', 'oculus-touch-v2', 'oculus-touch-v3'] },
+    orientationOffset: { type: 'vec3', default: { x: 43, y: 0, z: 0 } }
   },
 
   after: ['tracked-controls'],
 
   mapping: INPUT_MAPPING,
 
-  bindMethods: function () {
+  bindMethods: function() {
     this.onButtonChanged = this.onButtonChanged.bind(this);
     this.onThumbstickMoved = this.onThumbstickMoved.bind(this);
     this.onModelLoaded = this.onModelLoaded.bind(this);
@@ -210,12 +208,12 @@ module.exports.Component = registerComponent('oculus-touch-controls', {
     this.onAxisMoved = this.onAxisMoved.bind(this);
   },
 
-  init: function () {
+  init: function() {
     var self = this;
-    this.onButtonDown = function (evt) { onButtonEvent(evt.detail.id, 'down', self, self.data.hand); };
-    this.onButtonUp = function (evt) { onButtonEvent(evt.detail.id, 'up', self, self.data.hand); };
-    this.onButtonTouchStart = function (evt) { onButtonEvent(evt.detail.id, 'touchstart', self, self.data.hand); };
-    this.onButtonTouchEnd = function (evt) { onButtonEvent(evt.detail.id, 'touchend', self, self.data.hand); };
+    this.onButtonDown = function(evt) { onButtonEvent(evt.detail.id, 'down', self, self.data.hand); };
+    this.onButtonUp = function(evt) { onButtonEvent(evt.detail.id, 'up', self, self.data.hand); };
+    this.onButtonTouchStart = function(evt) { onButtonEvent(evt.detail.id, 'touchstart', self, self.data.hand); };
+    this.onButtonTouchEnd = function(evt) { onButtonEvent(evt.detail.id, 'touchend', self, self.data.hand); };
     this.controllerPresent = false;
     this.lastControllerCheck = 0;
     this.previousButtonValues = {};
@@ -223,7 +221,7 @@ module.exports.Component = registerComponent('oculus-touch-controls', {
     this.triggerEuler = new THREE.Euler();
   },
 
-  addEventListeners: function () {
+  addEventListeners: function() {
     var el = this.el;
     el.addEventListener('buttonchanged', this.onButtonChanged);
     el.addEventListener('buttondown', this.onButtonDown);
@@ -236,7 +234,7 @@ module.exports.Component = registerComponent('oculus-touch-controls', {
     this.controllerEventsActive = true;
   },
 
-  removeEventListeners: function () {
+  removeEventListeners: function() {
     var el = this.el;
     el.removeEventListener('buttonchanged', this.onButtonChanged);
     el.removeEventListener('buttondown', this.onButtonDown);
@@ -249,24 +247,24 @@ module.exports.Component = registerComponent('oculus-touch-controls', {
     this.controllerEventsActive = false;
   },
 
-  checkIfControllerPresent: function () {
+  checkIfControllerPresent: function() {
     checkControllerPresentAndSetup(this, GAMEPAD_ID_PREFIX, {
       hand: this.data.hand,
       iterateControllerProfiles: true
     });
   },
 
-  play: function () {
+  play: function() {
     this.checkIfControllerPresent();
     this.addControllersUpdateListener();
   },
 
-  pause: function () {
+  pause: function() {
     this.removeEventListeners();
     this.removeControllersUpdateListener();
   },
 
-  loadModel: function (controller) {
+  loadModel: function(controller) {
     var data = this.data;
     var controllerId;
 
@@ -309,7 +307,7 @@ module.exports.Component = registerComponent('oculus-touch-controls', {
     this.el.setAttribute('gltf-model', modelUrl);
   },
 
-  injectTrackedControls: function (controller) {
+  injectTrackedControls: function(controller) {
     var data = this.data;
     var webXRId = GAMEPAD_ID_WEBXR;
     var webVRId = data.hand === 'right' ? 'Oculus Touch (Right)' : 'Oculus Touch (Left)';
@@ -325,20 +323,20 @@ module.exports.Component = registerComponent('oculus-touch-controls', {
     this.loadModel(controller);
   },
 
-  addControllersUpdateListener: function () {
+  addControllersUpdateListener: function() {
     this.el.sceneEl.addEventListener('controllersupdated', this.onControllersUpdate, false);
   },
 
-  removeControllersUpdateListener: function () {
+  removeControllersUpdateListener: function() {
     this.el.sceneEl.removeEventListener('controllersupdated', this.onControllersUpdate, false);
   },
 
-  onControllersUpdate: function () {
+  onControllersUpdate: function() {
     // Note that due to gamepadconnected event propagation issues, we don't rely on events.
     this.checkIfControllerPresent();
   },
 
-  onButtonChanged: function (evt) {
+  onButtonChanged: function(evt) {
     var button = this.mapping[this.data.hand].buttons[evt.detail.id];
     if (!button) { return; }
     // move the button meshes
@@ -364,7 +362,7 @@ module.exports.Component = registerComponent('oculus-touch-controls', {
     this.el.emit(button + 'changed', evt.detail.state);
   },
 
-  onButtonChangedV3orPROorPlus: function (evt) {
+  onButtonChangedV3orPROorPlus: function(evt) {
     var button = this.mapping[this.data.hand].buttons[evt.detail.id];
     var buttonObjects = this.buttonObjects;
     var analogValue;
@@ -383,7 +381,7 @@ module.exports.Component = registerComponent('oculus-touch-controls', {
     );
   },
 
-  onModelLoaded: function (evt) {
+  onModelLoaded: function(evt) {
     if (evt.target !== this.el || !this.data.model) { return; }
     if (this.isTouchV3orPROorPlus) {
       this.onTouchV3orPROorPlusModelLoaded(evt);
@@ -421,12 +419,12 @@ module.exports.Component = registerComponent('oculus-touch-controls', {
     });
   },
 
-  applyOffset: function (model) {
+  applyOffset: function(model) {
     model.position.copy(this.displayModel[this.data.hand].modelPivotOffset);
     model.rotation.copy(this.displayModel[this.data.hand].modelPivotRotation);
   },
 
-  onTouchV3orPROorPlusModelLoaded: function (evt) {
+  onTouchV3orPROorPlusModelLoaded: function(evt) {
     var controllerObject3D = this.controllerObject3D = evt.detail.model;
 
     var buttonObjects = this.buttonObjects = {};
@@ -492,11 +490,11 @@ module.exports.Component = registerComponent('oculus-touch-controls', {
     };
   },
 
-  onAxisMoved: function (evt) {
+  onAxisMoved: function(evt) {
     emitIfAxesChanged(this, this.mapping[this.data.hand].axes, evt);
   },
 
-  onThumbstickMoved: function (evt) {
+  onThumbstickMoved: function(evt) {
     if (!this.buttonMeshes || !this.buttonMeshes.thumbstick) { return; }
     if (this.isTouchV3orPROorPlus) {
       this.updateThumbstickTouchV3orPROorPlus(evt);
@@ -515,7 +513,7 @@ module.exports.Component = registerComponent('oculus-touch-controls', {
     x: 'z'
   },
 
-  updateThumbstickTouchV3orPROorPlus: function (evt) {
+  updateThumbstickTouchV3orPROorPlus: function(evt) {
     var normalizedXAxis = (evt.detail.x + 1.0) / 2.0;
     this.buttonObjects.thumbstickXAxis.quaternion.slerpQuaternions(
       this.buttonRanges.thumbstickXAxis.min.quaternion,
@@ -531,12 +529,12 @@ module.exports.Component = registerComponent('oculus-touch-controls', {
     );
   },
 
-  updateModel: function (buttonName, evtName) {
+  updateModel: function(buttonName, evtName) {
     if (!this.data.model) { return; }
     this.updateButtonModel(buttonName, evtName);
   },
 
-  updateButtonModel: function (buttonName, state) {
+  updateButtonModel: function(buttonName, state) {
     // update the button mesh colors
     var buttonMeshes = this.buttonMeshes;
     var button;
@@ -555,8 +553,8 @@ module.exports.Component = registerComponent('oculus-touch-controls', {
  * Some of the controller models share the same material for different parts (buttons, triggers...).
  * In order to change their color independently we have to create separate materials.
  */
-function cloneMeshMaterial (object3d) {
-  object3d.traverse(function (node) {
+function cloneMeshMaterial(object3d) {
+  object3d.traverse(function(node) {
     var newMaterial;
     if (node.type !== 'Mesh') return;
     newMaterial = node.material.clone();

@@ -1,13 +1,13 @@
-var registerSystem = require('../core/system').registerSystem;
-var utils = require('../utils');
+import { registerSystem } from '../core/system';
+import * as utils from '../utils';
 var isWebXRAvailable = utils.device.isWebXRAvailable;
 
 /**
  * Tracked controls system.
  * Maintain list with available tracked controllers.
  */
-module.exports.System = registerSystem('tracked-controls-webvr', {
-  init: function () {
+export const System = registerSystem('tracked-controls-webvr', {
+  init: function() {
     var self = this;
 
     this.controllers = [];
@@ -21,14 +21,14 @@ module.exports.System = registerSystem('tracked-controls-webvr', {
 
     if (!navigator.getVRDisplays) { return; }
 
-    this.sceneEl.addEventListener('enter-vr', function () {
-      navigator.getVRDisplays().then(function (displays) {
+    this.sceneEl.addEventListener('enter-vr', function() {
+      navigator.getVRDisplays().then(function(displays) {
         if (displays.length) { self.vrDisplay = displays[0]; }
       });
     });
   },
 
-  tick: function () {
+  tick: function() {
     if (this.isChrome) {
       // Retrieve new controller handlers with updated state (pose, buttons...)
       this.updateControllerList();
@@ -40,7 +40,7 @@ module.exports.System = registerSystem('tracked-controls-webvr', {
   /**
    * Update controller list.
    */
-  updateControllerList: function () {
+  updateControllerList: function() {
     var controllers = this.controllers;
     var gamepad;
     var gamepads;

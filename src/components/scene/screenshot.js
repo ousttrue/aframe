@@ -1,8 +1,8 @@
 /* global ImageData, URL */
-var registerComponent = require('../../core/component').registerComponent;
-var THREE = require('../../lib/three');
+import {registerComponent} from '../../core/component';
+import * as THREE from 'three';
 
-var VERTEX_SHADER = [
+const VERTEX_SHADER = [
   'attribute vec3 position;',
   'attribute vec2 uv;',
   'uniform mat4 projectionMatrix;',
@@ -14,7 +14,7 @@ var VERTEX_SHADER = [
   '}'
 ].join('\n');
 
-var FRAGMENT_SHADER = [
+const FRAGMENT_SHADER = [
   'precision mediump float;',
   'uniform samplerCube map;',
   'varying vec2 vUv;',
@@ -43,7 +43,7 @@ var FRAGMENT_SHADER = [
  * The cube map produced by the CubeCamera is projected on a quad and then rendered to
  * WebGLRenderTarget with an orthographic camera.
  */
-module.exports.Component = registerComponent('screenshot', {
+export const Component = registerComponent('screenshot', {
   schema: {
     width: {default: 4096},
     height: {default: 2048},

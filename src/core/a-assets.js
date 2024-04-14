@@ -1,23 +1,23 @@
 /* global customElements */
-var ANode = require('./a-node').ANode;
-var debug = require('../utils/debug');
-var THREE = require('../lib/three');
+import { ANode } from './a-node';
+import debug from '../utils/debug';
+import * as THREE from 'three';
 
-var fileLoader = new THREE.FileLoader();
-var warn = debug('core:a-assets:warn');
+const fileLoader = new THREE.FileLoader();
+const warn = debug('core:a-assets:warn');
 
 /**
  * Asset management system. Handles blocking on asset loading.
  */
 class AAssets extends ANode {
-  constructor () {
+  constructor() {
     super();
     this.isAssets = true;
     this.fileLoader = fileLoader;
     this.timeout = null;
   }
 
-  doConnectedCallback () {
+  doConnectedCallback() {
     var self = this;
     var i;
     var loaded = [];
@@ -38,7 +38,7 @@ class AAssets extends ANode {
     imgEls = this.querySelectorAll('img');
     for (i = 0; i < imgEls.length; i++) {
       imgEl = fixUpMediaElement(imgEls[i]);
-      loaded.push(new Promise(function (resolve, reject) {
+      loaded.push(new Promise(function(resolve, reject) {
         // Set in cache because we won't be needing to call three.js loader if we have.
         // a loaded media element.
         THREE.Cache.add(imgEls[i].getAttribute('src'), imgEl);
@@ -63,10 +63,10 @@ class AAssets extends ANode {
 
     // Wait for <a-asset-item>s
     children = this.getChildren();
-    children.forEach(function (child) {
+    children.forEach(function(child) {
       if (!child.isAssetItem || !child.hasAttribute('src')) { return; }
 
-      loaded.push(new Promise(function waitForLoaded (resolve, reject) {
+      loaded.push(new Promise(function waitForLoaded(resolve, reject) {
         if (child.hasLoaded) { return resolve(); }
         child.addEventListener('loaded', resolve);
         child.addEventListener('error', reject);
@@ -74,7 +74,7 @@ class AAssets extends ANode {
     });
 
     // Trigger loaded for scene to start rendering.
-    Promise.allSettled(loaded).then(function () {
+    Promise.allSettled(loaded).then(function() {
       // Make sure the timeout didn't occur.
       if (self.timeout === null) { return; }
       self.load();
@@ -82,7 +82,7 @@ class AAssets extends ANode {
 
     // Timeout to start loading anyways.
     timeout = parseInt(this.getAttribute('timeout'), 10) || 3000;
-    this.timeout = setTimeout(function () {
+    this.timeout = setTimeout(function() {
       // Make sure the loading didn't complete.
       if (self.hasLoaded) { return; }
       warn('Asset loading timed out in', timeout, 'ms');
@@ -92,14 +92,14 @@ class AAssets extends ANode {
     }, timeout);
   }
 
-  disconnectedCallback () {
+  disconnectedCallback() {
     super.disconnectedCallback();
     if (this.timeout) { clearTimeout(this.timeout); }
   }
 
-  load () {
+  load() {
     // Filter out all children, as waiting already took place in doConnectedCallback.
-    super.load.call(this, null, function () { return false; });
+    super.load.call(this, null, function() { return false; });
   }
 }
 
@@ -109,28 +109,28 @@ customElements.define('a-assets', AAssets);
  * Preload using XHRLoader for any type of asset.
  */
 class AAssetItem extends ANode {
-  constructor () {
+  constructor() {
     super();
     this.data = null;
     this.isAssetItem = true;
   }
 
-  connectedCallback () {
+  connectedCallback() {
     var self = this;
     var src = this.getAttribute('src');
     fileLoader.setResponseType(
       this.getAttribute('response-type') || inferResponseType(src));
-    fileLoader.load(src, function handleOnLoad (response) {
+    fileLoader.load(src, function handleOnLoad(response) {
       self.data = response;
       ANode.prototype.load.call(self);
-    }, function handleOnProgress (xhr) {
+    }, function handleOnProgress(xhr) {
       self.emit('progress', {
         loadedBytes: xhr.loaded,
         totalBytes: xhr.total,
         xhr: xhr
       });
-    }, function handleOnError (xhr) {
-      self.emit('error', {xhr: xhr});
+    }, function handleOnError(xhr) {
+      self.emit('error', { xhr: xhr });
     });
   }
 }
@@ -143,13 +143,13 @@ customElements.define('a-asset-item', AAssetItem);
  * @param {Element} el - HTMLMediaElement.
  * @returns {Promise}
  */
-function mediaElementLoaded (el) {
+function mediaElementLoaded(el) {
   if (!el.hasAttribute('autoplay') && el.getAttribute('preload') !== 'auto') {
     return;
   }
 
   // If media specifies autoplay or preload, wait until media is completely buffered.
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     if (el.readyState === 4) { return resolve(); }  // Already loaded.
     if (el.error) { return reject(); }  // Error.
 
@@ -157,7 +157,7 @@ function mediaElementLoaded (el) {
     el.addEventListener('progress', checkProgress, false);
     el.addEventListener('error', reject, false);
 
-    function checkProgress () {
+    function checkProgress() {
       // Add up the seconds buffered.
       var secondsBuffered = 0;
       for (var i = 0; i < el.buffered.length; i++) {
@@ -183,7 +183,7 @@ function mediaElementLoaded (el) {
  * Automatically add attributes to media elements where convenient.
  * crossorigin, playsinline.
  */
-function fixUpMediaElement (mediaEl) {
+function fixUpMediaElement(mediaEl) {
   // Cross-origin.
   var newMediaEl = setCrossOrigin(mediaEl);
 
@@ -208,7 +208,7 @@ function fixUpMediaElement (mediaEl) {
  * @param {Element} Media element (e.g., <img>, <audio>, <video>).
  * @returns {Element} Media element to be used to listen to for loaded events.
  */
-function setCrossOrigin (mediaEl) {
+function setCrossOrigin(mediaEl) {
   var newMediaEl;
   var src;
 
@@ -226,8 +226,8 @@ function setCrossOrigin (mediaEl) {
   }
 
   warn('Cross-origin element (e.g., <img>) was requested without `crossorigin` set. ' +
-       'A-Frame will re-request the asset with `crossorigin` attribute set. ' +
-       'Please set `crossorigin` on the element (e.g., <img crossorigin="anonymous">)', src);
+    'A-Frame will re-request the asset with `crossorigin` attribute set. ' +
+    'Please set `crossorigin` on the element (e.g., <img crossorigin="anonymous">)', src);
   mediaEl.crossOrigin = 'anonymous';
   newMediaEl = mediaEl.cloneNode(true);
   return newMediaEl;
@@ -239,7 +239,7 @@ function setCrossOrigin (mediaEl) {
  * @param {string} url
  * @returns {string}
  */
-function extractDomain (url) {
+function extractDomain(url) {
   // Find and remove protocol (e.g., http, ftp, etc.) to get domain.
   var domain = url.indexOf('://') > -1 ? url.split('/')[2] : url.split('/')[0];
 
@@ -255,7 +255,7 @@ function extractDomain (url) {
  * @param {string} src
  * @returns {string}
  */
-function inferResponseType (src) {
+export function inferResponseType(src) {
   var fileName = getFileNameFromURL(src);
   var dotLastIndex = fileName.lastIndexOf('.');
   if (dotLastIndex >= 0) {
@@ -266,7 +266,6 @@ function inferResponseType (src) {
   }
   return 'text';
 }
-module.exports.inferResponseType = inferResponseType;
 
 /**
  * Extract filename from URL
@@ -274,11 +273,10 @@ module.exports.inferResponseType = inferResponseType;
  * @param {string} url
  * @returns {string}
  */
-function getFileNameFromURL (url) {
+export function getFileNameFromURL(url) {
   var parser = document.createElement('a');
   parser.href = url;
   var query = parser.search.replace(/^\?/, '');
   var filePath = url.replace(query, '').replace('?', '');
   return filePath.substring(filePath.lastIndexOf('/') + 1);
 }
-module.exports.getFileNameFromURL = getFileNameFromURL;

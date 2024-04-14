@@ -1,15 +1,15 @@
-var registerComponent = require('../core/component').registerComponent;
-var THREE = require('../lib/three');
+import { registerComponent } from '../core/component';
+import * as THREE from 'three';
 
 registerComponent('hand-tracking-grab-controls', {
   schema: {
-    hand: {default: 'right', oneOf: ['left', 'right']},
-    color: {type: 'color', default: 'white'},
-    hoverColor: {type: 'color', default: '#538df1'},
-    hoverEnabled: {default: false}
+    hand: { default: 'right', oneOf: ['left', 'right'] },
+    color: { type: 'color', default: 'white' },
+    hoverColor: { type: 'color', default: '#538df1' },
+    hoverEnabled: { default: false }
   },
 
-  init: function () {
+  init: function() {
     var el = this.el;
     var data = this.data;
     var trackedObject3DVariable;
@@ -20,8 +20,8 @@ registerComponent('hand-tracking-grab-controls', {
       trackedObject3DVariable = 'components.hand-tracking-controls.bones.21';
     }
 
-    el.setAttribute('hand-tracking-controls', {hand: data.hand});
-    el.setAttribute('obb-collider', {trackedObject3D: trackedObject3DVariable, size: 0.04});
+    el.setAttribute('hand-tracking-controls', { hand: data.hand });
+    el.setAttribute('obb-collider', { trackedObject3D: trackedObject3DVariable, size: 0.04 });
 
     this.auxMatrix = new THREE.Matrix4();
     this.auxQuaternion = new THREE.Quaternion();
@@ -51,7 +51,7 @@ registerComponent('hand-tracking-grab-controls', {
     this.el.addEventListener('pinchmoved', this.onPinchMoved);
   },
 
-  transferEntityOwnership: function () {
+  transferEntityOwnership: function() {
     var grabbingElComponent;
     var grabbingEls = this.el.sceneEl.querySelectorAll('[hand-tracking-grab-controls]');
     for (var i = 0; i < grabbingEls.length; ++i) {
@@ -64,7 +64,7 @@ registerComponent('hand-tracking-grab-controls', {
     return false;
   },
 
-  onCollisionStarted: function (evt) {
+  onCollisionStarted: function(evt) {
     var withEl = evt.detail.withEl;
     if (this.collidedEl) { return; }
     if (!withEl.getAttribute('grabbable')) { return; }
@@ -75,7 +75,7 @@ registerComponent('hand-tracking-grab-controls', {
     }
   },
 
-  onCollisionEnded: function () {
+  onCollisionEnded: function() {
     this.collidedEl = undefined;
     if (this.grabbedEl) { return; }
     this.grabbingObject3D = undefined;
@@ -84,7 +84,7 @@ registerComponent('hand-tracking-grab-controls', {
     }
   },
 
-  onPinchStarted: function (evt) {
+  onPinchStarted: function(evt) {
     if (!this.collidedEl) { return; }
     this.pinchPosition = evt.detail.position;
     this.wristRotation = evt.detail.wristRotation;
@@ -93,15 +93,15 @@ registerComponent('hand-tracking-grab-controls', {
     this.grab();
   },
 
-  onPinchEnded: function () {
+  onPinchEnded: function() {
     this.releaseGrabbedEntity();
   },
 
-  onPinchMoved: function (evt) {
+  onPinchMoved: function(evt) {
     this.wristRotation = evt.detail.wristRotation;
   },
 
-  releaseGrabbedEntity: function () {
+  releaseGrabbedEntity: function() {
     var grabbedEl = this.grabbedEl;
     if (!grabbedEl) { return; }
 
@@ -113,11 +113,11 @@ registerComponent('hand-tracking-grab-controls', {
     grabbedEl.object3D.position.copy(this.auxVector);
     grabbedEl.object3D.quaternion.copy(this.auxQuaternion);
 
-    this.el.emit('grabended', {grabbedEl: grabbedEl});
+    this.el.emit('grabended', { grabbedEl: grabbedEl });
     this.grabbedEl = undefined;
   },
 
-  grab: function () {
+  grab: function() {
     var grabbedEl = this.grabbedEl;
     var grabbedObjectWorldPosition;
 
@@ -127,8 +127,8 @@ registerComponent('hand-tracking-grab-controls', {
     this.grabInitialRotation.copy(this.auxQuaternion.copy(this.wristRotation).invert());
 
     this.originalUpdateMatrixWorld = grabbedEl.object3D.updateMatrixWorld;
-    grabbedEl.object3D.updateMatrixWorld = function () { /* no op */ };
-    grabbedEl.object3D.updateMatrixWorldChildren = function (force) {
+    grabbedEl.object3D.updateMatrixWorld = function() { /* no op */ };
+    grabbedEl.object3D.updateMatrixWorldChildren = function(force) {
       var children = this.children;
 
       for (var i = 0, l = children.length; i < l; i++) {
@@ -142,10 +142,10 @@ registerComponent('hand-tracking-grab-controls', {
     grabbedEl.object3D.matrixAutoUpdate = false;
     grabbedEl.object3D.matrixWorldAutoUpdate = false;
 
-    this.el.emit('grabstarted', {grabbedEl: grabbedEl});
+    this.el.emit('grabstarted', { grabbedEl: grabbedEl });
   },
 
-  tock: function () {
+  tock: function() {
     var auxMatrix = this.auxMatrix;
     var auxQuaternion = this.auxQuaternion;
     var auxQuaternion2 = this.auxQuaternion2;

@@ -1,34 +1,34 @@
-var registerSystem = require('../core/system').registerSystem;
-var utils = require('../utils/');
-var THREE = require('../lib/three');
+import { registerSystem } from '../core/system';
+import * as utils from '../utils/';
+import * as THREE from 'three';
 
-var debug = utils.debug;
-var warn = debug('components:renderer:warn');
+const debug = utils.debug;
+const warn = debug('components:renderer:warn');
 
 /**
  * Determines state of various renderer properties.
  */
-module.exports.System = registerSystem('renderer', {
+export const System = registerSystem('renderer', {
   schema: {
-    antialias: {default: 'auto', oneOf: ['true', 'false', 'auto']},
-    highRefreshRate: {default: utils.device.isOculusBrowser()},
-    logarithmicDepthBuffer: {default: 'auto', oneOf: ['true', 'false', 'auto']},
-    maxCanvasWidth: {default: -1},
-    maxCanvasHeight: {default: -1},
-    multiviewStereo: {default: false},
-    physicallyCorrectLights: {default: false},
-    exposure: {default: 1, if: {toneMapping: ['ACESFilmic', 'linear', 'reinhard', 'cineon']}},
-    toneMapping: {default: 'no', oneOf: ['no', 'ACESFilmic', 'linear', 'reinhard', 'cineon']},
-    precision: {default: 'high', oneOf: ['high', 'medium', 'low']},
-    anisotropy: {default: 1},
-    sortTransparentObjects: {default: false},
-    colorManagement: {default: true},
-    alpha: {default: true},
-    stencil: {default: false},
-    foveationLevel: {default: 1}
+    antialias: { default: 'auto', oneOf: ['true', 'false', 'auto'] },
+    highRefreshRate: { default: utils.device.isOculusBrowser() },
+    logarithmicDepthBuffer: { default: 'auto', oneOf: ['true', 'false', 'auto'] },
+    maxCanvasWidth: { default: -1 },
+    maxCanvasHeight: { default: -1 },
+    multiviewStereo: { default: false },
+    physicallyCorrectLights: { default: false },
+    exposure: { default: 1, if: { toneMapping: ['ACESFilmic', 'linear', 'reinhard', 'cineon'] } },
+    toneMapping: { default: 'no', oneOf: ['no', 'ACESFilmic', 'linear', 'reinhard', 'cineon'] },
+    precision: { default: 'high', oneOf: ['high', 'medium', 'low'] },
+    anisotropy: { default: 1 },
+    sortTransparentObjects: { default: false },
+    colorManagement: { default: true },
+    alpha: { default: true },
+    stencil: { default: false },
+    foveationLevel: { default: 1 }
   },
 
-  init: function () {
+  init: function() {
     var data = this.data;
     var sceneEl = this.el;
     var toneMappingName = this.data.toneMapping.charAt(0).toUpperCase() + this.data.toneMapping.slice(1);
@@ -57,7 +57,7 @@ module.exports.System = registerSystem('renderer', {
     renderer.setOpaqueSort(sortFrontToBack);
   },
 
-  update: function () {
+  update: function() {
     var data = this.data;
     var sceneEl = this.el;
     var renderer = sceneEl.renderer;
@@ -76,7 +76,7 @@ module.exports.System = registerSystem('renderer', {
     }
   },
 
-  applyColorCorrection: function (texture) {
+  applyColorCorrection: function(texture) {
     if (!this.data.colorManagement || !texture) {
       return;
     }
@@ -87,7 +87,7 @@ module.exports.System = registerSystem('renderer', {
     }
   },
 
-  setWebXRFrameRate: function (xrSession) {
+  setWebXRFrameRate: function(xrSession) {
     var data = this.data;
     var rates = xrSession.supportedFrameRates;
     if (rates && xrSession.updateTargetFrameRate) {
@@ -97,7 +97,7 @@ module.exports.System = registerSystem('renderer', {
       } else {
         targetRate = data.highRefreshRate ? 72 : 60;
       }
-      xrSession.updateTargetFrameRate(targetRate).catch(function (error) {
+      xrSession.updateTargetFrameRate(targetRate).catch(function(error) {
         console.warn('failed to set target frame rate of ' + targetRate + '. Error info: ' + error);
       });
     }
@@ -114,7 +114,7 @@ module.exports.System = registerSystem('renderer', {
 // - sort front-to-back by z-depth from camera (this should minimize overdraw)
 // - otherwise leave objects in default order (object tree order)
 
-function sortFrontToBack (a, b) {
+export function sortFrontToBack(a, b) {
   if (a.groupOrder !== b.groupOrder) {
     return a.groupOrder - b.groupOrder;
   }
@@ -127,7 +127,7 @@ function sortFrontToBack (a, b) {
 // Default sort for transparent objects:
 // - respect groupOrder & renderOrder settings
 // - otherwise leave objects in default order (object tree order)
-function sortRenderOrderOnly (a, b) {
+export function sortRenderOrderOnly(a, b) {
   if (a.groupOrder !== b.groupOrder) {
     return a.groupOrder - b.groupOrder;
   }
@@ -138,7 +138,7 @@ function sortRenderOrderOnly (a, b) {
 // - respect groupOrder & renderOrder settings
 // - sort back-to-front by z-depth from camera
 // - otherwise leave objects in default order (object tree order)
-function sortBackToFront (a, b) {
+export function sortBackToFront(a, b) {
   if (a.groupOrder !== b.groupOrder) {
     return a.groupOrder - b.groupOrder;
   }
@@ -147,8 +147,3 @@ function sortBackToFront (a, b) {
   }
   return b.z - a.z;
 }
-
-// exports needed for Unit Tests
-module.exports.sortFrontToBack = sortFrontToBack;
-module.exports.sortRenderOrderOnly = sortRenderOrderOnly;
-module.exports.sortBackToFront = sortBackToFront;

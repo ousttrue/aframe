@@ -3,7 +3,7 @@
  * Some code adapted from `style-attr` (https://github.com/joshwnj/style-attr)
  * by Josh Johnston (MIT License).
  */
-var DASH_REGEX = /-([a-z])/g;
+const DASH_REGEX = /-([a-z])/g;
 
 /**
  * Deserialize style-like string into an object of properties.
@@ -12,14 +12,14 @@ var DASH_REGEX = /-([a-z])/g;
  * @param {object} obj - Reused object for object pooling.
  * @returns {object} Property data.
  */
-module.exports.parse = function (value, obj) {
+export function parse(value, obj) {
   var parsedData;
   if (typeof value !== 'string') { return value; }
   parsedData = styleParse(value, obj);
   // The style parser returns an object { "" : "test"} when fed a string
   if (parsedData['']) { return value; }
   return parsedData;
-};
+}
 
 /**
  * Serialize an object of properties into a style-like string.
@@ -27,10 +27,10 @@ module.exports.parse = function (value, obj) {
  * @param {object} data - Property data.
  * @returns {string}
  */
-module.exports.stringify = function (data) {
+export function stringify(data) {
   if (typeof data === 'string') { return data; }
   return styleStringify(data);
-};
+}
 
 /**
  * Converts string from hyphen to camelCase.
@@ -38,19 +38,18 @@ module.exports.stringify = function (data) {
  * @param {string} str - String to camelCase.
  * @return {string} CamelCased string.
  */
-function toCamelCase (str) {
+export function toCamelCase(str) {
   return str.replace(DASH_REGEX, upperCase);
 }
-module.exports.toCamelCase = toCamelCase;
 
 /**
  * Split a string into chunks matching `<key>: <value>`
  */
-var getKeyValueChunks = (function () {
+const getKeyValueChunks = (function() {
   var chunks = [];
   var hasUnclosedUrl = /url\([^)]+$/;
 
-  return function getKeyValueChunks (raw) {
+  return function getKeyValueChunks(raw) {
     var chunk = '';
     var nextSplit;
     var offset = 0;
@@ -86,7 +85,7 @@ var getKeyValueChunks = (function () {
  * @param {object} str - Attribute string.
  * @param {object} obj - Object to reuse as a base, else a new one will be allocated.
  */
-function styleParse (str, obj) {
+function styleParse(str, obj) {
   var chunks;
   var i;
   var item;
@@ -112,7 +111,7 @@ function styleParse (str, obj) {
 /**
  * Convert an object into an attribute string
  **/
-function styleStringify (obj) {
+function styleStringify(obj) {
   var key;
   var keyCount = 0;
   var i = 0;
@@ -128,4 +127,4 @@ function styleStringify (obj) {
   return str;
 }
 
-function upperCase (str) { return str[1].toUpperCase(); }
+function upperCase(str) { return str[1].toUpperCase(); }

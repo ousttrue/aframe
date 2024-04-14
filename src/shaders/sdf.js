@@ -1,7 +1,7 @@
-var registerShader = require('../core/shader').registerShader;
-var THREE = require('../lib/three');
+import { registerShader } from '../core/shader';
+import * as THREE from 'three';
 
-var VERTEX_SHADER = [
+const VERTEX_SHADER = [
   '#include <common>',
   '#include <fog_pars_vertex>',
   '#include <logdepthbuf_pars_vertex>',
@@ -17,7 +17,7 @@ var VERTEX_SHADER = [
   '}'
 ].join('\n');
 
-var FRAGMENT_SHADER = [
+const FRAGMENT_SHADER = [
   '#include <common>',
   '#include <fog_pars_fragment>',
   '#include <logdepthbuf_pars_fragment>',
@@ -47,15 +47,15 @@ var FRAGMENT_SHADER = [
   '  vec2 duv = dscale * (dFdx(uv) + dFdy(uv));',
   '  float isBigEnough = max(abs(duv.x), abs(duv.y));',
 
-     // When texel is too small, blend raw alpha value rather than supersampling.
-     // FIXME: experimentally determined constant
+  // When texel is too small, blend raw alpha value rather than supersampling.
+  // FIXME: experimentally determined constant
   '  if (isBigEnough > BIG_ENOUGH) {',
   '    float ratio = BIG_ENOUGH / isBigEnough;',
   '    alpha = ratio * alpha + (1.0 - ratio) * dist;',
   '  }',
 
-     // Otherwise do weighted supersampling.
-     // FIXME: why this weighting?
+  // Otherwise do weighted supersampling.
+  // FIXME: why this weighting?
   '  if (isBigEnough <= BIG_ENOUGH) {',
   '    vec4 box = vec4 (uv - duv, uv + duv);',
   '    alpha = (alpha + 0.5 * (',
@@ -66,7 +66,7 @@ var FRAGMENT_SHADER = [
   '    )) / 3.0;',
   '  }',
 
-       // Do modified alpha test.
+  // Do modified alpha test.
   '  if (alpha < alphaTest * MODIFIED_ALPHATEST) { discard; return; }',
 
   '  gl_FragColor = vec4(color, opacity * alpha);',
@@ -81,29 +81,29 @@ var FRAGMENT_SHADER = [
  * Signed distance field.
  * Used by text component.
  */
-module.exports.Shader = registerShader('sdf', {
+export const Shader = registerShader('sdf', {
   schema: {
-    alphaTest: {type: 'number', is: 'uniform', default: 0.5},
-    color: {type: 'color', is: 'uniform', default: 'white'},
-    map: {type: 'map', is: 'uniform'},
-    opacity: {type: 'number', is: 'uniform', default: 1.0}
+    alphaTest: { type: 'number', is: 'uniform', default: 0.5 },
+    color: { type: 'color', is: 'uniform', default: 'white' },
+    map: { type: 'map', is: 'uniform' },
+    opacity: { type: 'number', is: 'uniform', default: 1.0 }
   },
 
   vertexShader: VERTEX_SHADER,
 
   fragmentShader: FRAGMENT_SHADER,
 
-  init: function () {
-     this.uniforms = THREE.UniformsUtils.merge([
-       THREE.UniformsLib.fog,
-       this.initUniforms()
-     ]);
-     this.material = new THREE.ShaderMaterial({
-       uniforms: this.uniforms,
-       vertexShader: this.vertexShader,
-       fragmentShader: this.fragmentShader,
-       fog: true
-     });
-     return this.material;
-   }
+  init: function() {
+    this.uniforms = THREE.UniformsUtils.merge([
+      THREE.UniformsLib.fog,
+      this.initUniforms()
+    ]);
+    this.material = new THREE.ShaderMaterial({
+      uniforms: this.uniforms,
+      vertexShader: this.vertexShader,
+      fragmentShader: this.fragmentShader,
+      fog: true
+    });
+    return this.material;
+  }
 });

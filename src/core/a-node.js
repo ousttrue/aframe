@@ -1,10 +1,10 @@
 /* global customElements, CustomEvent, HTMLElement, MutationObserver */
-var utils = require('../utils/');
-var readyState = require('./readyState');
+import * as utils from '../utils/';
+import { readyState } from './readyState';
 
-var warn = utils.debug('core:a-node:warn');
+const warn = utils.debug('core:a-node:warn');
 
-var knownTags = {
+export const knownTags = {
   'a-scene': true,
   'a-assets': true,
   'a-assets-items': true,
@@ -14,7 +14,7 @@ var knownTags = {
   'a-entity': true
 };
 
-function isNode (node) {
+function isNode(node) {
   return node.tagName.toLowerCase() in knownTags || node.isNode;
 }
 
@@ -24,8 +24,8 @@ function isNode (node) {
  * Nodes can be modified using mixins.
  * Nodes emit a `loaded` event when they and their children have initialized.
  */
-class ANode extends HTMLElement {
-  constructor () {
+export class ANode extends HTMLElement {
+  constructor() {
     super();
     this.computedMixinStr = '';
     this.hasLoaded = false;
@@ -33,7 +33,7 @@ class ANode extends HTMLElement {
     this.mixinEls = [];
   }
 
-  connectedCallback () {
+  connectedCallback() {
     // Defer if not ready to initialize.
     if (!readyState.canInitializeElements) {
       document.addEventListener('aframeready', this.connectedCallback.bind(this));
@@ -42,14 +42,14 @@ class ANode extends HTMLElement {
     this.doConnectedCallback();
   }
 
-  doConnectedCallback () {
+  doConnectedCallback() {
     var mixins;
 
     this.sceneEl = this.closestScene();
 
     if (!this.sceneEl) {
       warn('You are attempting to attach <' + this.tagName + '> outside of an A-Frame ' +
-           'scene. Append this element to `<a-scene>` instead.');
+        'scene. Append this element to `<a-scene>` instead.');
     }
 
     this.hasLoaded = false;
@@ -64,7 +64,7 @@ class ANode extends HTMLElement {
   /**
    * Handle mixin.
    */
-  attributeChangedCallback (attr, oldVal, newVal) {
+  attributeChangedCallback(attr, oldVal, newVal) {
     // Ignore if `<a-node>` code is just updating computed mixin in the DOM.
     if (newVal === this.computedMixinStr) { return; }
 
@@ -73,11 +73,11 @@ class ANode extends HTMLElement {
     }
   }
 
- /**
-  * Returns the first scene by traversing up the tree starting from and
-  * including receiver element.
-  */
-  closestScene () {
+  /**
+   * Returns the first scene by traversing up the tree starting from and
+   * including receiver element.
+   */
+  closestScene() {
     var element = this;
     while (element) {
       if (element.isScene) { break; }
@@ -92,7 +92,7 @@ class ANode extends HTMLElement {
    *
    * @param {string} selector - Selector of element to find.
    */
-  closest (selector) {
+  closest(selector) {
     var matches = this.matches || this.mozMatchesSelector ||
       this.msMatchesSelector || this.oMatchesSelector || this.webkitMatchesSelector;
     var element = this;
@@ -103,7 +103,7 @@ class ANode extends HTMLElement {
     return element;
   }
 
-  disconnectedCallback () {
+  disconnectedCallback() {
     this.hasLoaded = false;
   }
 
@@ -111,7 +111,7 @@ class ANode extends HTMLElement {
    * Wait for children to load, if any.
    * Then emit `loaded` event and set `hasLoaded`.
    */
-  load (cb, childFilter) {
+  load(cb, childFilter) {
     var children;
     var childrenLoaded;
     var self = this;
@@ -122,16 +122,16 @@ class ANode extends HTMLElement {
     childFilter = childFilter || isNode;
     // Wait for children to load (if any), then load.
     children = this.getChildren();
-    childrenLoaded = children.filter(childFilter).map(function (child) {
-      return new Promise(function waitForLoaded (resolve, reject) {
+    childrenLoaded = children.filter(childFilter).map(function(child) {
+      return new Promise(function waitForLoaded(resolve, reject) {
         if (child.hasLoaded) { return resolve(); }
         child.addEventListener('loaded', resolve);
         child.addEventListener('error', reject);
       });
     });
 
-    Promise.allSettled(childrenLoaded).then(function emitLoaded (results) {
-      results.forEach(function checkResultForError (result) {
+    Promise.allSettled(childrenLoaded).then(function emitLoaded(results) {
+      results.forEach(function checkResultForError(result) {
         if (result.status === 'rejected') {
           // An "error" event has already been fired by THREE.js loader,
           // so we don't need to fire another one.
@@ -160,10 +160,10 @@ class ANode extends HTMLElement {
    * This function setup a mutation observer to keep track of the entity attribute changes
    * in the DOM and update components accordingly.
    */
-  setupMutationObserver () {
+  setupMutationObserver() {
     var self = this;
-    var observerConfig = {attributes: true, attributeOldValue: true};
-    var observer = new MutationObserver(function callAttributeChangedCallback (mutationList) {
+    var observerConfig = { attributes: true, attributeOldValue: true };
+    var observer = new MutationObserver(function callAttributeChangedCallback(mutationList) {
       var i;
       for (i = 0; i < mutationList.length; i++) {
         if (mutationList[i].type === 'attributes') {
@@ -177,7 +177,7 @@ class ANode extends HTMLElement {
     observer.observe(this, observerConfig);
   }
 
-  getChildren () {
+  getChildren() {
     return Array.prototype.slice.call(this.children, 0);
   }
 
@@ -186,7 +186,7 @@ class ANode extends HTMLElement {
    * Register new mixins and listeners.
    * Registering means to update `this.mixinEls` with listeners.
    */
-  updateMixins (newMixins, oldMixins) {
+  updateMixins(newMixins, oldMixins) {
     var newMixinIdArray = ANode.newMixinIdArray;
     var oldMixinIdArray = ANode.oldMixinIdArray;
     var mixinIds = ANode.mixinIds;
@@ -222,7 +222,7 @@ class ANode extends HTMLElement {
     if (this.computedMixinStr) {
       this.computedMixinStr = this.computedMixinStr.trim();
       window.HTMLElement.prototype.setAttribute.call(this, 'mixin',
-                                                     this.computedMixinStr);
+        this.computedMixinStr);
     }
 
     if (newMixinIds.length === 0) {
@@ -237,7 +237,7 @@ class ANode extends HTMLElement {
    *
    * @param {string} mixinId - ID of the mixin to register.
    */
-  registerMixin (mixinId) {
+  registerMixin(mixinId) {
     var compositedMixinIds;
     var i;
     var mixin;
@@ -262,7 +262,7 @@ class ANode extends HTMLElement {
     this.mixinEls.push(mixinEl);
   }
 
-  setAttribute (attr, newValue) {
+  setAttribute(attr, newValue) {
     if (attr === 'mixin') { this.updateMixins(newValue); }
     window.HTMLElement.prototype.setAttribute.call(this, attr, newValue);
   }
@@ -272,7 +272,7 @@ class ANode extends HTMLElement {
    *
    * @param {string} mixinId - ID of the mixin to remove.
    */
-  unregisterMixin (mixinId) {
+  unregisterMixin(mixinId) {
     var i;
     var mixinEls = this.mixinEls;
     var mixinEl;
@@ -293,7 +293,7 @@ class ANode extends HTMLElement {
    * @param {boolean} [bubbles=true] - Whether the event should bubble.
    * @param {object} [extraData] - Extra data to pass to the event, if any.
    */
-  emit (name, detail, bubbles, extraData) {
+  emit(name, detail, bubbles, extraData) {
     var data = ANode.evtData;
 
     if (bubbles === undefined) { bubbles = true; }
@@ -301,7 +301,7 @@ class ANode extends HTMLElement {
     data.detail = detail;
 
     // If extra data is present, we need to create a new object.
-    if (extraData) { data = utils.extend({}, extraData, data); }
+    if (extraData) { data = Object.assign({}, extraData, data); }
 
     this.dispatchEvent(new CustomEvent(name, data));
   }
@@ -313,6 +313,3 @@ ANode.oldMixinIdArray = [];
 ANode.mixinIds = {};
 
 customElements.define('a-node', ANode);
-
-module.exports.ANode = ANode;
-module.exports.knownTags = knownTags;

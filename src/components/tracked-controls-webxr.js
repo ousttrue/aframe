@@ -1,7 +1,7 @@
-var controllerUtils = require('../utils/tracked-controls');
-var registerComponent = require('../core/component').registerComponent;
+import * as controllerUtils from '../utils/tracked-controls';
+import { registerComponent } from '../core/component';
 
-var EVENTS = {
+const EVENTS = {
   AXISMOVE: 'axismove',
   BUTTONCHANGED: 'buttonchanged',
   BUTTONDOWN: 'buttondown',
@@ -10,44 +10,44 @@ var EVENTS = {
   TOUCHEND: 'touchend'
 };
 
-module.exports.Component = registerComponent('tracked-controls-webxr', {
+export const Component = registerComponent('tracked-controls-webxr', {
   schema: {
-    id: {type: 'string', default: ''},
-    hand: {type: 'string', default: ''},
-    handTrackingEnabled: {default: false},
-    index: {type: 'int', default: -1},
-    iterateControllerProfiles: {default: false},
-    space: {type: 'string', oneOf: ['targetRaySpace', 'gripSpace'], default: 'gripSpace'}
+    id: { type: 'string', default: '' },
+    hand: { type: 'string', default: '' },
+    handTrackingEnabled: { default: false },
+    index: { type: 'int', default: -1 },
+    iterateControllerProfiles: { default: false },
+    space: { type: 'string', oneOf: ['targetRaySpace', 'gripSpace'], default: 'gripSpace' }
   },
 
-  init: function () {
+  init: function() {
     this.updateController = this.updateController.bind(this);
     this.buttonEventDetails = {};
     this.buttonStates = this.el.components['tracked-controls'].buttonStates = {};
     this.axis = this.el.components['tracked-controls'].axis = [0, 0, 0];
     this.changedAxes = [];
-    this.axisMoveEventDetail = {axis: this.axis, changed: this.changedAxes};
+    this.axisMoveEventDetail = { axis: this.axis, changed: this.changedAxes };
   },
 
-  update: function () {
+  update: function() {
     this.updateController();
   },
 
-  play: function () {
+  play: function() {
     var sceneEl = this.el.sceneEl;
     this.updateController();
     sceneEl.addEventListener('controllersupdated', this.updateController);
   },
 
-  pause: function () {
+  pause: function() {
     var sceneEl = this.el.sceneEl;
     sceneEl.removeEventListener('controllersupdated', this.updateController);
   },
 
-  isControllerPresent: function (evt) {
+  isControllerPresent: function(evt) {
     if (!this.controller || this.controller.gamepad) { return false; }
     if (evt.inputSource.handedness !== 'none' &&
-        evt.inputSource.handedness !== this.data.hand) {
+      evt.inputSource.handedness !== this.data.hand) {
       return false;
     }
     return true;
@@ -56,7 +56,7 @@ module.exports.Component = registerComponent('tracked-controls-webxr', {
   /**
    * Handle update controller match criteria (such as `id`, `idPrefix`, `hand`, `controller`)
    */
-  updateController: function () {
+  updateController: function() {
     this.controller = controllerUtils.findMatchingControllerWebXR(
       this.system.controllers,
       this.data.id,
@@ -70,7 +70,7 @@ module.exports.Component = registerComponent('tracked-controls-webxr', {
     if (this.data.autoHide) { this.el.object3D.visible = !!this.controller; }
   },
 
-  tick: function () {
+  tick: function() {
     var sceneEl = this.el.sceneEl;
     var controller = this.controller;
     var frame = sceneEl.frame;
@@ -82,7 +82,7 @@ module.exports.Component = registerComponent('tracked-controls-webxr', {
     }
   },
 
-  updatePose: function () {
+  updatePose: function() {
     var object3D = this.el.object3D;
     var pose = this.pose;
     if (!pose) { return; }
@@ -93,7 +93,7 @@ module.exports.Component = registerComponent('tracked-controls-webxr', {
   /**
    * Handle button changes including axes, presses, touches, values.
    */
-  updateButtons: function () {
+  updateButtons: function() {
     var buttonState;
     var id;
     var controller = this.controller;
@@ -105,10 +105,10 @@ module.exports.Component = registerComponent('tracked-controls-webxr', {
     for (id = 0; id < gamepad.buttons.length; ++id) {
       // Initialize button state.
       if (!this.buttonStates[id]) {
-        this.buttonStates[id] = {pressed: false, touched: false, value: 0};
+        this.buttonStates[id] = { pressed: false, touched: false, value: 0 };
       }
       if (!this.buttonEventDetails[id]) {
-        this.buttonEventDetails[id] = {id: id, state: this.buttonStates[id]};
+        this.buttonEventDetails[id] = { id: id, state: this.buttonStates[id] };
       }
 
       buttonState = gamepad.buttons[id];
@@ -125,11 +125,11 @@ module.exports.Component = registerComponent('tracked-controls-webxr', {
    * @param {number} buttonState - Value of button state from 0 to 1.
    * @returns {boolean} Whether button has changed in any way.
    */
-  handleButton: function (id, buttonState) {
+  handleButton: function(id, buttonState) {
     var changed;
     changed = this.handlePress(id, buttonState) |
-              this.handleTouch(id, buttonState) |
-              this.handleValue(id, buttonState);
+      this.handleTouch(id, buttonState) |
+      this.handleValue(id, buttonState);
     if (!changed) { return false; }
     this.el.emit(EVENTS.BUTTONCHANGED, this.buttonEventDetails[id], false);
     return true;
@@ -141,7 +141,7 @@ module.exports.Component = registerComponent('tracked-controls-webxr', {
    *
    * @returns {boolean} Whether axes changed.
    */
-  handleAxes: function () {
+  handleAxes: function() {
     var changed = false;
     var controllerAxes = this.controller.gamepad.axes;
     var i;
@@ -171,7 +171,7 @@ module.exports.Component = registerComponent('tracked-controls-webxr', {
    * @param {object} buttonState - State of the button to check.
    * @returns {boolean} Whether button press state changed.
    */
-  handlePress: function (id, buttonState) {
+  handlePress: function(id, buttonState) {
     var evtName;
     var previousButtonState = this.buttonStates[id];
 
@@ -191,7 +191,7 @@ module.exports.Component = registerComponent('tracked-controls-webxr', {
    * @param {object} buttonState - State of the button to check.
    * @returns {boolean} Whether button touch state changed.
    */
-  handleTouch: function (id, buttonState) {
+  handleTouch: function(id, buttonState) {
     var evtName;
     var previousButtonState = this.buttonStates[id];
 
@@ -211,7 +211,7 @@ module.exports.Component = registerComponent('tracked-controls-webxr', {
    * @param {object} buttonState - State of the button to check.
    * @returns {boolean} Whether button value changed.
    */
-  handleValue: function (id, buttonState) {
+  handleValue: function(id, buttonState) {
     var previousButtonState = this.buttonStates[id];
 
     // Not changed.

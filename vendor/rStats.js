@@ -33,7 +33,7 @@
 
 } )();
 
-window.rStats = function rStats ( settings ) {
+export function RStats ( settings ) {
 
     function iterateKeys ( array, callback ) {
         var keys = Object.keys( array );
@@ -446,8 +446,4 @@ window.rStats = function rStats ( settings ) {
         };
     };
 
-}
-
-if (typeof module === 'object') {
-  module.exports = window.rStats;
 }

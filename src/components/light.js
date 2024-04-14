@@ -1,57 +1,57 @@
-var utils = require('../utils');
-var diff = utils.diff;
-var debug = require('../utils/debug');
-var registerComponent = require('../core/component').registerComponent;
-var THREE = require('../lib/three');
-var mathUtils = require('../utils/math');
+import * as utils from '../utils';
+import { diff } from '../utils/diff';
+import debug from '../utils/debug';
+import { registerComponent } from '../core/component';
+import * as THREE from 'three';
+import * as mathUtils from '../utils/math';
 
-var degToRad = THREE.MathUtils.degToRad;
-var warn = debug('components:light:warn');
+const degToRad = THREE.MathUtils.degToRad;
+const warn = debug('components:light:warn');
 var CubeLoader = new THREE.CubeTextureLoader();
 
-var probeCache = {};
+const probeCache = {};
 
 /**
  * Light component.
  */
-module.exports.Component = registerComponent('light', {
+export const Component = registerComponent('light', {
   schema: {
-    angle: {default: 60, if: {type: ['spot']}},
-    color: {type: 'color', if: {type: ['ambient', 'directional', 'hemisphere', 'point', 'spot']}},
-    envMap: {default: '', if: {type: ['probe']}},
-    groundColor: {type: 'color', if: {type: ['hemisphere']}},
-    decay: {default: 1, if: {type: ['point', 'spot']}},
-    distance: {default: 0.0, min: 0, if: {type: ['point', 'spot']}},
-    intensity: {default: 1.0, min: 0, if: {type: ['ambient', 'directional', 'hemisphere', 'point', 'spot', 'probe']}},
-    penumbra: {default: 0, min: 0, max: 1, if: {type: ['spot']}},
+    angle: { default: 60, if: { type: ['spot'] } },
+    color: { type: 'color', if: { type: ['ambient', 'directional', 'hemisphere', 'point', 'spot'] } },
+    envMap: { default: '', if: { type: ['probe'] } },
+    groundColor: { type: 'color', if: { type: ['hemisphere'] } },
+    decay: { default: 1, if: { type: ['point', 'spot'] } },
+    distance: { default: 0.0, min: 0, if: { type: ['point', 'spot'] } },
+    intensity: { default: 1.0, min: 0, if: { type: ['ambient', 'directional', 'hemisphere', 'point', 'spot', 'probe'] } },
+    penumbra: { default: 0, min: 0, max: 1, if: { type: ['spot'] } },
     type: {
       default: 'directional',
       oneOf: ['ambient', 'directional', 'hemisphere', 'point', 'spot', 'probe'],
       schemaChange: true
     },
-    target: {type: 'selector', if: {type: ['spot', 'directional']}},
+    target: { type: 'selector', if: { type: ['spot', 'directional'] } },
 
     // Shadows.
-    castShadow: {default: false, if: {type: ['point', 'spot', 'directional']}},
-    shadowBias: {default: 0, if: {castShadow: true}},
-    shadowCameraFar: {default: 500, if: {castShadow: true}},
-    shadowCameraFov: {default: 90, if: {castShadow: true}},
-    shadowCameraNear: {default: 0.5, if: {castShadow: true}},
-    shadowCameraTop: {default: 5, if: {castShadow: true}},
-    shadowCameraRight: {default: 5, if: {castShadow: true}},
-    shadowCameraBottom: {default: -5, if: {castShadow: true}},
-    shadowCameraLeft: {default: -5, if: {castShadow: true}},
-    shadowCameraVisible: {default: false, if: {castShadow: true}},
-    shadowCameraAutomatic: {default: '', if: {type: ['directional']}},
-    shadowMapHeight: {default: 512, if: {castShadow: true}},
-    shadowMapWidth: {default: 512, if: {castShadow: true}},
-    shadowRadius: {default: 1, if: {castShadow: true}}
+    castShadow: { default: false, if: { type: ['point', 'spot', 'directional'] } },
+    shadowBias: { default: 0, if: { castShadow: true } },
+    shadowCameraFar: { default: 500, if: { castShadow: true } },
+    shadowCameraFov: { default: 90, if: { castShadow: true } },
+    shadowCameraNear: { default: 0.5, if: { castShadow: true } },
+    shadowCameraTop: { default: 5, if: { castShadow: true } },
+    shadowCameraRight: { default: 5, if: { castShadow: true } },
+    shadowCameraBottom: { default: -5, if: { castShadow: true } },
+    shadowCameraLeft: { default: -5, if: { castShadow: true } },
+    shadowCameraVisible: { default: false, if: { castShadow: true } },
+    shadowCameraAutomatic: { default: '', if: { type: ['directional'] } },
+    shadowMapHeight: { default: 512, if: { castShadow: true } },
+    shadowMapWidth: { default: 512, if: { castShadow: true } },
+    shadowRadius: { default: 1, if: { castShadow: true } }
   },
 
   /**
    * Notifies scene a light has been added to remove default lighting.
    */
-  init: function () {
+  init: function() {
     var el = this.el;
     this.light = null;
     this.defaultTarget = null;
@@ -61,7 +61,7 @@ module.exports.Component = registerComponent('light', {
   /**
    * (Re)create or update light.
    */
-  update: function (oldData) {
+  update: function(oldData) {
     var data = this.data;
     var diffData = diff(data, oldData);
     var light = this.light;
@@ -71,7 +71,7 @@ module.exports.Component = registerComponent('light', {
     if (light && !('type' in diffData)) {
       var shadowsLoaded = false;
       // Light type has not changed. Update light.
-      Object.keys(diffData).forEach(function (key) {
+      Object.keys(diffData).forEach(function(key) {
         var value = data[key];
 
         switch (key) {
@@ -151,7 +151,7 @@ module.exports.Component = registerComponent('light', {
     this.updateShadow();
   },
 
-  tick: (function () {
+  tick: (function() {
     var bbox = new THREE.Box3();
     var normal = new THREE.Vector3();
     var cameraWorldPosition = new THREE.Vector3();
@@ -159,7 +159,7 @@ module.exports.Component = registerComponent('light', {
     var sphere = new THREE.Sphere();
     var tempVector = new THREE.Vector3();
 
-    return function () {
+    return function() {
       if (!(
         this.data.type === 'directional' &&
         this.light.shadow &&
@@ -178,7 +178,7 @@ module.exports.Component = registerComponent('light', {
       camera.right = -100000;
       camera.top = -100000;
       camera.bottom = 100000;
-      this.shadowCameraAutomaticEls.forEach(function (el) {
+      this.shadowCameraAutomaticEls.forEach(function(el) {
         bbox.setFromObject(el.object3D);
         bbox.getBoundingSphere(sphere);
         var distanceToPlane = mathUtils.distanceOfPointFromPlane(cameraWorldPosition, normal, sphere.center);
@@ -195,7 +195,7 @@ module.exports.Component = registerComponent('light', {
     };
   }()),
 
-  setLight: function (data) {
+  setLight: function(data) {
     var el = this.el;
     var newLight = this.getLight(data);
     if (newLight) {
@@ -229,7 +229,7 @@ module.exports.Component = registerComponent('light', {
   /**
    * Updates shadow-related properties on the current light.
    */
-  updateShadow: function () {
+  updateShadow: function() {
     var el = this.el;
     var data = this.data;
     var light = this.light;
@@ -273,7 +273,7 @@ module.exports.Component = registerComponent('light', {
    *
    * @param {object} data
    */
-  getLight: function (data) {
+  getLight: function(data) {
     var angle = data.angle;
     var color = new THREE.Color(data.color);
     color = color.getHex();
@@ -333,7 +333,7 @@ module.exports.Component = registerComponent('light', {
 
       default: {
         warn('%s is not a valid light type. ' +
-           'Choose from ambient, directional, hemisphere, point, spot.', type);
+          'Choose from ambient, directional, hemisphere, point, spot.', type);
       }
     }
   },
@@ -341,23 +341,23 @@ module.exports.Component = registerComponent('light', {
   /**
    * Generate the spherical harmonics for the LightProbe from a cube map
    */
-  updateProbeMap: function (data, light) {
+  updateProbeMap: function(data, light) {
     if (!data.envMap) {
       // reset parameters if no map
       light.copy(new THREE.LightProbe());
     }
 
     if (probeCache[data.envMap] instanceof window.Promise) {
-      probeCache[data.envMap].then(function (tempLightProbe) {
+      probeCache[data.envMap].then(function(tempLightProbe) {
         light.copy(tempLightProbe);
       });
     }
     if (probeCache[data.envMap] instanceof THREE.LightProbe) {
       light.copy(probeCache[data.envMap]);
     }
-    probeCache[data.envMap] = new window.Promise(function (resolve) {
-      utils.srcLoader.validateCubemapSrc(data.envMap, function loadEnvMap (urls) {
-        CubeLoader.load(urls, function (cube) {
+    probeCache[data.envMap] = new window.Promise(function(resolve) {
+      utils.srcLoader.validateCubemapSrc(data.envMap, function loadEnvMap(urls) {
+        CubeLoader.load(urls, function(cube) {
           var tempLightProbe = THREE.LightProbeGenerator.fromCubeTexture(cube);
           probeCache[data.envMap] = tempLightProbe;
           light.copy(tempLightProbe);
@@ -366,14 +366,14 @@ module.exports.Component = registerComponent('light', {
     });
   },
 
-  onSetTarget: function (targetEl, light) {
+  onSetTarget: function(targetEl, light) {
     light.target = targetEl.object3D;
   },
 
   /**
    * Remove light on remove (callback).
    */
-  remove: function () {
+  remove: function() {
     var el = this.el;
     el.removeObject3D('light');
     if (el.getObject3D('cameraHelper')) {

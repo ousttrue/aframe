@@ -1,9 +1,9 @@
-var registerComponent = require('../../core/component').registerComponent;
+import {registerComponent} from '../../core/component';
 
 /**
  * Component to embed an a-frame scene within the layout of a 2D page.
  */
-module.exports.Component = registerComponent('embedded', {
+export const Component = registerComponent('embedded', {
   dependencies: ['xr-mode-ui'],
 
   schema: {default: true},

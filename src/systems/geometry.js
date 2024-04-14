@@ -1,5 +1,5 @@
-var geometries = require('../core/geometry').geometries;
-var registerSystem = require('../core/system').registerSystem;
+import { geometries } from '../core/geometry';
+import { registerSystem } from '../core/system';
 
 /**
  * System for geometry component.
@@ -9,8 +9,8 @@ var registerSystem = require('../core/system').registerSystem;
  * @member {object} cacheCount - Keep track of number of entities using a geometry to
  *         know whether to dispose on removal.
  */
-module.exports.System = registerSystem('geometry', {
-  init: function () {
+export const System = registerSystem('geometry', {
+  init: function() {
     this.cache = {};
     this.cacheCount = {};
   },
@@ -18,7 +18,7 @@ module.exports.System = registerSystem('geometry', {
   /**
    * Reset cache. Mainly for testing.
    */
-  clearCache: function () {
+  clearCache: function() {
     this.cache = {};
     this.cacheCount = {};
   },
@@ -28,7 +28,7 @@ module.exports.System = registerSystem('geometry', {
    *
    * @returns {Object|null} A geometry if it exists, else null.
    */
-  getOrCreateGeometry: function (data) {
+  getOrCreateGeometry: function(data) {
     var cache = this.cache;
     var cachedGeometry;
     var hash;
@@ -54,7 +54,7 @@ module.exports.System = registerSystem('geometry', {
   /**
    * Let system know that an entity is no longer using a geometry.
    */
-  unuseGeometry: function (data) {
+  unuseGeometry: function(data) {
     var cache = this.cache;
     var cacheCount = this.cacheCount;
     var geometry;
@@ -83,7 +83,7 @@ module.exports.System = registerSystem('geometry', {
    * Should be deterministic within a single browser engine.
    * If not, then look into json-stable-stringify.
    */
-  hash: function (data) {
+  hash: function(data) {
     return JSON.stringify(data);
   }
 });
@@ -94,7 +94,7 @@ module.exports.System = registerSystem('geometry', {
  * @param {object} data - Component data.
  * @returns {object} Geometry.
  */
-function createGeometry (data) {
+function createGeometry(data) {
   var geometryType = data.primitive;
   var GeometryClass = geometries[geometryType] && geometries[geometryType].Geometry;
   var geometryInstance = new GeometryClass();
@@ -108,13 +108,13 @@ function createGeometry (data) {
 /**
  * Decrease count of entity using a geometry.
  */
-function decrementCacheCount (cacheCount, hash) {
+function decrementCacheCount(cacheCount, hash) {
   cacheCount[hash]--;
 }
 
 /**
  * Increase count of entity using a geometry.
  */
-function incrementCacheCount (cacheCount, hash) {
+function incrementCacheCount(cacheCount, hash) {
   cacheCount[hash] = cacheCount[hash] === undefined ? 1 : cacheCount[hash] + 1;
 }

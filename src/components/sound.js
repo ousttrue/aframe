@@ -1,13 +1,13 @@
-var registerComponent = require('../core/component').registerComponent;
-var debug = require('../utils/debug');
-var THREE = require('../lib/three');
+import {registerComponent} from '../core/component';
+import debug from '../utils/debug';
+import * as THREE from 'three';
 
-var warn = debug('components:sound:warn');
+const warn = debug('components:sound:warn');
 
 /**
  * Sound component.
  */
-module.exports.Component = registerComponent('sound', {
+export const Component = registerComponent('sound', {
   schema: {
     autoplay: {default: false},
     distanceModel: {default: 'inverse', oneOf: ['linear', 'inverse', 'exponential']},

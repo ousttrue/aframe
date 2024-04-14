@@ -1,7 +1,37 @@
+import * as THREE from 'three';
+import * as  utils from './utils/';
+// Required before `AEntity` so that all components are registered.
+import { AScene } from './core/scene/a-scene';
+import { components, registerComponent } from './core/component';
+import { registerGeometry } from './core/geometry';
+import { primitives as _prim, registerPrimitive } from './extras/primitives/primitives';
+import { shaders, registerShader } from './core/shader';
+import { systems, registerSystem } from './core/system';
+import { readyState } from './core/readyState';
+
+import * as pkg from '../package';
+
+import './components/index'; // Register standard components.
+import './geometries/index'; // Register standard geometries.
+import './shaders/index'; // Register standard shaders.
+import './systems/index'; // Register standard systems.
+import { ANode } from './core/a-node';
+import { AEntity } from './core/a-entity'; // Depends on ANode and core components.
+
+import './core/a-assets';
+import './core/a-cubemap';
+import './core/a-mixin';
+
+// Extras.
+import './extras/components/';
+import './extras/primitives/';
+
+import * as getMeshMixin from './extras/primitives/getMeshMixin';
+
 // WebVR polyfill
 // Check before the polyfill runs.
 window.hasNativeWebVRImplementation = !!window.navigator.getVRDisplays ||
-                                      !!window.navigator.getVRDevices;
+  !!window.navigator.getVRDevices;
 window.hasNativeWebXRImplementation = navigator.xr !== undefined;
 
 // If native WebXR or WebVR are defined WebVRPolyfill does not initialize.
@@ -20,16 +50,15 @@ if (!window.hasNativeWebXRImplementation && !window.hasNativeWebVRImplementation
   window.webvrpolyfill = new WebVRPolyfill(polyfillConfig);
 }
 
-var utils = require('./utils/');
 var debug = utils.debug;
 var error = debug('A-Frame:error');
 var warn = debug('A-Frame:warn');
 
 if (window.document.currentScript && window.document.currentScript.parentNode !==
-    window.document.head && !window.debug) {
+  window.document.head && !window.debug) {
   warn('Put the A-Frame <script> tag in the <head> of the HTML *before* the scene to ' +
-       'ensure everything for A-Frame is properly registered before they are used from ' +
-       'HTML.');
+    'ensure everything for A-Frame is properly registered before they are used from ' +
+    'HTML.');
 }
 
 // Error if not using a server.
@@ -43,44 +72,13 @@ if (!window.cordova && window.location.protocol === 'file:') {
 
 // CSS.
 if (utils.device.isBrowserEnvironment) {
-  require('./style/aframe.css');
-  require('./style/rStats.css');
+  import('./style/aframe.css');
+  import('./style/rStats.css');
 }
-
-// Required before `AEntity` so that all components are registered.
-var AScene = require('./core/scene/a-scene').AScene;
-var components = require('./core/component').components;
-var registerComponent = require('./core/component').registerComponent;
-var registerGeometry = require('./core/geometry').registerGeometry;
-var registerPrimitive = require('./extras/primitives/primitives').registerPrimitive;
-var registerShader = require('./core/shader').registerShader;
-var registerSystem = require('./core/system').registerSystem;
-var shaders = require('./core/shader').shaders;
-var systems = require('./core/system').systems;
-// Exports THREE to window so three.js can be used without alteration.
-var THREE = window.THREE = require('./lib/three');
-var readyState = require('./core/readyState');
-
-var pkg = require('../package');
-
-require('./components/index'); // Register standard components.
-require('./geometries/index'); // Register standard geometries.
-require('./shaders/index'); // Register standard shaders.
-require('./systems/index'); // Register standard systems.
-var ANode = require('./core/a-node').ANode;
-var AEntity = require('./core/a-entity').AEntity; // Depends on ANode and core components.
-
-require('./core/a-assets');
-require('./core/a-cubemap');
-require('./core/a-mixin');
-
-// Extras.
-require('./extras/components/');
-require('./extras/primitives/');
 
 console.log('A-Frame Version: 1.5.0 (Date 2024-04-10, Commit #d8ef6575)');
 console.log('THREE Version (https://github.com/supermedium/three.js):',
-            pkg.dependencies['super-three']);
+  pkg.dependencies['super-three']);
 console.log('WebVR Polyfill Version:', pkg.dependencies['webvr-polyfill']);
 
 // Wait for ready state, unless user asynchronously initializes A-Frame.
@@ -88,30 +86,27 @@ if (!window.AFRAME_ASYNC) {
   readyState.waitForDocumentReadyState();
 }
 
-module.exports = window.AFRAME = {
-  AComponent: require('./core/component').Component,
-  AEntity: AEntity,
-  ANode: ANode,
-  ANIME: require('super-animejs').default,
-  AScene: AScene,
-  components: components,
-  coreComponents: Object.keys(components),
-  geometries: require('./core/geometry').geometries,
-  registerComponent: registerComponent,
-  registerGeometry: registerGeometry,
-  registerPrimitive: registerPrimitive,
-  registerShader: registerShader,
-  registerSystem: registerSystem,
-  primitives: {
-    getMeshMixin: require('./extras/primitives/getMeshMixin'),
-    primitives: require('./extras/primitives/primitives').primitives
-  },
-  scenes: require('./core/scene/scenes'),
-  schema: require('./core/schema'),
-  shaders: shaders,
-  systems: systems,
-  emitReady: readyState.emitReady,
-  THREE: THREE,
-  utils: utils,
-  version: pkg.version
+export { Component as AComponent } from './core/component';
+export { AEntity };
+export { ANode };
+export * as ANIME from 'super-animejs';
+export { AScene };
+export { components };
+export const coreComponents = Object.keys(components);
+export { geometries } from './core/geometry';
+export { registerComponent };
+export { registerGeometry };
+export { registerPrimitive };
+export { registerShader };
+export { registerSystem };
+export const primitives = {
+  getMeshMixin,
+  primitives: _prim
 };
+export { scenes } from './core/scene/scenes';
+export * as schema from './core/schema';
+export { shaders };
+export { systems };
+export const emitReady = readyState.emitReady;
+export { utils };
+export const version = pkg.version;

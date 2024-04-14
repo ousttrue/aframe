@@ -1,10 +1,10 @@
-var debug = require('../utils/debug');
-var registerComponent = require('../core/component').registerComponent;
-var THREE = require('../lib/three');
+import debug from '../utils/debug';
+import {registerComponent} from '../core/component';
+import * as THREE from 'three';
 
-var warn = debug('components:obj-model:warn');
+const warn = debug('components:obj-model:warn');
 
-module.exports.Component = registerComponent('obj-model', {
+export const Component = registerComponent('obj-model', {
   schema: {
     mtl: {type: 'model'},
     obj: {type: 'model'}

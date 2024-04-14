@@ -1,18 +1,18 @@
 /* global THREE, XRRigidTransform, XRWebGLBinding */
-var registerComponent = require('../core/component').registerComponent;
-var utils = require('../utils/');
-var warn = utils.debug('components:layer:warn');
+import { registerComponent } from '../core/component';
+import * as utils from '../utils/';
+const warn = utils.debug('components:layer:warn');
 
-module.exports.Component = registerComponent('layer', {
+export const Component = registerComponent('layer', {
   schema: {
-    type: {default: 'quad', oneOf: ['quad', 'monocubemap', 'stereocubemap']},
-    src: {type: 'map'},
-    rotateCubemap: {default: false},
-    width: {default: 0},
-    height: {default: 0}
+    type: { default: 'quad', oneOf: ['quad', 'monocubemap', 'stereocubemap'] },
+    src: { type: 'map' },
+    rotateCubemap: { default: false },
+    width: { default: 0 },
+    height: { default: 0 }
   },
 
-  init: function () {
+  init: function() {
     var gl = this.el.sceneEl.renderer.getContext();
 
     this.quaternion = new THREE.Quaternion();
@@ -32,17 +32,17 @@ module.exports.Component = registerComponent('layer', {
     this.el.sceneEl.addEventListener('exit-vr', this.onExitVR);
   },
 
-  bindMethods: function () {
+  bindMethods: function() {
     this.onRequestedReferenceSpace = this.onRequestedReferenceSpace.bind(this);
     this.onEnterVR = this.onEnterVR.bind(this);
     this.onExitVR = this.onExitVR.bind(this);
   },
 
-  update: function (oldData) {
+  update: function(oldData) {
     if (this.data.src !== oldData.src) { this.updateSrc(); }
   },
 
-  updateSrc: function () {
+  updateSrc: function() {
     var type = this.data.type;
     this.texture = undefined;
     if (type === 'quad') {
@@ -56,7 +56,7 @@ module.exports.Component = registerComponent('layer', {
     }
   },
 
-  loadCubeMapImages: function () {
+  loadCubeMapImages: function() {
     var glayer;
     var xrGLFactory = this.xrGLFactory;
     var frame = this.el.sceneEl.frame;
@@ -90,13 +90,13 @@ module.exports.Component = registerComponent('layer', {
     }
   },
 
-  loadQuadImage: function () {
+  loadQuadImage: function() {
     var src = this.data.src;
     var self = this;
-    this.el.sceneEl.systems.material.loadTexture(src, {src: src}, function textureLoaded (texture) {
+    this.el.sceneEl.systems.material.loadTexture(src, { src: src }, function textureLoaded(texture) {
       self.el.sceneEl.renderer.initTexture(texture);
       self.texture = texture;
-      if (src.tagName === 'VIDEO') { setTimeout(function () { self.textureIsVideo = true; }, 1000); }
+      if (src.tagName === 'VIDEO') { setTimeout(function() { self.textureIsVideo = true; }, 1000); }
       if (self.layer) {
         self.layer.height = self.data.height / 2 || self.texture.image.height / 1000;
         self.layer.width = self.data.width / 2 || self.texture.image.width / 1000;
@@ -106,7 +106,7 @@ module.exports.Component = registerComponent('layer', {
     });
   },
 
-  preGenerateCubeMapTextures: function (src, callback) {
+  preGenerateCubeMapTextures: function(src, callback) {
     if (this.data.type === 'monocubemap') {
       this.generateCubeMapTextures(src, 0, callback);
     } else {
@@ -115,7 +115,7 @@ module.exports.Component = registerComponent('layer', {
     }
   },
 
-  generateCubeMapTextures: function (src, faceOffset, callback) {
+  generateCubeMapTextures: function(src, faceOffset, callback) {
     var data = this.data;
     var cubeFaceSize = this.cubeFaceSize;
     var textureSourceCubeFaceSize = Math.min(src.width, src.height);
@@ -175,7 +175,7 @@ module.exports.Component = registerComponent('layer', {
     return cubefaceTextures;
   },
 
-  loadCubeMapImage: function (layerColorTexture, src, faceOffset) {
+  loadCubeMapImage: function(layerColorTexture, src, faceOffset) {
     var gl = this.el.sceneEl.renderer.getContext();
     var cubefaceTextures;
 
@@ -192,7 +192,7 @@ module.exports.Component = registerComponent('layer', {
     }
 
     var errorCode = 0;
-    cubefaceTextures.forEach(function (canvas, i) {
+    cubefaceTextures.forEach(function(canvas, i) {
       gl.texSubImage2D(
         gl.TEXTURE_CUBE_MAP_POSITIVE_X + i,
         0,
@@ -210,7 +210,7 @@ module.exports.Component = registerComponent('layer', {
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
   },
 
-  tick: function () {
+  tick: function() {
     if (!this.el.sceneEl.xrSession) { return; }
     if (!this.layer && (this.el.sceneEl.is('vr-mode') || this.el.sceneEl.is('ar-mode'))) { this.initLayer(); }
     this.updateTransform();
@@ -220,11 +220,11 @@ module.exports.Component = registerComponent('layer', {
     this.needsRedraw = false;
   },
 
-  initLayer: function () {
+  initLayer: function() {
     var self = this;
     var type = this.data.type;
 
-    this.el.sceneEl.xrSession.onvisibilitychange = function (evt) {
+    this.el.sceneEl.xrSession.onvisibilitychange = function(evt) {
       self.visibilityChanged = evt.session.visibilityState !== 'hidden';
     };
 
@@ -239,7 +239,7 @@ module.exports.Component = registerComponent('layer', {
     }
   },
 
-  initQuadLayer: function () {
+  initQuadLayer: function() {
     var sceneEl = this.el.sceneEl;
     var gl = sceneEl.renderer.getContext();
     var xrGLFactory = this.xrGLFactory = new XRWebGLBinding(sceneEl.xrSession, gl);
@@ -255,7 +255,7 @@ module.exports.Component = registerComponent('layer', {
     sceneEl.renderer.xr.addLayer(this.layer);
   },
 
-  initCubeMapLayer: function () {
+  initCubeMapLayer: function() {
     var src = this.data.src;
     var sceneEl = this.el.sceneEl;
     var gl = sceneEl.renderer.getContext();
@@ -275,7 +275,7 @@ module.exports.Component = registerComponent('layer', {
     sceneEl.renderer.xr.addLayer(this.layer);
   },
 
-  initLoadingScreenImages: function () {
+  initLoadingScreenImages: function() {
     var cubeFaceSize = this.cubeFaceSize;
     var loadingScreenImages = this.loadingScreenImages = [];
     for (var i = 0; i < 6; i++) {
@@ -296,23 +296,23 @@ module.exports.Component = registerComponent('layer', {
     }
   },
 
-  destroyLayer: function () {
+  destroyLayer: function() {
     if (!this.layer) { return; }
     this.el.sceneEl.renderer.xr.removeLayer(this.layer);
     this.layer.destroy();
     this.layer = undefined;
   },
 
-  toggleCompositorLayer: function () {
+  toggleCompositorLayer: function() {
     this.enableCompositorLayer(!this.layerEnabled);
   },
 
-  enableCompositorLayer: function (enable) {
+  enableCompositorLayer: function(enable) {
     this.layerEnabled = enable;
     this.quadPanelEl.object3D.visible = !this.layerEnabled;
   },
 
-  updateQuadPanel: function () {
+  updateQuadPanel: function() {
     var quadPanelEl = this.quadPanelEl;
     if (!this.quadPanelEl) {
       quadPanelEl = this.quadPanelEl = document.createElement('a-entity');
@@ -332,7 +332,7 @@ module.exports.Component = registerComponent('layer', {
     });
   },
 
-  draw: function () {
+  draw: function() {
     var sceneEl = this.el.sceneEl;
     var gl = this.el.sceneEl.renderer.getContext();
     var glayer = this.xrGLFactory.getSubImage(this.layer, sceneEl.frame);
@@ -348,7 +348,7 @@ module.exports.Component = registerComponent('layer', {
     gl.bindFramebuffer(gl.FRAMEBUFFER, previousFrameBuffer);
   },
 
-  updateTransform: function () {
+  updateTransform: function() {
     var el = this.el;
     var position = this.position;
     var quaternion = this.quaternion;
@@ -359,7 +359,7 @@ module.exports.Component = registerComponent('layer', {
     this.layer.transform = new XRRigidTransform(position, quaternion);
   },
 
-  onEnterVR: function () {
+  onEnterVR: function() {
     var sceneEl = this.el.sceneEl;
     var xrSession = sceneEl.xrSession;
     if (!sceneEl.hasWebXR || !XRWebGLBinding || !xrSession) {
@@ -374,19 +374,19 @@ module.exports.Component = registerComponent('layer', {
     if (this.data.src.play) { this.data.src.play(); }
   },
 
-  onExitVR: function () {
+  onExitVR: function() {
     if (this.quadPanelEl) {
       this.quadPanelEl.object3D.visible = true;
     }
     this.destroyLayer();
   },
 
-  onRequestedReferenceSpace: function (referenceSpace) {
+  onRequestedReferenceSpace: function(referenceSpace) {
     this.referenceSpace = referenceSpace;
   }
 });
 
-function blitTexture (gl, texture, subImage, textureEl) {
+function blitTexture(gl, texture, subImage, textureEl) {
   var xrReadFramebuffer = gl.createFramebuffer();
   var x1offset = subImage.viewport.x;
   var y1offset = subImage.viewport.y;

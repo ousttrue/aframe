@@ -1,20 +1,20 @@
-var registerComponent = require('../../core/component').registerComponent;
-var constants = require('../../constants/');
-var utils = require('../../utils/');
+import {registerComponent} from '../../core/component';
+import * as constants from '../../constants/';
+import * as utils from '../../utils/';
 
-var ENTER_VR_CLASS = 'a-enter-vr';
-var ENTER_AR_CLASS = 'a-enter-ar';
+const ENTER_VR_CLASS = 'a-enter-vr';
+const ENTER_AR_CLASS = 'a-enter-ar';
 
-var ENTER_VR_BTN_CLASS = 'a-enter-vr-button';
-var ENTER_AR_BTN_CLASS = 'a-enter-ar-button';
-var HIDDEN_CLASS = 'a-hidden';
-var ORIENTATION_MODAL_CLASS = 'a-orientation-modal';
+const ENTER_VR_BTN_CLASS = 'a-enter-vr-button';
+const ENTER_AR_BTN_CLASS = 'a-enter-ar-button';
+const HIDDEN_CLASS = 'a-hidden';
+const ORIENTATION_MODAL_CLASS = 'a-orientation-modal';
 
 /**
  * UI for entering VR mode.
  */
-module.exports.Component = registerComponent('xr-mode-ui', {
-  dependencies: ['canvas'],
+export const Component = registerComponent('xr-mode-ui', {
+  // dependencies: ['canvas'],
 
   schema: {
     enabled: {default: true},

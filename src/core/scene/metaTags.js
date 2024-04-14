@@ -1,34 +1,33 @@
-var constants = require('../../constants/');
-var extend = require('../../utils').extend;
+import * as constants from '../../constants/';
 
-var MOBILE_HEAD_TAGS = module.exports.MOBILE_HEAD_TAGS = [
-  Meta({name: 'viewport', content: 'width=device-width,initial-scale=1,maximum-scale=1,shrink-to-fit=no,user-scalable=no,minimal-ui,viewport-fit=cover'}),
+export const MOBILE_HEAD_TAGS = [
+  Meta({ name: 'viewport', content: 'width=device-width,initial-scale=1,maximum-scale=1,shrink-to-fit=no,user-scalable=no,minimal-ui,viewport-fit=cover' }),
 
   // W3C-standardised meta tags.
-  Meta({name: 'mobile-web-app-capable', content: 'yes'}),
-  Meta({name: 'theme-color', content: 'black'})
+  Meta({ name: 'mobile-web-app-capable', content: 'yes' }),
+  Meta({ name: 'theme-color', content: 'black' })
 ];
 
 var MOBILE_IOS_HEAD_TAGS = [
   // iOS-specific meta tags for fullscreen when pinning to homescreen.
-  Meta({name: 'apple-mobile-web-app-capable', content: 'yes'}),
-  Meta({name: 'apple-mobile-web-app-status-bar-style', content: 'black'}),
-  Link({rel: 'apple-touch-icon', href: 'https://aframe.io/images/aframe-logo-152.png'})
+  Meta({ name: 'apple-mobile-web-app-capable', content: 'yes' }),
+  Meta({ name: 'apple-mobile-web-app-status-bar-style', content: 'black' }),
+  Link({ rel: 'apple-touch-icon', href: 'https://aframe.io/images/aframe-logo-152.png' })
 ];
 
-function Meta (attrs) {
+function Meta(attrs) {
   return {
     tagName: 'meta',
     attributes: attrs,
-    exists: function () { return document.querySelector('meta[name="' + attrs.name + '"]'); }
+    exists: function() { return document.querySelector('meta[name="' + attrs.name + '"]'); }
   };
 }
 
-function Link (attrs) {
+function Link(attrs) {
   return {
     tagName: 'link',
     attributes: attrs,
-    exists: function () { return document.querySelector('link[rel="' + attrs.rel + '"]'); }
+    exists: function() { return document.querySelector('link[rel="' + attrs.rel + '"]'); }
   };
 }
 
@@ -44,7 +43,7 @@ function Link (attrs) {
  * @param {object} scene - Scene element
  * @returns {Array}
  */
-module.exports.inject = function injectHeadTags (scene) {
+export function inject(scene) {
   var headEl = document.head;
   var headScriptEl = headEl.querySelector('script');
   var tag;
@@ -55,7 +54,7 @@ module.exports.inject = function injectHeadTags (scene) {
   }
   return headTags;
 
-  function createAndInjectTag (tagObj) {
+  function createAndInjectTag(tagObj) {
     if (!tagObj || tagObj.exists()) { return; }
 
     tag = createTag(tagObj);
@@ -69,11 +68,11 @@ module.exports.inject = function injectHeadTags (scene) {
 
     headTags.push(tag);
   }
-};
+}
 
-function createTag (tagObj) {
+function createTag(tagObj) {
   if (!tagObj || !tagObj.tagName) { return; }
   var meta = document.createElement(tagObj.tagName);
   meta.setAttribute(constants.AFRAME_INJECTED, '');
-  return extend(meta, tagObj.attributes);
+  return Object.assign(meta, tagObj.attributes);
 }

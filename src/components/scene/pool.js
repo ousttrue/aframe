@@ -1,7 +1,7 @@
-var debug = require('../../utils/debug');
-var registerComponent = require('../../core/component').registerComponent;
+import debug from '../../utils/debug';
+import { registerComponent } from '../../core/component';
 
-var warn = debug('components:pool:warn');
+const warn = debug('components:pool:warn');
 
 /**
  * Pool component to reuse entities.
@@ -11,19 +11,19 @@ var warn = debug('components:pool:warn');
  * @member {array} availableEls - Available entities in the pool.
  * @member {array} usedEls - Entities of the pool in use.
  */
-module.exports.Component = registerComponent('pool', {
+export const Component = registerComponent('pool', {
   schema: {
-    container: {default: ''},
-    mixin: {default: ''},
-    size: {default: 0},
-    dynamic: {default: false}
+    container: { default: '' },
+    mixin: { default: '' },
+    size: { default: 0 },
+    dynamic: { default: false }
   },
 
   sceneOnly: true,
 
   multiple: true,
 
-  initPool: function () {
+  initPool: function() {
     var i;
 
     this.availableEls = [];
@@ -46,7 +46,7 @@ module.exports.Component = registerComponent('pool', {
     }
   },
 
-  update: function (oldData) {
+  update: function(oldData) {
     var data = this.data;
     if (oldData.mixin !== data.mixin || oldData.size !== data.size) {
       this.initPool();
@@ -56,7 +56,7 @@ module.exports.Component = registerComponent('pool', {
   /**
    * Add a new entity to the list of available entities.
    */
-  createEntity: function () {
+  createEntity: function() {
     var el;
     el = document.createElement('a-entity');
     el.play = this.wrapPlay(el.play);
@@ -67,7 +67,7 @@ module.exports.Component = registerComponent('pool', {
     this.availableEls.push(el);
 
     var usedEls = this.usedEls;
-    el.addEventListener('loaded', function () {
+    el.addEventListener('loaded', function() {
       if (usedEls.indexOf(el) !== -1) { return; }
       el.object3DParent = el.object3D.parent;
       el.object3D.parent.remove(el.object3D);
@@ -78,9 +78,9 @@ module.exports.Component = registerComponent('pool', {
    * Play wrapper for pooled entities. When pausing and playing a scene, don't want to play
    * entities that are not in use.
    */
-  wrapPlay: function (playMethod) {
+  wrapPlay: function(playMethod) {
     var usedEls = this.usedEls;
-    return function () {
+    return function() {
       if (usedEls.indexOf(this) === -1) { return; }
       playMethod.call(this);
     };
@@ -89,7 +89,7 @@ module.exports.Component = registerComponent('pool', {
   /**
    * Used to request one of the available entities of the pool.
    */
-  requestEntity: function () {
+  requestEntity: function() {
     var el;
     if (this.availableEls.length === 0) {
       if (this.data.dynamic === false) {
@@ -97,7 +97,7 @@ module.exports.Component = registerComponent('pool', {
         return;
       } else {
         warn('Requested entity from empty pool. This pool is dynamic and will resize ' +
-             'automatically. You might want to increase its initial size: ' + this.attrName);
+          'automatically. You might want to increase its initial size: ' + this.attrName);
       }
       this.createEntity();
     }
@@ -114,7 +114,7 @@ module.exports.Component = registerComponent('pool', {
   /**
    * Used to return a used entity to the pool.
    */
-  returnEntity: function (el) {
+  returnEntity: function(el) {
     var index = this.usedEls.indexOf(el);
     if (index === -1) {
       warn('The returned entity was not previously pooled from ' + this.attrName);
@@ -130,10 +130,10 @@ module.exports.Component = registerComponent('pool', {
     return el;
   },
 
-  updateRaycasters: function () {
+  updateRaycasters: function() {
     var raycasterEls = document.querySelectorAll('[raycaster]');
 
-    raycasterEls.forEach(function (el) {
+    raycasterEls.forEach(function(el) {
       el.components['raycaster'].setDirty();
     });
   }

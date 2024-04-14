@@ -1,7 +1,7 @@
-var registerShader = require('../core/shader').registerShader;
-var THREE = require('../lib/three');
+import {registerShader} from '../core/shader';
+import * as THREE from 'three';
 
-var VERTEX_SHADER = [
+const VERTEX_SHADER = [
   '#include <common>',
   '#include <fog_pars_vertex>',
   '#include <logdepthbuf_pars_vertex>',
@@ -17,7 +17,7 @@ var VERTEX_SHADER = [
   '}'
 ].join('\n');
 
-var FRAGMENT_SHADER = [
+const FRAGMENT_SHADER = [
   '#include <common>',
   '#include <fog_pars_fragment>',
   '#include <logdepthbuf_pars_fragment>',
@@ -70,7 +70,7 @@ var FRAGMENT_SHADER = [
  * Multi-channel signed distance field.
  * Used by text component.
  */
-module.exports.Shader = registerShader('msdf', {
+export const Shader = registerShader('msdf', {
   schema: {
     alphaTest: {type: 'number', is: 'uniform', default: 0.5},
     color: {type: 'color', is: 'uniform', default: 'white'},

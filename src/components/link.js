@@ -1,28 +1,28 @@
-var registerComponent = require('../core/component').registerComponent;
-var registerShader = require('../core/shader').registerShader;
-var THREE = require('../lib/three');
+import { registerComponent } from '../core/component';
+import { registerShader } from '../core/shader';
+import * as THREE from 'three';
 
 /**
  * Link component. Connect experiences and traverse between them in VR
  *
  * @member {object} hiddenEls - Store the hidden elements during peek mode.
  */
-module.exports.Component = registerComponent('link', {
+export const Component = registerComponent('link', {
   schema: {
-    backgroundColor: {default: 'red', type: 'color'},
-    borderColor: {default: 'white', type: 'color'},
-    highlighted: {default: false},
-    highlightedColor: {default: '#24CAFF', type: 'color'},
-    href: {default: ''},
-    image: {type: 'asset'},
-    on: {default: 'click'},
-    peekMode: {default: false},
-    title: {default: ''},
-    titleColor: {default: 'white', type: 'color'},
-    visualAspectEnabled: {default: false}
+    backgroundColor: { default: 'red', type: 'color' },
+    borderColor: { default: 'white', type: 'color' },
+    highlighted: { default: false },
+    highlightedColor: { default: '#24CAFF', type: 'color' },
+    href: { default: '' },
+    image: { type: 'asset' },
+    on: { default: 'click' },
+    peekMode: { default: false },
+    title: { default: '' },
+    titleColor: { default: 'white', type: 'color' },
+    visualAspectEnabled: { default: false }
   },
 
-  init: function () {
+  init: function() {
     this.navigate = this.navigate.bind(this);
     this.previousQuaternion = undefined;
     this.quaternionClone = new THREE.Quaternion();
@@ -30,7 +30,7 @@ module.exports.Component = registerComponent('link', {
     this.hiddenEls = [];
   },
 
-  update: function (oldData) {
+  update: function(oldData) {
     var data = this.data;
     var el = this.el;
     var backgroundColor;
@@ -48,18 +48,18 @@ module.exports.Component = registerComponent('link', {
     if (data.on !== oldData.on) { this.updateEventListener(); }
 
     if (oldData.peekMode !== undefined &&
-        data.peekMode !== oldData.peekMode) { this.updatePeekMode(); }
+      data.peekMode !== oldData.peekMode) { this.updatePeekMode(); }
 
     if (!data.image || oldData.image === data.image) { return; }
 
     el.setAttribute('material', 'pano',
-                    typeof data.image === 'string' ? data.image : data.image.src);
+      typeof data.image === 'string' ? data.image : data.image.src);
   },
 
   /*
    * Toggle all elements and full 360 preview of the linked page.
    */
-  updatePeekMode: function () {
+  updatePeekMode: function() {
     var el = this.el;
     var sphereEl = this.sphereEl;
     if (this.data.peekMode) {
@@ -73,28 +73,28 @@ module.exports.Component = registerComponent('link', {
     }
   },
 
-  play: function () {
+  play: function() {
     this.updateEventListener();
   },
 
-  pause: function () {
+  pause: function() {
     this.removeEventListener();
   },
 
-  updateEventListener: function () {
+  updateEventListener: function() {
     var el = this.el;
     if (!el.isPlaying) { return; }
     this.removeEventListener();
     el.addEventListener(this.data.on, this.navigate);
   },
 
-  removeEventListener: function () {
+  removeEventListener: function() {
     var on = this.data.on;
     if (!on) { return; }
     this.el.removeEventListener(on, this.navigate);
   },
 
-  initVisualAspect: function () {
+  initVisualAspect: function() {
     var el = this.el;
     var semiSphereEl;
     var sphereEl;
@@ -107,8 +107,8 @@ module.exports.Component = registerComponent('link', {
     semiSphereEl = this.semiSphereEl = this.semiSphereEl || document.createElement('a-entity');
 
     // Set portal.
-    el.setAttribute('geometry', {primitive: 'circle', radius: 1.0, segments: 64});
-    el.setAttribute('material', {shader: 'portal', pano: this.data.image, side: 'double'});
+    el.setAttribute('geometry', { primitive: 'circle', radius: 1.0, segments: 64 });
+    el.setAttribute('material', { shader: 'portal', pano: this.data.image, side: 'double' });
 
     // Set text that displays the link title and URL.
     textEl.setAttribute('text', {
@@ -162,7 +162,7 @@ module.exports.Component = registerComponent('link', {
     this.visualAspectInitialized = true;
   },
 
-  navigate: function () {
+  navigate: function() {
     window.location = this.data.href;
   },
 
@@ -173,13 +173,13 @@ module.exports.Component = registerComponent('link', {
    * 2. Place the url/title above or inside portal depending on distance to camera.
    * 3. Face portal to camera when far away from user.
    */
-  tick: (function () {
+  tick: (function() {
     var cameraWorldPosition = new THREE.Vector3();
     var elWorldPosition = new THREE.Vector3();
     var quaternion = new THREE.Quaternion();
     var scale = new THREE.Vector3();
 
-    return function () {
+    return function() {
       var el = this.el;
       var object3D = el.object3D;
       var camera = el.sceneEl.camera;
@@ -249,17 +249,17 @@ module.exports.Component = registerComponent('link', {
     };
   })(),
 
-  hideAll: function () {
+  hideAll: function() {
     var el = this.el;
     var hiddenEls = this.hiddenEls;
     var self = this;
     if (hiddenEls.length > 0) { return; }
-    el.sceneEl.object3D.traverse(function (object) {
+    el.sceneEl.object3D.traverse(function(object) {
       if (object && object.el && object.el.hasAttribute('link-controls')) { return; }
       if (!object.el || object === el.sceneEl.object3D || object.el === el ||
-          object.el === self.sphereEl || object.el === el.sceneEl.cameraEl ||
-          object.el.getAttribute('visible') === false || object.el === self.textEl ||
-          object.el === self.semiSphereEl) {
+        object.el === self.sphereEl || object.el === el.sceneEl.cameraEl ||
+        object.el.getAttribute('visible') === false || object.el === self.textEl ||
+        object.el === self.semiSphereEl) {
         return;
       }
       object.el.setAttribute('visible', false);
@@ -267,8 +267,8 @@ module.exports.Component = registerComponent('link', {
     });
   },
 
-  showAll: function () {
-    this.hiddenEls.forEach(function (el) { el.setAttribute('visible', true); });
+  showAll: function() {
+    this.hiddenEls.forEach(function(el) { el.setAttribute('visible', true); });
     this.hiddenEls = [];
   },
 
@@ -276,13 +276,13 @@ module.exports.Component = registerComponent('link', {
    * Calculate whether the camera faces the front or back face of the portal.
    * @returns {number} > 0 if camera faces front of portal, < 0 if it faces back of portal.
    */
-  calculateCameraPortalOrientation: (function () {
+  calculateCameraPortalOrientation: (function() {
     var mat4 = new THREE.Matrix4();
     var cameraPosition = new THREE.Vector3();
     var portalNormal = new THREE.Vector3(0, 0, 1);
     var portalPosition = new THREE.Vector3(0, 0, 0);
 
-    return function () {
+    return function() {
       var el = this.el;
       var camera = el.sceneEl.camera;
 
@@ -316,7 +316,7 @@ module.exports.Component = registerComponent('link', {
     };
   })(),
 
-  remove: function () {
+  remove: function() {
     this.removeEventListener();
   }
 });
@@ -324,10 +324,10 @@ module.exports.Component = registerComponent('link', {
 /* eslint-disable */
 registerShader('portal', {
   schema: {
-    borderEnabled: {default: 1.0, type: 'int', is: 'uniform'},
-    backgroundColor: {default: 'red', type: 'color', is: 'uniform'},
-    pano: {type: 'map', is: 'uniform'},
-    strokeColor: {default: 'white', type: 'color', is: 'uniform'}
+    borderEnabled: { default: 1.0, type: 'int', is: 'uniform' },
+    backgroundColor: { default: 'red', type: 'color', is: 'uniform' },
+    pano: { type: 'map', is: 'uniform' },
+    strokeColor: { default: 'white', type: 'color', is: 'uniform' }
   },
 
   vertexShader: [

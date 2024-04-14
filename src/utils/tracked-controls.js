@@ -1,6 +1,6 @@
-var DEFAULT_HANDEDNESS = require('../constants').DEFAULT_HANDEDNESS;
-var AXIS_LABELS = ['x', 'y', 'z', 'w'];
-var NUM_HANDS = 2;  // Number of hands in a pair. Should always be 2.
+import { DEFAULT_HANDEDNESS } from '../constants';
+const AXIS_LABELS = ['x', 'y', 'z', 'w'];
+const NUM_HANDS = 2;  // Number of hands in a pair. Should always be 2.
 
 /**
  * Called on controller component `.play` handlers.
@@ -12,7 +12,7 @@ var NUM_HANDS = 2;  // Number of hands in a pair. Should always be 2.
  * @param {object} idPrefix - Prefix to match in gamepad id if any.
  * @param {object} queryObject - Map of values to match.
  */
-module.exports.checkControllerPresentAndSetup = function (component, idPrefix, queryObject) {
+export function checkControllerPresentAndSetup(component, idPrefix, queryObject) {
   var el = component.el;
   var controller;
   var hasWebXR = el.sceneEl.hasWebXR;
@@ -38,12 +38,12 @@ module.exports.checkControllerPresentAndSetup = function (component, idPrefix, q
   if (isPresent) {
     component.addEventListeners();
     component.injectTrackedControls(controller);
-    el.emit('controllerconnected', {name: component.name, component: component});
+    el.emit('controllerconnected', { name: component.name, component: component });
   } else {
     component.removeEventListeners();
-    el.emit('controllerdisconnected', {name: component.name, component: component});
+    el.emit('controllerdisconnected', { name: component.name, component: component });
   }
-};
+}
 
 /**
  * Enumerate controller (that have pose) and check if they match parameters for WebVR
@@ -52,7 +52,7 @@ module.exports.checkControllerPresentAndSetup = function (component, idPrefix, q
  * @param {object} idPrefix - Prefix to match in gamepad id if any.
  * @param {object} queryObject - Map of values to match.
  */
-function isControllerPresentWebVR (component, idPrefix, queryObject) {
+export function isControllerPresentWebVR(component, idPrefix, queryObject) {
   var gamepads;
   var sceneEl = component.el.sceneEl;
   var trackedControlsSystem;
@@ -67,14 +67,14 @@ function isControllerPresentWebVR (component, idPrefix, queryObject) {
   if (!gamepads.length) { return false; }
 
   return !!findMatchingControllerWebVR(gamepads, null, idPrefix, queryObject.hand,
-                                  filterControllerIndex);
+    filterControllerIndex);
 }
 
 /**
  *
  * @param {object} component - Tracked controls component.
  */
-function isControllerPresentWebXR (component, id, queryObject) {
+export function isControllerPresentWebXR(component, id, queryObject) {
   var controllers;
   var sceneEl = component.el.sceneEl;
   var trackedControlsSystem = sceneEl && sceneEl.systems['tracked-controls-webxr'];
@@ -87,9 +87,6 @@ function isControllerPresentWebXR (component, id, queryObject) {
     controllers, id,
     queryObject.hand, queryObject.index, queryObject.iterateControllerProfiles, queryObject.handTracking);
 }
-
-module.exports.isControllerPresentWebVR = isControllerPresentWebVR;
-module.exports.isControllerPresentWebXR = isControllerPresentWebXR;
 
 /**
  * Walk through the given controllers to find any where the device ID equals
@@ -114,8 +111,8 @@ module.exports.isControllerPresentWebXR = isControllerPresentWebXR;
  * @param {object} filterControllerIndex - Find the nth matching controller,
  * where n equals filterControllerIndex. defaults to 0.
  */
-function findMatchingControllerWebVR (controllers, filterIdExact, filterIdPrefix, filterHand,
-                                 filterControllerIndex) {
+export function findMatchingControllerWebVR(controllers, filterIdExact, filterIdPrefix, filterHand,
+  filterControllerIndex) {
   var controller;
   var i;
   var matchingControllerOccurrence = 0;
@@ -152,7 +149,7 @@ function findMatchingControllerWebVR (controllers, filterIdExact, filterIdPrefix
   return undefined;
 }
 
-function findMatchingControllerWebXR (controllers, idPrefix, handedness, index, iterateProfiles, handTracking) {
+export function findMatchingControllerWebXR(controllers, idPrefix, handedness, index, iterateProfiles, handTracking) {
   var i;
   var j;
   var controller;
@@ -186,9 +183,6 @@ function findMatchingControllerWebXR (controllers, idPrefix, handedness, index, 
   return undefined;
 }
 
-module.exports.findMatchingControllerWebVR = findMatchingControllerWebVR;
-module.exports.findMatchingControllerWebXR = findMatchingControllerWebXR;
-
 /**
  * Emit specific `moved` event(s) if axes changed based on original axismove event.
  *
@@ -196,7 +190,7 @@ module.exports.findMatchingControllerWebXR = findMatchingControllerWebXR;
  * @param {array} axesMapping - For example `{thumbstick: [0, 1]}`.
  * @param {object} evt - Event to process.
  */
-module.exports.emitIfAxesChanged = function (component, axesMapping, evt) {
+export function emitIfAxesChanged(component, axesMapping, evt) {
   var axes;
   var buttonType;
   var changed;
@@ -220,7 +214,7 @@ module.exports.emitIfAxesChanged = function (component, axesMapping, evt) {
     }
     component.el.emit(buttonType + 'moved', detail);
   }
-};
+}
 
 /**
  * Handle a button event and reemits the events.
@@ -230,11 +224,11 @@ module.exports.emitIfAxesChanged = function (component, axesMapping, evt) {
  * @param {object} component - reference to the component
  * @param {string} hand - handedness of the controller: left or right.
  */
-module.exports.onButtonEvent = function (id, evtName, component, hand) {
+export function onButtonEvent(id, evtName, component, hand) {
   var mapping = hand ? component.mapping[hand] : component.mapping;
   var buttonName = mapping.buttons[id];
   component.el.emit(buttonName + evtName);
   if (component.updateModel) {
     component.updateModel(buttonName, evtName);
   }
-};
+}

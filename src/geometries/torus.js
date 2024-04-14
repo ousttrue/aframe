@@ -1,7 +1,7 @@
-var registerGeometry = require('../core/geometry').registerGeometry;
-var THREE = require('../lib/three');
+import {registerGeometry} from '../core/geometry';
+import * as THREE from 'three';
 
-var degToRad = THREE.MathUtils.degToRad;
+const degToRad = THREE.MathUtils.degToRad;
 
 registerGeometry('torus', {
   schema: {

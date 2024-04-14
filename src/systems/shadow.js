@@ -1,7 +1,7 @@
-var registerSystem = require('../core/system').registerSystem;
-var THREE = require('../lib/three');
+import { registerSystem } from '../core/system';
+import * as THREE from 'three';
 
-var SHADOW_MAP_TYPE_MAP = {
+const SHADOW_MAP_TYPE_MAP = {
   basic: THREE.BasicShadowMap,
   pcf: THREE.PCFShadowMap,
   pcfsoft: THREE.PCFSoftShadowMap
@@ -13,14 +13,14 @@ var SHADOW_MAP_TYPE_MAP = {
  * Enabled automatically when one or more shadow components are added to the scene, the system sets
  * options on the WebGLRenderer for configuring shadow appearance.
  */
-module.exports.System = registerSystem('shadow', {
+export const System = registerSystem('shadow', {
   schema: {
-    enabled: {default: true},
-    autoUpdate: {default: true},
-    type: {default: 'pcf', oneOf: ['basic', 'pcf', 'pcfsoft']}
+    enabled: { default: true },
+    autoUpdate: { default: true },
+    type: { default: 'pcf', oneOf: ['basic', 'pcf', 'pcfsoft'] }
   },
 
-  init: function () {
+  init: function() {
     var sceneEl = this.sceneEl;
     var data = this.data;
 
@@ -30,7 +30,7 @@ module.exports.System = registerSystem('shadow', {
     sceneEl.renderer.shadowMap.autoUpdate = data.autoUpdate;
   },
 
-  update: function (prevData) {
+  update: function(prevData) {
     if (prevData.enabled !== this.data.enabled) {
       this.setShadowMapEnabled(this.shadowMapEnabled);
     }
@@ -40,7 +40,7 @@ module.exports.System = registerSystem('shadow', {
    * Enables/disables the renderer shadow map.
    * @param {boolean} enabled
    */
-  setShadowMapEnabled: function (enabled) {
+  setShadowMapEnabled: function(enabled) {
     var sceneEl = this.sceneEl;
     var renderer = this.sceneEl.renderer;
 
@@ -55,10 +55,10 @@ module.exports.System = registerSystem('shadow', {
   }
 });
 
-function updateAllMaterials (sceneEl) {
+function updateAllMaterials(sceneEl) {
   if (!sceneEl.hasLoaded) { return; }
 
-  sceneEl.object3D.traverse(function (node) {
+  sceneEl.object3D.traverse(function(node) {
     if (node.material) {
       var materials = Array.isArray(node.material) ? node.material : [node.material];
       for (var i = 0; i < materials.length; i++) {

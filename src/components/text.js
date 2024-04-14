@@ -1,24 +1,24 @@
-var createTextGeometry = require('three-bmfont-text');
-var loadBMFont = require('load-bmfont');
+import * as THREE from 'three';
+import * as createTextGeometry from 'three-bmfont-text';
+import * as loadBMFont from 'load-bmfont';
 
-var registerComponent = require('../core/component').registerComponent;
-var coreShader = require('../core/shader');
-var THREE = require('../lib/three');
-var utils = require('../utils/');
+import { registerComponent } from '../core/component';
+import * as coreShader from '../core/shader';
+import * as utils from '../utils/';
+import {AFRAME_CDN_ROOT} from '../constants';
 
-var error = utils.debug('components:text:error');
-var shaders = coreShader.shaders;
-var warn = utils.debug('components:text:warn');
+const error = utils.debug('components:text:error');
+const shaders = coreShader.shaders;
+const warn = utils.debug('components:text:warn');
 
 // 1 to match other A-Frame default widths.
-var DEFAULT_WIDTH = 1;
+const DEFAULT_WIDTH = 1;
 
 // @bryik set anisotropy to 16. Improves look of large amounts of text when viewed from angle.
-var MAX_ANISOTROPY = 16;
+const MAX_ANISOTROPY = 16;
 
-var AFRAME_CDN_ROOT = require('../constants').AFRAME_CDN_ROOT;
-var FONT_BASE_URL = AFRAME_CDN_ROOT + 'fonts/';
-var FONTS = {
+const FONT_BASE_URL = AFRAME_CDN_ROOT + 'fonts/';
+const FONTS = {
   aileronsemibold: FONT_BASE_URL + 'Aileron-Semibold.fnt',
   dejavu: FONT_BASE_URL + 'DejaVu-sdf.fnt',
   exo2bold: FONT_BASE_URL + 'Exo2Bold.fnt',
@@ -29,16 +29,16 @@ var FONTS = {
   roboto: FONT_BASE_URL + 'Roboto-msdf.json',
   sourcecodepro: FONT_BASE_URL + 'SourceCodePro.fnt'
 };
-var MSDF_FONTS = ['roboto'];
-var DEFAULT_FONT = 'roboto';
+const MSDF_FONTS = ['roboto'];
+const DEFAULT_FONT = 'roboto';
 module.exports.FONTS = FONTS;
 
-var cache = new PromiseCache();
-var fontWidthFactors = {};
-var textures = {};
+const cache = new PromiseCache();
+const fontWidthFactors = {};
+const textures = {};
 
 // Regular expression for detecting a URLs with a protocol prefix.
-var protocolRe = /^\w+:/;
+const protocolRe = /^\w+:/;
 
 /**
  * SDF-based text component.
@@ -47,55 +47,55 @@ var protocolRe = /^\w+:/;
  * All the stock fonts are for the `sdf` registered shader, an improved version of jam3's
  * original `sdf` shader.
  */
-module.exports.Component = registerComponent('text', {
+export const Component = registerComponent('text', {
   multiple: true,
 
   schema: {
-    align: {type: 'string', default: 'left', oneOf: ['left', 'right', 'center']},
-    alphaTest: {default: 0.5},
+    align: { type: 'string', default: 'left', oneOf: ['left', 'right', 'center'] },
+    alphaTest: { default: 0.5 },
     // `anchor` defaults to center to match geometries.
-    anchor: {default: 'center', oneOf: ['left', 'right', 'center', 'align']},
-    baseline: {default: 'center', oneOf: ['top', 'center', 'bottom']},
-    color: {type: 'color', default: '#FFF'},
-    font: {type: 'string', default: DEFAULT_FONT},
+    anchor: { default: 'center', oneOf: ['left', 'right', 'center', 'align'] },
+    baseline: { default: 'center', oneOf: ['top', 'center', 'bottom'] },
+    color: { type: 'color', default: '#FFF' },
+    font: { type: 'string', default: DEFAULT_FONT },
     // `fontImage` defaults to the font name as a .png (e.g., mozillavr.fnt -> mozillavr.png).
-    fontImage: {type: 'string'},
+    fontImage: { type: 'string' },
     // `height` has no default, will be populated at layout.
-    height: {type: 'number'},
-    letterSpacing: {type: 'number', default: 0},
+    height: { type: 'number' },
+    letterSpacing: { type: 'number', default: 0 },
     // `lineHeight` defaults to font's `lineHeight` value.
-    lineHeight: {type: 'number'},
+    lineHeight: { type: 'number' },
     // `negate` must be true for fonts generated with older versions of msdfgen (white background).
-    negate: {type: 'boolean', default: true},
-    opacity: {type: 'number', default: 1.0},
-    shader: {default: 'sdf', oneOf: shaders},
-    side: {default: 'front', oneOf: ['front', 'back', 'double']},
-    tabSize: {default: 4},
-    transparent: {default: true},
-    value: {type: 'string'},
-    whiteSpace: {default: 'normal', oneOf: ['normal', 'pre', 'nowrap']},
+    negate: { type: 'boolean', default: true },
+    opacity: { type: 'number', default: 1.0 },
+    shader: { default: 'sdf', oneOf: shaders },
+    side: { default: 'front', oneOf: ['front', 'back', 'double'] },
+    tabSize: { default: 4 },
+    transparent: { default: true },
+    value: { type: 'string' },
+    whiteSpace: { default: 'normal', oneOf: ['normal', 'pre', 'nowrap'] },
     // `width` defaults to geometry width if present, else `DEFAULT_WIDTH`.
-    width: {type: 'number'},
+    width: { type: 'number' },
     // `wrapCount` units are about one default font character. Wrap roughly at this number.
-    wrapCount: {type: 'number', default: 40},
+    wrapCount: { type: 'number', default: 40 },
     // `wrapPixels` will wrap using bmfont pixel units (e.g., dejavu's is 32 pixels).
-    wrapPixels: {type: 'number'},
+    wrapPixels: { type: 'number' },
     // `xOffset` to add padding.
-    xOffset: {type: 'number', default: 0},
+    xOffset: { type: 'number', default: 0 },
     // `yOffset` to adjust generated fonts from tools that may have incorrect metrics.
-    yOffset: {type: 'number', default: 0},
+    yOffset: { type: 'number', default: 0 },
     // `zOffset` will provide a small z offset to avoid z-fighting.
-    zOffset: {type: 'number', default: 0.001}
+    zOffset: { type: 'number', default: 0.001 }
   },
 
-  init: function () {
+  init: function() {
     this.shaderData = {};
     this.geometry = createTextGeometry();
     this.createOrUpdateMaterial();
     this.explicitGeoDimensionsChecked = false;
   },
 
-  update: function (oldData) {
+  update: function(oldData) {
     var data = this.data;
     var font = this.currentFont;
     if (textures[data.font]) {
@@ -125,7 +125,7 @@ module.exports.Component = registerComponent('text', {
   /**
    * Clean up geometry, material, texture, mesh, objects.
    */
-  remove: function () {
+  remove: function() {
     this.geometry.dispose();
     this.geometry = null;
     this.el.removeObject3D(this.attrName);
@@ -139,7 +139,7 @@ module.exports.Component = registerComponent('text', {
   /**
    * Update the shader of the material.
    */
-  createOrUpdateMaterial: function () {
+  createOrUpdateMaterial: function() {
     var data = this.data;
     var hasChangedShader;
     var material = this.material;
@@ -188,7 +188,7 @@ module.exports.Component = registerComponent('text', {
   /**
    * Load font for geometry, load font image for material, and apply.
    */
-  updateFont: function () {
+  updateFont: function() {
     var data = this.data;
     var el = this.el;
     var fontSrc;
@@ -202,9 +202,9 @@ module.exports.Component = registerComponent('text', {
 
     // Look up font URL to use, and perform cached load.
     fontSrc = this.lookupFont(data.font || DEFAULT_FONT) || data.font;
-    cache.get(fontSrc, function doLoadFont () {
+    cache.get(fontSrc, function doLoadFont() {
       return loadFont(fontSrc, data.yOffset);
-    }).then(function setFont (font) {
+    }).then(function setFont(font) {
       var fontImgSrc;
 
       if (font.pages.length !== 1) {
@@ -217,9 +217,9 @@ module.exports.Component = registerComponent('text', {
       self.currentFont = font;
       // Look up font image URL to use, and perform cached load.
       fontImgSrc = self.getFontImageSrc();
-      cache.get(fontImgSrc, function () {
+      cache.get(fontImgSrc, function() {
         return loadTexture(fontImgSrc);
-      }).then(function (image) {
+      }).then(function(image) {
         // Make mesh visible and apply font image as texture.
         var texture = self.texture;
         // The component may have been removed at this point and texture will
@@ -236,24 +236,24 @@ module.exports.Component = registerComponent('text', {
         self.updateGeometry(geometry, font);
         self.updateLayout();
         self.mesh.visible = true;
-        el.emit('textfontset', {font: data.font, fontObj: font});
-      }).catch(function (err) {
+        el.emit('textfontset', { font: data.font, fontObj: font });
+      }).catch(function(err) {
         error(err.message);
         error(err.stack);
       });
-    }).catch(function (err) {
+    }).catch(function(err) {
       error(err.message);
       error(err.stack);
     });
   },
 
-  initMesh: function () {
+  initMesh: function() {
     if (this.mesh) { return; }
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.el.setObject3D(this.attrName, this.mesh);
   },
 
-  getFontImageSrc: function () {
+  getFontImageSrc: function() {
     if (this.data.fontImage) { return this.data.fontImage; }
     var fontSrc = this.lookupFont(this.data.font || DEFAULT_FONT) || this.data.font;
     var imageSrc = this.currentFont.pages[0];
@@ -268,7 +268,7 @@ module.exports.Component = registerComponent('text', {
   /**
    * Update layout with anchor, alignment, baseline, and considering any meshes.
    */
-  updateLayout: function () {
+  updateLayout: function() {
     var anchor;
     var baseline;
     var el = this.el;
@@ -293,7 +293,7 @@ module.exports.Component = registerComponent('text', {
     // Determine wrap pixel count. Either specified or by experimental fudge factor.
     // Note that experimental factor will never be correct for variable width fonts.
     textRenderWidth = computeWidth(data.wrapPixels, data.wrapCount,
-                                   this.currentFont.widthFactor);
+      this.currentFont.widthFactor);
     textScale = width / textRenderWidth;
 
     // Determine height to use.
@@ -348,20 +348,20 @@ module.exports.Component = registerComponent('text', {
    * Grab font from the constant.
    * Set as a method for test stubbing purposes.
    */
-  lookupFont: function (key) {
+  lookupFont: function(key) {
     return FONTS[key];
   },
 
   /**
    * Update the text geometry using `three-bmfont-text.update`.
    */
-  updateGeometry: (function () {
+  updateGeometry: (function() {
     var geometryUpdateBase = {};
     var geometryUpdateData = {};
     var newLineRegex = /\\n/g;
     var tabRegex = /\\t/g;
 
-    return function (geometry, font) {
+    return function(geometry, font) {
       var data = this.data;
 
       geometryUpdateData.font = font;
@@ -369,10 +369,10 @@ module.exports.Component = registerComponent('text', {
         ? data.lineHeight
         : font.common.lineHeight;
       geometryUpdateData.text = data.value.toString().replace(newLineRegex, '\n')
-                                                     .replace(tabRegex, '\t');
+        .replace(tabRegex, '\t');
       geometryUpdateData.width = computeWidth(data.wrapPixels, data.wrapCount,
-                                              font.widthFactor);
-      geometry.update(utils.extend(geometryUpdateBase, data, geometryUpdateData));
+        font.widthFactor);
+      geometry.update(Object.assign(geometryUpdateBase, data, geometryUpdateData));
     };
   })()
 });
@@ -381,7 +381,7 @@ module.exports.Component = registerComponent('text', {
  * Due to using negative scale, we return the opposite side specified.
  * https://github.com/mrdoob/three.js/pull/12787/
  */
-function parseSide (side) {
+function parseSide(side) {
   switch (side) {
     case 'back': {
       return THREE.FrontSide;
@@ -398,9 +398,9 @@ function parseSide (side) {
 /**
  * @returns {Promise}
  */
-function loadFont (src, yOffset) {
-  return new Promise(function (resolve, reject) {
-    loadBMFont(src, function (err, font) {
+function loadFont(src, yOffset) {
+  return new Promise(function(resolve, reject) {
+    loadBMFont(src, function(err, font) {
       if (err) {
         error('Error loading font', src);
         reject(err);
@@ -409,7 +409,7 @@ function loadFont (src, yOffset) {
 
       // Fix negative Y offsets for Roboto MSDF font from tool. Experimentally determined.
       if (src.indexOf('/Roboto-msdf.json') >= 0) { yOffset = 30; }
-      if (yOffset) { font.chars.map(function doOffset (ch) { ch.yoffset += yOffset; }); }
+      if (yOffset) { font.chars.map(function doOffset(ch) { ch.yoffset += yOffset; }); }
 
       resolve(font);
     });
@@ -419,18 +419,18 @@ function loadFont (src, yOffset) {
 /**
  * @returns {Promise}
  */
-function loadTexture (src) {
-  return new Promise(function (resolve, reject) {
-    new THREE.ImageLoader().load(src, function (image) {
+function loadTexture(src) {
+  return new Promise(function(resolve, reject) {
+    new THREE.ImageLoader().load(src, function(image) {
       resolve(image);
-    }, undefined, function () {
+    }, undefined, function() {
       error('Error loading font image', src);
       reject(null);
     });
   });
 }
 
-function createShader (el, shaderName, data) {
+function createShader(el, shaderName, data) {
   var shader;
   var shaderObject;
 
@@ -455,18 +455,18 @@ function createShader (el, shaderName, data) {
  * Determine wrap pixel count. Either specified or by experimental fudge factor.
  * Note that experimental factor will never be correct for variable width fonts.
  */
-function computeWidth (wrapPixels, wrapCount, widthFactor) {
+function computeWidth(wrapPixels, wrapCount, widthFactor) {
   return wrapPixels || ((0.5 + wrapCount) * widthFactor);
 }
 
 /**
  * Compute default font width factor to use.
  */
-function computeFontWidthFactor (font) {
+function computeFontWidthFactor(font) {
   var sum = 0;
   var digitsum = 0;
   var digits = 0;
-  font.chars.map(function (ch) {
+  font.chars.map(function(ch) {
     sum += ch.xadvance;
     if (ch.id >= 48 && ch.id <= 57) {
       digits++;
@@ -480,10 +480,10 @@ function computeFontWidthFactor (font) {
  * Get or create a promise given a key and promise generator.
  * @todo Move to a utility and use in other parts of A-Frame.
  */
-function PromiseCache () {
+function PromiseCache() {
   var cache = this.cache = {};
 
-  this.get = function (key, promiseGenerator) {
+  this.get = function(key, promiseGenerator) {
     if (key in cache) {
       return cache[key];
     }

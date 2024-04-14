@@ -1,5 +1,5 @@
-var registerComponent = require('../core/component').registerComponent;
-var utils = require('../utils/');
+import {registerComponent} from '../core/component';
+import * as utils from '../utils/';
 
 registerComponent('laser-controls', {
   schema: {
@@ -42,7 +42,7 @@ registerComponent('laser-controls', {
 
       // Show the line unless a particular config opts to hide it, until a controllermodelready
       // event comes through.
-      var raycasterConfig = utils.extend({
+      var raycasterConfig = Object.assign({
         showLine: true
       }, controllerConfig.raycaster || {});
 
@@ -62,7 +62,7 @@ registerComponent('laser-controls', {
         el.setAttribute('raycaster', 'showLine', true);
       }
 
-      el.setAttribute('cursor', utils.extend({
+      el.setAttribute('cursor', Object.assign({
         fuse: false
       }, controllerConfig.cursor));
     }

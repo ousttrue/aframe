@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-var Util = require('./util.js');
+import * as  Util from './util.js';
 
 /**
  * Android and iOS compatible wakelock implementation.
@@ -51,18 +51,17 @@ function iOSWakeLock() {
         setTimeout(window.stop, 0);
       }, 15000);
     }
-  }
+  };
 
   this.release = function() {
     if (timer) {
       clearInterval(timer);
       timer = null;
     }
-  }
+  };
 }
 
-
-function getWakeLock() {
+export function getWakeLock() {
   var userAgent = navigator.userAgent || navigator.vendor || window.opera;
   if (userAgent.match(/iPhone/i) || userAgent.match(/iPod/i)) {
     return iOSWakeLock;
@@ -70,5 +69,3 @@ function getWakeLock() {
     return AndroidWakeLock;
   }
 }
-
-module.exports = getWakeLock();

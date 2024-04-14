@@ -1,14 +1,14 @@
-var constants = require('../constants/');
-const { registerSystemClass, System } = require('../core/system');
+import * as constants from '../constants/';
+import { registerSystemClass, System } from '../core/system';
 
-var DEFAULT_CAMERA_ATTR = 'data-aframe-default-camera';
+const DEFAULT_CAMERA_ATTR = 'data-aframe-default-camera';
 
 /**
  * Camera system. Manages which camera is active among multiple cameras in scene.
  *
  * @member {object} activeCameraEl - Active camera entity.
  */
-class CameraSystem extends System {
+export class CameraSystem extends System {
   init() {
     this.activeCameraEl = null;
 
@@ -253,7 +253,6 @@ class CameraSystem extends System {
     sceneEl.renderer.xr.enabled = isVREnabled;
   }
 }
-module.exports.System = CameraSystem;
 registerSystemClass('camera', CameraSystem);
 
 /**

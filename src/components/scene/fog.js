@@ -1,14 +1,14 @@
-var register = require('../../core/component').registerComponent;
-var THREE = require('../../lib/three');
-var debug = require('../../utils/debug');
+import {registerComponent} from '../../core/component';
+import * as THREE from 'three';
+import debug from '../../utils/debug';
 
-var warn = debug('components:fog:warn');
+const warn = debug('components:fog:warn');
 
 /**
  * Fog component.
  * Applies only to the scene entity.
  */
-module.exports.Component = register('fog', {
+export const Component = registerComponent('fog', {
   schema: {
     color: {type: 'color', default: '#000'},
     density: {default: 0.00025},

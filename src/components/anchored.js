@@ -1,7 +1,7 @@
 /* global THREE, XRRigidTransform, localStorage */
-var registerComponent = require('../core/component').registerComponent;
-var utils = require('../utils/');
-var warn = utils.debug('components:anchored:warn');
+import { registerComponent } from '../core/component';
+import * as utils from '../utils/';
+const warn = utils.debug('components:anchored:warn');
 
 /**
  * Anchored component.
@@ -9,12 +9,12 @@ var warn = utils.debug('components:anchored:warn');
  * Once anchored the entity remains to a fixed position in real-world space.
  * If the anchor is persistent, the anchor positioned remains across sessions or until the browser data is cleared.
  */
-module.exports.Component = registerComponent('anchored', {
+export const Component = registerComponent('anchored', {
   schema: {
-    persistent: {default: false}
+    persistent: { default: false }
   },
 
-  init: function () {
+  init: function() {
     var sceneEl = this.el.sceneEl;
     var webxrData = sceneEl.getAttribute('webxr');
     var optionalFeaturesArray = webxrData.optionalFeatures;
@@ -29,13 +29,13 @@ module.exports.Component = registerComponent('anchored', {
     this.el.sceneEl.addEventListener('enter-vr', this.onEnterVR);
   },
 
-  onEnterVR: function () {
+  onEnterVR: function() {
     this.anchor = undefined;
     this.requestPersistentAnchorPending = this.data.persistent;
     this.requestAnchorPending = !this.data.persistent;
   },
 
-  tick: function () {
+  tick: function() {
     var sceneEl = this.el.sceneEl;
     var xrManager = sceneEl.renderer.xr;
     var frame;
@@ -56,7 +56,7 @@ module.exports.Component = registerComponent('anchored', {
     object3D.matrix.decompose(object3D.position, object3D.rotation, object3D.scale);
   },
 
-  createAnchor: async function createAnchor (position, quaternion) {
+  createAnchor: async function createAnchor(position, quaternion) {
     var sceneEl = this.el.sceneEl;
     var xrManager = sceneEl.renderer.xr;
     var frame;
@@ -104,7 +104,7 @@ module.exports.Component = registerComponent('anchored', {
     this.anchor = anchor;
   },
 
-  restorePersistentAnchor: async function restorePersistentAnchor () {
+  restorePersistentAnchor: async function restorePersistentAnchor() {
     var xrManager = this.el.sceneEl.renderer.xr;
     var session = xrManager.getSession();
     var persistentAnchors = session.persistentAnchors;
@@ -129,7 +129,7 @@ module.exports.Component = registerComponent('anchored', {
     }
   },
 
-  deleteAnchor: function () {
+  deleteAnchor: function() {
     var xrManager;
     var session;
     var anchor = this.anchor;
@@ -145,7 +145,7 @@ module.exports.Component = registerComponent('anchored', {
   }
 });
 
-function anchorsSupported (sceneEl) {
+function anchorsSupported(sceneEl) {
   var xrManager = sceneEl.renderer.xr;
   var session = xrManager.getSession();
   return (session && session.restorePersistentAnchor);

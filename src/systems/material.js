@@ -1,13 +1,13 @@
-var registerSystem = require('../core/system').registerSystem;
-var THREE = require('../lib/three');
-var utils = require('../utils/');
-var setTextureProperties = require('../utils/material').setTextureProperties;
-var createCompatibleTexture = require('../utils/material').createCompatibleTexture;
+import { registerSystem } from '../core/system';
+import * as THREE from 'three';
+import * as utils from '../utils/';
+import { setTextureProperties, createCompatibleTexture  } from '../utils/material';
+import '../core/scene/a-scene';
 
-var debug = utils.debug;
-var error = debug('components:texture:error');
-var warn = debug('components:texture:warn');
-var ImageLoader = new THREE.ImageLoader();
+const debug = utils.debug;
+const error = debug('components:texture:error');
+const warn = debug('components:texture:warn');
+const ImageLoader = new THREE.ImageLoader();
 
 /**
  * System for material component.
@@ -16,13 +16,13 @@ var ImageLoader = new THREE.ImageLoader();
  * @member {object} materials - Registered materials.
  * @member {object} sourceCache - Texture source cache for, Image, Video and Canvas sources
  */
-module.exports.System = registerSystem('material', {
-  init: function () {
+export const System = registerSystem('material', {
+  init: function() {
     this.materials = {};
     this.sourceCache = {};
   },
 
-  clearTextureSourceCache: function () {
+  clearTextureSourceCache: function() {
     this.sourceCache = {};
   },
 
@@ -33,8 +33,8 @@ module.exports.System = registerSystem('material', {
    * @param {object} data - Relevant texture properties
    * @param {function} cb - Callback to pass texture to
    */
-  loadTexture: function (src, data, cb) {
-    this.loadTextureSource(src, function sourceLoaded (source) {
+  loadTexture: function(src, data, cb) {
+    this.loadTextureSource(src, function sourceLoaded(source) {
       var texture = createCompatibleTexture(source);
       setTextureProperties(texture, data);
       cb(texture);
@@ -47,7 +47,7 @@ module.exports.System = registerSystem('material', {
    * @param {string, or element} src - URL or element.
    * @param {function} cb - Callback to pass texture source to.
    */
-  loadTextureSource: function (src, cb) {
+  loadTextureSource: function(src, cb) {
     var self = this;
     var sourceCache = this.sourceCache;
 
@@ -64,13 +64,13 @@ module.exports.System = registerSystem('material', {
     }
 
     sourceLoaded(new Promise(doSourceLoad));
-    function doSourceLoad (resolve, reject) {
+    function doSourceLoad(resolve, reject) {
       utils.srcLoader.validateSrc(src, loadImageCb, loadVideoCb);
-      function loadImageCb (src) { self.loadImage(src, resolve); }
-      function loadVideoCb (src) { self.loadVideo(src, resolve); }
+      function loadImageCb(src) { self.loadImage(src, resolve); }
+      function loadVideoCb(src) { self.loadVideo(src, resolve); }
     }
 
-    function sourceLoaded (sourcePromise) {
+    function sourceLoaded(sourcePromise) {
       sourceCache[hash] = Promise.resolve(sourcePromise);
       sourceCache[hash].then(cb);
     }
@@ -82,14 +82,14 @@ module.exports.System = registerSystem('material', {
    * @param {Array} srcs - Array of six texture URLs or elements.
    * @param {function} cb - Callback to pass cube texture to.
    */
-  loadCubeMapTexture: function (srcs, cb) {
+  loadCubeMapTexture: function(srcs, cb) {
     var self = this;
     var loaded = 0;
     var cube = new THREE.CubeTexture();
     cube.colorSpace = THREE.SRGBColorSpace;
 
-    function loadSide (index) {
-      self.loadTextureSource(srcs[index], function (source) {
+    function loadSide(index) {
+      self.loadTextureSource(srcs[index], function(source) {
         cube.images[index] = source;
         loaded++;
         if (loaded === 6) {
@@ -115,7 +115,7 @@ module.exports.System = registerSystem('material', {
    * @param {Element|string} src - Texture source.
    * @param {function} cb - Callback to pass texture to.
    */
-  loadImage: function (src, cb) {
+  loadImage: function(src, cb) {
     // Image element provided
     if (typeof src !== 'string') {
       cb(new THREE.Source(src));
@@ -134,7 +134,7 @@ module.exports.System = registerSystem('material', {
    * @param {Element|string} src - Texture source.
    * @param {function} cb - Callback to pass texture to.
    */
-  loadVideo: function (src, cb) {
+  loadVideo: function(src, cb) {
     var videoEl;
 
     // Video element provided.
@@ -155,7 +155,7 @@ module.exports.System = registerSystem('material', {
   /**
    * Create a hash for a given source.
    */
-  hash: function (src) {
+  hash: function(src) {
     if (src.tagName) {
       // Prefer element's ID or source, otherwise fallback to the element itself
       return src.id || src.src || src;
@@ -168,7 +168,7 @@ module.exports.System = registerSystem('material', {
    *
    * @param {object} material
    */
-  registerMaterial: function (material) {
+  registerMaterial: function(material) {
     this.materials[material.uuid] = material;
   },
 
@@ -178,7 +178,7 @@ module.exports.System = registerSystem('material', {
    *
    * @param {object} material
    */
-  unregisterMaterial: function (material) {
+  unregisterMaterial: function(material) {
     delete this.materials[material.uuid];
   }
 });
@@ -190,22 +190,22 @@ module.exports.System = registerSystem('material', {
  * @param {string} src - An url to an image file.
  * @returns {Promise} Resolves once texture is loaded.
  */
-function loadImageUrl (src) {
+function loadImageUrl(src) {
   return new Promise(doLoadImageUrl);
 
-  function doLoadImageUrl (resolve, reject) {
+  function doLoadImageUrl(resolve, reject) {
     // Request and load texture from src string. THREE will create underlying element.
     ImageLoader.load(
       src,
       resolveSource,
-      function () { /* no-op */ },
-      function (xhr) {
+      function() { /* no-op */ },
+      function(xhr) {
         error('`$s` could not be fetched (Error code: %s; Response: %s)', xhr.status,
-              xhr.statusText);
+          xhr.statusText);
       }
     );
 
-    function resolveSource (data) {
+    function resolveSource(data) {
       resolve(new THREE.Source(data));
     }
   }
@@ -217,7 +217,7 @@ function loadImageUrl (src) {
  * @param {string} src - Url to a video file.
  * @returns {Element} Video element.
  */
-function createVideoEl (src) {
+function createVideoEl(src) {
   var videoEl = document.createElement('video');
   // Support inline videos for iOS webviews.
   videoEl.setAttribute('playsinline', '');
@@ -225,7 +225,7 @@ function createVideoEl (src) {
   videoEl.autoplay = true;
   videoEl.loop = true;
   videoEl.crossOrigin = 'anonymous';
-  videoEl.addEventListener('error', function () {
+  videoEl.addEventListener('error', function() {
     warn('`%s` is not a valid video', src);
   }, true);
   videoEl.src = src;
@@ -245,7 +245,7 @@ function createVideoEl (src) {
  * @param {Element} videoEl - Video element.
  * @returns {Element} Video element with the correct properties updated.
  */
-function fixVideoAttributes (videoEl) {
+function fixVideoAttributes(videoEl) {
   videoEl.autoplay = videoEl.hasAttribute('autoplay') && videoEl.getAttribute('autoplay') !== 'false';
   videoEl.controls = videoEl.hasAttribute('controls') && videoEl.getAttribute('controls') !== 'false';
   if (videoEl.getAttribute('loop') === 'false') {

@@ -1,11 +1,11 @@
-const { registerComponentClass, Component } = require('../core/component');
-var THREE = require('../lib/three');
+import { registerComponentClass, Component } from '../core/component';
+import * as THREE from 'three';
 
 /**
  * Camera component.
  * Pairs along with camera system to handle tracking the active camera.
  */
-class CameraComponent extends Component {
+export class CameraComponent extends Component {
   /**
    * Initialize three.js camera and add it to the entity.
    * Add reference from scene to this entity as the camera.
@@ -78,8 +78,7 @@ class CameraComponent extends Component {
   remove() {
     this.el.removeObject3D('camera');
   }
-};
-module.exports.Component = CameraComponent;
+}
 registerComponentClass('camera', CameraComponent,
   {
     active: { default: true },

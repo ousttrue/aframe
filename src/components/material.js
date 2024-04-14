@@ -1,13 +1,12 @@
 /* global Promise */
-var utils = require('../utils/');
-var component = require('../core/component');
-var THREE = require('../lib/three');
-var shader = require('../core/shader');
+import * as utils from '../utils/';
+import { registerComponent } from '../core/component';
+import * as THREE from 'three';
+import * as shader from '../core/shader';
 
-var error = utils.debug('components:material:error');
-var registerComponent = component.registerComponent;
-var shaders = shader.shaders;
-var shaderNames = shader.shaderNames;
+const error = utils.debug('components:material:error');
+const shaders = shader.shaders;
+const shaderNames = shader.shaderNames;
 
 /**
  * Material component.
@@ -16,27 +15,27 @@ var shaderNames = shader.shaderNames;
  *         three.js's implementation of PBR. Another standard shading model is `flat` which
  *         uses MeshBasicMaterial.
  */
-module.exports.Component = registerComponent('material', {
+export const Component = registerComponent('material', {
   schema: {
-    alphaTest: {default: 0.0, min: 0.0, max: 1.0},
-    depthTest: {default: true},
-    depthWrite: {default: true},
-    flatShading: {default: false},
-    npot: {default: false},
-    offset: {type: 'vec2', default: {x: 0, y: 0}},
-    opacity: {default: 1.0, min: 0.0, max: 1.0},
-    repeat: {type: 'vec2', default: {x: 1, y: 1}},
-    shader: {default: 'standard', oneOf: shaderNames, schemaChange: true},
-    side: {default: 'front', oneOf: ['front', 'back', 'double']},
-    transparent: {default: false},
-    vertexColorsEnabled: {default: false},
-    visible: {default: true},
-    blending: {default: 'normal', oneOf: ['none', 'normal', 'additive', 'subtractive', 'multiply']},
-    dithering: {default: true},
-    anisotropy: {default: 0, min: 0}
+    alphaTest: { default: 0.0, min: 0.0, max: 1.0 },
+    depthTest: { default: true },
+    depthWrite: { default: true },
+    flatShading: { default: false },
+    npot: { default: false },
+    offset: { type: 'vec2', default: { x: 0, y: 0 } },
+    opacity: { default: 1.0, min: 0.0, max: 1.0 },
+    repeat: { type: 'vec2', default: { x: 1, y: 1 } },
+    shader: { default: 'standard', oneOf: shaderNames, schemaChange: true },
+    side: { default: 'front', oneOf: ['front', 'back', 'double'] },
+    transparent: { default: false },
+    vertexColorsEnabled: { default: false },
+    visible: { default: true },
+    blending: { default: 'normal', oneOf: ['none', 'normal', 'additive', 'subtractive', 'multiply'] },
+    dithering: { default: true },
+    anisotropy: { default: 0, min: 0 }
   },
 
-  init: function () {
+  init: function() {
     this.material = null;
   },
 
@@ -45,7 +44,7 @@ module.exports.Component = registerComponent('material', {
    *
    * @param {object|null} oldData
    */
-  update: function (oldData) {
+  update: function(oldData) {
     var data = this.data;
     if (!this.shader || data.shader !== oldData.shader) {
       this.updateShader(data.shader);
@@ -54,7 +53,7 @@ module.exports.Component = registerComponent('material', {
     this.updateMaterial(oldData);
   },
 
-  updateSchema: function (data) {
+  updateSchema: function(data) {
     var currentShader;
     var newShader;
     var schema;
@@ -71,14 +70,14 @@ module.exports.Component = registerComponent('material', {
     this.updateBehavior();
   },
 
-  updateBehavior: function () {
+  updateBehavior: function() {
     var key;
     var sceneEl = this.el.sceneEl;
     var schema = this.schema;
     var self = this;
     var tickProperties;
 
-    function tickTime (time, delta) {
+    function tickTime(time, delta) {
       var key;
       for (key in tickProperties) {
         tickProperties[key] = time;
@@ -104,7 +103,7 @@ module.exports.Component = registerComponent('material', {
     }
   },
 
-  updateShader: function (shaderName) {
+  updateShader: function(shaderName) {
     var data = this.data;
     var Shader = shaders[shaderName] && shaders[shaderName].Shader;
     var shaderInstance;
@@ -123,7 +122,7 @@ module.exports.Component = registerComponent('material', {
    * Set and update base material properties.
    * Set `needsUpdate` when needed.
    */
-  updateMaterial: function (oldData) {
+  updateMaterial: function(oldData) {
     var data = this.data;
     var material = this.material;
     var oldDataHasKeys;
@@ -144,9 +143,9 @@ module.exports.Component = registerComponent('material', {
     // Check if material needs update.
     for (oldDataHasKeys in oldData) { break; }
     if (oldDataHasKeys &&
-        (oldData.alphaTest !== data.alphaTest ||
-         oldData.side !== data.side ||
-         oldData.vertexColorsEnabled !== data.vertexColorsEnabled)) {
+      (oldData.alphaTest !== data.alphaTest ||
+        oldData.side !== data.side ||
+        oldData.vertexColorsEnabled !== data.vertexColorsEnabled)) {
       material.needsUpdate = true;
     }
   },
@@ -155,7 +154,7 @@ module.exports.Component = registerComponent('material', {
    * Remove material on remove (callback).
    * Dispose of it from memory and unsubscribe from scene updates.
    */
-  remove: function () {
+  remove: function() {
     var defaultMaterial = new THREE.MeshBasicMaterial();
     var material = this.material;
     var object3D = this.el.getObject3D('mesh');
@@ -171,7 +170,7 @@ module.exports.Component = registerComponent('material', {
    * @param {object} type - Material type to create.
    * @returns {object} Material.
    */
-  setMaterial: function (material) {
+  setMaterial: function(material) {
     var el = this.el;
     var mesh;
     var system = this.system;
@@ -186,7 +185,7 @@ module.exports.Component = registerComponent('material', {
     if (mesh) {
       mesh.material = material;
     } else {
-      el.addEventListener('object3dset', function waitForMesh (evt) {
+      el.addEventListener('object3dset', function waitForMesh(evt) {
         if (evt.detail.type !== 'mesh' || evt.target !== el) { return; }
         el.getObject3D('mesh').material = material;
         el.removeEventListener('object3dset', waitForMesh);
@@ -202,7 +201,7 @@ module.exports.Component = registerComponent('material', {
  * @param {string} [side=front] - `front`, `back`, or `double`.
  * @returns {number} THREE.FrontSide, THREE.BackSide, or THREE.DoubleSide.
  */
-function parseSide (side) {
+function parseSide(side) {
   switch (side) {
     case 'back': {
       return THREE.BackSide;
@@ -224,7 +223,7 @@ function parseSide (side) {
  * - `none`, additive`, `subtractive`,`multiply` or `normal`.
  * @returns {number}
  */
-function parseBlending (blending) {
+function parseBlending(blending) {
   switch (blending) {
     case 'none': {
       return THREE.NoBlending;
@@ -247,16 +246,16 @@ function parseBlending (blending) {
 /**
  * Dispose of material from memory and unsubscribe material from scene updates like fog.
  */
-function disposeMaterial (material, system) {
+function disposeMaterial(material, system) {
   material.dispose();
   system.unregisterMaterial(material);
 
   // Dispose textures on this material
   Object.keys(material)
-    .filter(function (propName) {
+    .filter(function(propName) {
       return material[propName] && material[propName].isTexture;
     })
-    .forEach(function (mapName) {
+    .forEach(function(mapName) {
       material[mapName].dispose();
     });
 }

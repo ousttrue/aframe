@@ -1,6 +1,6 @@
-var getMeshMixin = require('../getMeshMixin');
-var registerPrimitive = require('../primitives').registerPrimitive;
-var utils = require('../../../utils/');
+import { getMeshMixin } from '../getMeshMixin';
+import { registerPrimitive } from '../primitives';
+import * as utils from '../../../utils/';
 
 registerPrimitive('a-curvedimage', utils.extendDeep({}, getMeshMixin(), {
   defaultComponents: {

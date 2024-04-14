@@ -1,5 +1,7 @@
-var registerSystem = require('../core/system').registerSystem;
-var THREE = require('../lib/three');
+import {registerSystem} from '../core/system';
+import * as THREE from 'three';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 
 function fetchScript (src) {
   return new Promise(function (resolve, reject) {
@@ -22,7 +24,7 @@ function fetchScript (src) {
  * @param {string} basisTranscoderPath - Base path from which to load Basis transcoder library.
  * @param {string} meshoptDecoderPath - Full path from which to load Meshopt decoder.
  */
-module.exports.System = registerSystem('gltf-model', {
+export const System = registerSystem('gltf-model', {
   schema: {
     dracoDecoderPath: {default: 'https://www.gstatic.com/draco/versioned/decoders/1.5.6/'},
     basisTranscoderPath: {default: ''},
@@ -38,11 +40,11 @@ module.exports.System = registerSystem('gltf-model', {
     var basisTranscoderPath = this.data.basisTranscoderPath;
     var meshoptDecoderPath = this.data.meshoptDecoderPath;
     if (!this.dracoLoader && dracoDecoderPath) {
-      this.dracoLoader = new THREE.DRACOLoader();
+      this.dracoLoader = new DRACOLoader();
       this.dracoLoader.setDecoderPath(dracoDecoderPath);
     }
     if (!this.ktx2Loader && basisTranscoderPath) {
-      this.ktx2Loader = new THREE.KTX2Loader();
+      this.ktx2Loader = new KTX2Loader();
       this.ktx2Loader.setTranscoderPath(basisTranscoderPath).detectSupport(this.el.renderer);
     }
     if (!this.meshoptDecoder && meshoptDecoderPath) {

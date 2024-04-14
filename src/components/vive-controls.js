@@ -1,21 +1,20 @@
-var registerComponent = require('../core/component').registerComponent;
+import {registerComponent} from '../core/component';
+import * as trackedControlsUtils from '../utils/tracked-controls';
+import {AFRAME_CDN_ROOT} from '../constants';
+import {isWebXRAvailable} from '../utils/device';
 
-var trackedControlsUtils = require('../utils/tracked-controls');
-var checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
-var emitIfAxesChanged = trackedControlsUtils.emitIfAxesChanged;
-var onButtonEvent = trackedControlsUtils.onButtonEvent;
+const checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
+const emitIfAxesChanged = trackedControlsUtils.emitIfAxesChanged;
+const onButtonEvent = trackedControlsUtils.onButtonEvent;
 
-var AFRAME_CDN_ROOT = require('../constants').AFRAME_CDN_ROOT;
-var VIVE_CONTROLLER_MODEL_OBJ_URL = AFRAME_CDN_ROOT + 'controllers/vive/vr_controller_vive.obj';
-var VIVE_CONTROLLER_MODEL_OBJ_MTL = AFRAME_CDN_ROOT + 'controllers/vive/vr_controller_vive.mtl';
+const VIVE_CONTROLLER_MODEL_OBJ_URL = AFRAME_CDN_ROOT + 'controllers/vive/vr_controller_vive.obj';
+const VIVE_CONTROLLER_MODEL_OBJ_MTL = AFRAME_CDN_ROOT + 'controllers/vive/vr_controller_vive.mtl';
 
-var isWebXRAvailable = require('../utils/').device.isWebXRAvailable;
-
-var GAMEPAD_ID_WEBXR = 'htc-vive';
-var GAMEPAD_ID_WEBVR = 'OpenVR ';
+const GAMEPAD_ID_WEBXR = 'htc-vive';
+const GAMEPAD_ID_WEBVR = 'OpenVR ';
 
 // Prefix for HTC Vive Controllers.
-var GAMEPAD_ID_PREFIX = isWebXRAvailable ? GAMEPAD_ID_WEBXR : GAMEPAD_ID_WEBVR;
+const GAMEPAD_ID_PREFIX = isWebXRAvailable ? GAMEPAD_ID_WEBXR : GAMEPAD_ID_WEBVR;
 
 /**
  * Button IDs:
@@ -25,7 +24,7 @@ var GAMEPAD_ID_PREFIX = isWebXRAvailable ? GAMEPAD_ID_WEBXR : GAMEPAD_ID_WEBVR;
  * 3 - menu (dispatch but better for menu options)
  * 4 - system (never dispatched on this layer)
  */
-var INPUT_MAPPING_WEBVR = {
+const INPUT_MAPPING_WEBVR = {
   axes: {trackpad: [0, 1]},
   buttons: ['trackpad', 'trigger', 'grip', 'menu', 'system']
 };
@@ -43,12 +42,12 @@ var INPUT_MAPPING_WEBVR = {
  * 1 - touchpad y axis
  * Reference: https://github.com/immersive-web/webxr-input-profiles/blob/master/packages/registry/profiles/htc/htc-vive.json
  */
-var INPUT_MAPPING_WEBXR = {
+const INPUT_MAPPING_WEBXR = {
   axes: {touchpad: [0, 1]},
   buttons: ['trigger', 'grip', 'touchpad', 'none']
 };
 
-var INPUT_MAPPING = isWebXRAvailable ? INPUT_MAPPING_WEBXR : INPUT_MAPPING_WEBVR;
+const INPUT_MAPPING = isWebXRAvailable ? INPUT_MAPPING_WEBXR : INPUT_MAPPING_WEBVR;
 
 /**
  * Vive controls.
@@ -56,7 +55,7 @@ var INPUT_MAPPING = isWebXRAvailable ? INPUT_MAPPING_WEBXR : INPUT_MAPPING_WEBVR
  * touchpad, trigger, grip, menu, system
  * Load a controller model and highlight the pressed buttons.
  */
-module.exports.Component = registerComponent('vive-controls', {
+export const Component = registerComponent('vive-controls', {
   schema: {
     hand: {default: 'left'},
     buttonColor: {type: 'color', default: '#FAFAFA'},  // Off-white.

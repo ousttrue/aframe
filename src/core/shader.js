@@ -1,13 +1,13 @@
-var schema = require('./schema');
+import * as THREE from 'three';
+import * as utils from '../utils';
+import * as schema from './schema';
 
-var processSchema = schema.process;
-var shaders = module.exports.shaders = {};  // Keep track of registered shaders.
-var shaderNames = module.exports.shaderNames = [];  // Keep track of the names of registered shaders.
-var THREE = require('../lib/three');
-var utils = require('../utils');
+const processSchema = schema.process;
+export const shaders = {};  // Keep track of registered shaders.
+export const shaderNames = [];  // Keep track of the names of registered shaders.
 
 // A-Frame properties to three.js uniform types.
-var propertyToThreeMapping = {
+const propertyToThreeMapping = {
   array: 'v3',
   color: 'v3',
   int: 'i',
@@ -26,7 +26,7 @@ var propertyToThreeMapping = {
  * of customized materials.
  *
  */
-var Shader = module.exports.Shader = function () {};
+export const Shader = function() { };
 
 Shader.prototype = {
   /**
@@ -37,19 +37,19 @@ Shader.prototype = {
 
   vertexShader:
     'void main() {' +
-      'gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);' +
+    'gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);' +
     '}',
 
   fragmentShader:
     'void main() {' +
-      'gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);' +
+    'gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);' +
     '}',
 
   /**
    * Init handler. Similar to attachedCallback.
    * Called during shader initialization and is only run once.
    */
-  init: function (data) {
+  init: function(data) {
     this.uniforms = this.initUniforms();
     this.material = new (this.raw ? THREE.RawShaderMaterial : THREE.ShaderMaterial)({
       uniforms: this.uniforms,
@@ -60,7 +60,7 @@ Shader.prototype = {
     return this.material;
   },
 
-  initUniforms: function () {
+  initUniforms: function() {
     var key;
     var schema = this.schema;
     var variables = {};
@@ -83,7 +83,7 @@ Shader.prototype = {
    *
    * @param {object} data - New material data.
    */
-  update: function (data) {
+  update: function(data) {
     var key;
     var materialKey;
     var schema = this.schema;
@@ -111,7 +111,7 @@ Shader.prototype = {
     }
   },
 
-  parseValue: function (type, value) {
+  parseValue: function(type, value) {
     var color;
     switch (type) {
       case 'vec2': {
@@ -133,9 +133,9 @@ Shader.prototype = {
     }
   },
 
-  setMapOnTextureLoad: function (uniforms, key, materialKey) {
+  setMapOnTextureLoad: function(uniforms, key, materialKey) {
     var self = this;
-    this.el.addEventListener('materialtextureloaded', function () {
+    this.el.addEventListener('materialtextureloaded', function() {
       uniforms[key].value = self.material[materialKey];
       uniforms[key].needsUpdate = true;
     });
@@ -149,12 +149,12 @@ Shader.prototype = {
  * @param {object} definition - shader property and methods.
  * @returns {object} Shader.
  */
-module.exports.registerShader = function (name, definition) {
+export function registerShader(name, definition) {
   var NewShader;
   var proto = {};
 
   // Format definition object to prototype object.
-  Object.keys(definition).forEach(function (key) {
+  Object.keys(definition).forEach(function(key) {
     proto[key] = {
       value: definition[key],
       writable: true
@@ -164,7 +164,7 @@ module.exports.registerShader = function (name, definition) {
   if (shaders[name]) {
     throw new Error('The shader ' + name + ' has already been registered');
   }
-  NewShader = function () { Shader.call(this); };
+  NewShader = function() { Shader.call(this); };
   NewShader.prototype = Object.create(Shader.prototype, proto);
   NewShader.prototype.name = name;
   NewShader.prototype.constructor = NewShader;
@@ -174,4 +174,4 @@ module.exports.registerShader = function (name, definition) {
   };
   shaderNames.push(name);
   return NewShader;
-};
+}

@@ -1,6 +1,6 @@
-require('./flat');
-require('./standard');
-require('./phong');
-require('./sdf');
-require('./msdf');
-require('./shadow');
+import './flat';
+import './standard';
+import './phong';
+import './sdf';
+import './msdf';
+import './shadow';

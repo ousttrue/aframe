@@ -1,7 +1,7 @@
-var getMeshMixin = require('../getMeshMixin');
-var registerPrimitive = require('../primitives').registerPrimitive;
-var utils = require('../../../utils/');
-var meshPrimitives = require('./meshPrimitives');
+import { getMeshMixin } from '../getMeshMixin';
+import { registerPrimitive } from '../primitives';
+import * as utils from '../../../utils/';
+import { meshPrimitives } from './meshPrimitives';
 
 registerPrimitive('a-sky', utils.extendDeep({}, getMeshMixin(), {
   defaultComponents: {

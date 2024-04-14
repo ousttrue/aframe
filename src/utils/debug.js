@@ -1,4 +1,4 @@
-var debug = require('debug');
+import debug from 'debug';
 
 var settings = {
   colors: {
@@ -16,7 +16,7 @@ var settings = {
  */
 debug.formatArgs = formatArgs;
 
-function formatArgs (args) {
+function formatArgs(args) {
   args[0] =
     (this.useColors ? '%c' : '') +
     this.namespace +
@@ -36,7 +36,7 @@ function formatArgs (args) {
   // figure out the correct index to insert the CSS into
   var index = 0;
   var lastC = 0;
-  args[0].replace(/%[a-zA-Z%]/g, function (match) {
+  args[0].replace(/%[a-zA-Z%]/g, function(match) {
     if (match === '%%') {
       return;
     }
@@ -59,7 +59,7 @@ function formatArgs (args) {
  * @returns {String} The type of the namespace (e.g., `warn`).
  * @api private
  */
-function getDebugNamespaceType (namespace) {
+function getDebugNamespaceType(namespace) {
   var chunks = namespace.split(':');
 
   return chunks[chunks.length - 1];  // Return the last one
@@ -73,7 +73,7 @@ function getDebugNamespaceType (namespace) {
  * @returns {String} The color of the namespace (e.g., `orange`).
  * @api private
  */
-function getDebugNamespaceColor (namespace) {
+function getDebugNamespaceColor(namespace) {
   var type = getDebugNamespaceType(namespace);
 
   var color = settings.colors && settings.colors[type];
@@ -90,7 +90,7 @@ function getDebugNamespaceColor (namespace) {
  * @returns {localStorage}
  * @api private
  */
-function storage () {
+function storage() {
   try {
     return window.localStorage;
   } catch (e) {
@@ -114,6 +114,6 @@ if (ls && (parseInt(ls.logs, 10) || ls.logs === 'true')) {
   debug.enable('*:error,*:info,*:warn');
 }
 
-if (process.browser) { window.logs = debug; }
+if (typeof window !== 'undefined') { window.logs = debug; }
 
-module.exports = debug;
+export default debug;

@@ -1,7 +1,7 @@
-var registerComponent = require('../core/component').registerComponent;
+import { registerComponent } from '../core/component';
 
 registerComponent('grabbable', {
-  init: function () {
+  init: function() {
     this.el.setAttribute('obb-collider', 'centerModel: true');
   }
 });

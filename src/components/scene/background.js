@@ -1,13 +1,13 @@
 /* global THREE */
-var register = require('../../core/component').registerComponent;
+import { registerComponent } from '../../core/component';
 
-module.exports.Component = register('background', {
+export const Component = registerComponent('background', {
   schema: {
     color: { type: 'color', default: 'black' },
     transparent: { default: false }
   },
   sceneOnly: true,
-  update: function () {
+  update: function() {
     var data = this.data;
     var object3D = this.el.object3D;
 
@@ -18,7 +18,7 @@ module.exports.Component = register('background', {
     }
   },
 
-  remove: function () {
+  remove: function() {
     var object3D = this.el.object3D;
     object3D.background = null;
   }

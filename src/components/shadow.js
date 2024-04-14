@@ -1,6 +1,6 @@
-var component = require('../core/component');
-var THREE = require('../lib/three');
-var registerComponent = component.registerComponent;
+import * as component from '../core/component';
+import * as THREE from 'three';
+const registerComponent = component.registerComponent;
 
 /**
  * Shadow component.
@@ -8,7 +8,7 @@ var registerComponent = component.registerComponent;
  * When applied to an entity, that entity's geometry and any descendants will cast or receive
  * shadows as specified by the `cast` and `receive` properties.
  */
-module.exports.Component = registerComponent('shadow', {
+export const Component = registerComponent('shadow', {
   schema: {
     cast: {default: true},
     receive: {default: true}

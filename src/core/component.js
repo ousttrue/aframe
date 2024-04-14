@@ -1,10 +1,9 @@
-/* global Node */
-const schema = require('./schema');
-const scenes = require('./scene/scenes');
-const systems = require('./system');
-const utils = require('../utils/');
+import * as schema from './schema';
+import * as scenes from './scene/scenes';
+import * as systems from './system';
+import * as utils from '../utils/';
 
-const components = module.exports.components = {}; // Keep track of registered components.
+export const components = {}; // Keep track of registered components.
 const parseProperty = schema.parseProperty;
 const processSchema = schema.process;
 const isSingleProp = schema.isSingleProperty;
@@ -48,7 +47,7 @@ const attrValueProxyHandler = {
  * @member {string} attrValue - Value of the corresponding HTML attribute.
  * @member {string} id - Optional id for differentiating multiple instances on the same entity.
  */
-class Component {
+export class Component {
   constructor(el, attrValue, id) {
     var self = this;
 
@@ -277,7 +276,7 @@ class Component {
       styleParser.parse(attrValue, this.attrValueProxy);
     } else {
       // AttrValue is an object, apply it to the attrValueProxy object
-      utils.extend(this.attrValueProxy, attrValue);
+      Object.assign(this.attrValueProxy, attrValue);
     }
 
     // Update schema if needed
@@ -373,9 +372,9 @@ class Component {
   extendSchema(schemaAddon) {
     var extendedSchema;
     // Clone base schema.
-    extendedSchema = utils.extend({}, components[this.name].schema);
+    extendedSchema = Object.assign({}, components[this.name].schema);
     // Extend base schema with new schema chunk.
-    utils.extend(extendedSchema, schemaAddon);
+    Object.assign(extendedSchema, schemaAddon);
     this.schema = processSchema(extendedSchema);
     this.el.emit('schemachanged', this.evtDetail);
   }
@@ -591,7 +590,6 @@ class Component {
  * Will be attached on play.
  */
 Component.prototype.events = {};
-module.exports.Component = Component;
 
 function eventsBind(component, events) {
   var eventName;
@@ -601,9 +599,9 @@ function eventsBind(component, events) {
 }
 
 // For testing.
-if (window.debug) {
-  var registrationOrderWarnings = module.exports.registrationOrderWarnings = {};
-}
+// if (window.debug) {
+export const registrationOrderWarnings = {};
+// }
 
 /**
  * Register a component to A-Frame.
@@ -613,7 +611,7 @@ if (window.debug) {
  * @param {object} schema - Contains the type schema and defaults for the data values. Data is coerced into the types of the values of the defaults.
  * @returns {object} Component.
  */
-module.exports.registerComponentClass = function(name, NewComponent, schema = {}) {
+export function registerComponentClass(name, NewComponent, schema = {}) {
   NewComponent.prototype.schema = schema;
   // Warning if component is statically registered after the scene.
   if (document.currentScript && document.currentScript !== aframeScript) {
@@ -659,7 +657,8 @@ module.exports.registerComponentClass = function(name, NewComponent, schema = {}
   NewComponent.prototype.play = wrapPlay(NewComponent.prototype.play);
   NewComponent.prototype.pause = wrapPause(NewComponent.prototype.pause);
 
-  schema = utils.extend(processSchema(NewComponent.prototype.schema, NewComponent.prototype.name));
+  schema = Object.assign(processSchema(NewComponent.prototype.schema, NewComponent.prototype.name));
+  console.assert(schema, name, schema);
   const schemaIsSingleProp = isSingleProp(NewComponent.prototype.schema);
   NewComponent.prototype.isSingleProperty = schemaIsSingleProp;
   NewComponent.prototype.isObjectBased = !schemaIsSingleProp ||
@@ -686,7 +685,7 @@ module.exports.registerComponentClass = function(name, NewComponent, schema = {}
   for (var i = 0; i < scenes.length; i++) {
     scenes[i].emit('componentregistered', { name: name }, false);
   }
-};
+}
 
 /**
  * Register a component to A-Frame.
@@ -695,7 +694,7 @@ module.exports.registerComponentClass = function(name, NewComponent, schema = {}
  * @param {object} definition - Component schema and lifecycle method handlers.
  * @returns {object} Component.
  */
-module.exports.registerComponent = function(name, definition) {
+export function registerComponent(name, definition) {
   class NewComponent extends Component { }
   Object.keys(definition).forEach(function(key) {
     // Format definition object to prototype object.
@@ -706,10 +705,10 @@ module.exports.registerComponent = function(name, definition) {
       });
   });
 
-  module.exports.registerComponentClass(name, NewComponent, NewComponent.prototype.schema);
+  registerComponentClass(name, NewComponent, NewComponent.prototype.schema);
 
   return NewComponent;
-};
+}
 
 /**
  * Checks if a component has defined a method that needs to run every frame.

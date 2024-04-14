@@ -1,17 +1,17 @@
-var registerComponent = require('../core/component').registerComponent;
-var THREE = require('../lib/three');
+import {registerComponent} from '../core/component';
+import * as THREE from 'three';
+import * as trackedControlsUtils from '../utils/tracked-controls';
+import {AFRAME_CDN_ROOT} from '../constants';
 
-var trackedControlsUtils = require('../utils/tracked-controls');
-var checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
-var emitIfAxesChanged = trackedControlsUtils.emitIfAxesChanged;
-var onButtonEvent = trackedControlsUtils.onButtonEvent;
+const checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
+const emitIfAxesChanged = trackedControlsUtils.emitIfAxesChanged;
+const onButtonEvent = trackedControlsUtils.onButtonEvent;
 
 // See Profiles Registry:
 // https://github.com/immersive-web/webxr-input-profiles/tree/master/packages/registry
 // TODO: Add a more robust system for deriving gamepad name.
-var GAMEPAD_ID = 'pico-4';
-var AFRAME_CDN_ROOT = require('../constants').AFRAME_CDN_ROOT;
-var PICO_MODEL_GLB_BASE_URL = AFRAME_CDN_ROOT + 'controllers/pico/pico4/';
+const GAMEPAD_ID = 'pico-4';
+const PICO_MODEL_GLB_BASE_URL = AFRAME_CDN_ROOT + 'controllers/pico/pico4/';
 
 /**
  * Button IDs:
@@ -24,7 +24,7 @@ var PICO_MODEL_GLB_BASE_URL = AFRAME_CDN_ROOT + 'controllers/pico/pico4/';
  * 2 - joystick x axis
  * 3 - joystick y axis
  */
-var INPUT_MAPPING_WEBXR = {
+const INPUT_MAPPING_WEBXR = {
   left: {
     axes: {touchpad: [2, 3]},
     buttons: ['trigger', 'squeeze', 'none', 'thumbstick', 'xbutton', 'ybutton']
@@ -38,7 +38,7 @@ var INPUT_MAPPING_WEBXR = {
 /**
  * Pico Controls
  */
-module.exports.Component = registerComponent('pico-controls', {
+export const Component = registerComponent('pico-controls', {
   schema: {
     hand: {default: 'none'},
     model: {default: true},

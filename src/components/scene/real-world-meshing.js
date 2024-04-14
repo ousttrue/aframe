@@ -1,6 +1,6 @@
 /* global XRPlane, XRMesh */
-var register = require('../../core/component').registerComponent;
-var THREE = require('../../lib/three');
+import { registerComponent } from '../../core/component';
+import * as THREE from 'three';
 
 /**
  * Real World Meshing.
@@ -9,18 +9,18 @@ var THREE = require('../../lib/three');
  * It requires a browser with support for the WebXR Mesh and Plane detection modules.
  *
  */
-module.exports.Component = register('real-world-meshing', {
+export const Component = registerComponent('real-world-meshing', {
   schema: {
-    filterLabels: {type: 'array'},
-    meshesEnabled: {default: true},
-    meshMixin: {default: true},
-    planesEnabled: {default: true},
-    planeMixin: {default: ''}
+    filterLabels: { type: 'array' },
+    meshesEnabled: { default: true },
+    meshMixin: { default: true },
+    planesEnabled: { default: true },
+    planeMixin: { default: '' }
   },
 
   sceneOnly: true,
 
-  init: function () {
+  init: function() {
     var webxrData = this.el.getAttribute('webxr');
     var requiredFeaturesArray = webxrData.requiredFeatures;
     if (requiredFeaturesArray.indexOf('mesh-detection') === -1) {
@@ -35,13 +35,13 @@ module.exports.Component = register('real-world-meshing', {
     this.initWorldMeshEntity = this.initWorldMeshEntity.bind(this);
   },
 
-  tick: function () {
+  tick: function() {
     if (!this.el.is('ar-mode')) { return; }
     this.detectMeshes();
     this.updateMeshes();
   },
 
-  detectMeshes: function () {
+  detectMeshes: function() {
     var data = this.data;
     var detectedMeshes;
     var detectedPlanes;
@@ -105,9 +105,9 @@ module.exports.Component = register('real-world-meshing', {
     this.createNewMeshes(newMeshes);
   },
 
-  updateMeshes: (function () {
+  updateMeshes: (function() {
     var auxMatrix = new THREE.Matrix4();
-    return function () {
+    return function() {
       var meshPose;
       var sceneEl = this.el;
       var meshEl;
@@ -126,7 +126,7 @@ module.exports.Component = register('real-world-meshing', {
     };
   })(),
 
-  deleteMeshes: function () {
+  deleteMeshes: function() {
     var meshEntities = this.meshEntities;
     var newMeshEntities = [];
     for (var i = 0; i < meshEntities.length; i++) {
@@ -139,7 +139,7 @@ module.exports.Component = register('real-world-meshing', {
     this.meshEntities = newMeshEntities;
   },
 
-  createNewMeshes: function (newMeshes) {
+  createNewMeshes: function(newMeshes) {
     var meshEl;
     for (var i = 0; i < newMeshes.length; i++) {
       meshEl = document.createElement('a-entity');
@@ -152,7 +152,7 @@ module.exports.Component = register('real-world-meshing', {
     }
   },
 
-  initMeshGeometry: function (mesh) {
+  initMeshGeometry: function(mesh) {
     var geometry;
     var shape;
     var polygon;
@@ -181,7 +181,7 @@ module.exports.Component = register('real-world-meshing', {
     return geometry;
   },
 
-  initWorldMeshEntity: function (evt) {
+  initWorldMeshEntity: function(evt) {
     var el = evt.target;
     var geometry;
     var mesh;
@@ -194,7 +194,7 @@ module.exports.Component = register('real-world-meshing', {
       }
     }
     geometry = this.initMeshGeometry(meshEntity.mesh);
-    mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: Math.random() * 0xFFFFFF, side: THREE.DoubleSide}));
+    mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: Math.random() * 0xFFFFFF, side: THREE.DoubleSide }));
     el.setObject3D('mesh', mesh);
     if (meshEntity.mesh instanceof XRPlane && this.data.planeMixin) {
       el.setAttribute('mixin', this.data.planeMixin);
@@ -206,7 +206,7 @@ module.exports.Component = register('real-world-meshing', {
     el.setAttribute('data-world-mesh', meshEntity.mesh.semanticLabel);
   },
 
-  updateMeshGeometry: function (entityEl, mesh) {
+  updateMeshGeometry: function(entityEl, mesh) {
     var entityMesh = entityEl.getObject3D('mesh');
     entityMesh.geometry.dispose();
     entityMesh.geometry = this.initMeshGeometry(mesh);

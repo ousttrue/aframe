@@ -1,12 +1,12 @@
-var registerSystem = require('../core/system').registerSystem;
-var utils = require('../utils');
+import { registerSystem } from '../core/system';
+import * as utils from '../utils';
 
 /**
  * Tracked controls system.
  * Maintain list with available tracked controllers.
  */
-module.exports.System = registerSystem('tracked-controls-webxr', {
-  init: function () {
+export const System = registerSystem('tracked-controls-webxr', {
+  init: function() {
     this.controllers = [];
     this.oldControllers = [];
     this.oldControllersLength = 0;
@@ -16,11 +16,11 @@ module.exports.System = registerSystem('tracked-controls-webxr', {
     this.el.addEventListener('exit-vr', this.updateReferenceSpace);
   },
 
-  tick: function () {
+  tick: function() {
     this.throttledUpdateControllerList();
   },
 
-  updateReferenceSpace: function () {
+  updateReferenceSpace: function() {
     var self = this;
     var xrSession = this.el.xrSession;
 
@@ -34,17 +34,17 @@ module.exports.System = registerSystem('tracked-controls-webxr', {
       return;
     }
     var refspace = self.el.sceneEl.systems.webxr.sessionReferenceSpaceType;
-    xrSession.requestReferenceSpace(refspace).then(function (referenceSpace) {
+    xrSession.requestReferenceSpace(refspace).then(function(referenceSpace) {
       self.referenceSpace = referenceSpace;
-    }).catch(function (err) {
+    }).catch(function(err) {
       self.el.sceneEl.systems.webxr.warnIfFeatureNotRequested(
-          refspace,
-          'tracked-controls-webxr uses reference space "' + refspace + '".');
+        refspace,
+        'tracked-controls-webxr uses reference space "' + refspace + '".');
       throw err;
     });
   },
 
-  updateControllerList: function () {
+  updateControllerList: function() {
     var xrSession = this.el.xrSession;
     var oldControllers = this.oldControllers;
     var i;
@@ -64,7 +64,7 @@ module.exports.System = registerSystem('tracked-controls-webxr', {
       var equal = true;
       for (i = 0; i < this.controllers.length; ++i) {
         if (this.controllers[i] === oldControllers[i] &&
-            this.controllers[i].gamepad === oldControllers[i].gamepad) { continue; }
+          this.controllers[i].gamepad === oldControllers[i].gamepad) { continue; }
         equal = false;
         break;
       }

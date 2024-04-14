@@ -1,11 +1,11 @@
-var registerGeometry = require('../core/geometry').registerGeometry;
-var THREE = require('../lib/three');
+import {registerGeometry} from '../core/geometry';
+import * as THREE from 'three';
 
-var quaternion = new THREE.Quaternion();
-var rotateVector = new THREE.Vector3(0, 0, 1);
-var uvMinVector = new THREE.Vector2();
-var uvMaxVector = new THREE.Vector2();
-var uvScaleVector = new THREE.Vector2();
+const quaternion = new THREE.Quaternion();
+const rotateVector = new THREE.Vector3(0, 0, 1);
+const uvMinVector = new THREE.Vector2();
+const uvMaxVector = new THREE.Vector2();
+const uvScaleVector = new THREE.Vector2();
 
 registerGeometry('triangle', {
   schema: {

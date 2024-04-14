@@ -1,15 +1,15 @@
-var registerComponent = require('../core/component').registerComponent;
-var THREE = require('../lib/three');
+import { registerComponent } from '../core/component';
+import * as THREE from 'three';
 
 registerComponent('obb-collider', {
   schema: {
-    size: {default: 0},
-    trackedObject3D: {default: ''},
-    minimumColliderDimension: {default: 0.02},
-    centerModel: {default: false}
+    size: { default: 0 },
+    trackedObject3D: { default: '' },
+    minimumColliderDimension: { default: 0.02 },
+    centerModel: { default: false }
   },
 
-  init: function () {
+  init: function() {
     this.previousScale = new THREE.Vector3().copy(this.el.object3D.scale);
     this.auxEuler = new THREE.Euler();
 
@@ -26,22 +26,22 @@ registerComponent('obb-collider', {
     this.system.addCollider(this.el);
   },
 
-  remove: function () {
+  remove: function() {
     this.system.removeCollider(this.el);
   },
 
-  update: function () {
+  update: function() {
     if (this.data.trackedObject3D) {
       this.trackedObject3DPath = this.data.trackedObject3D.split('.');
     }
   },
 
-  onModelLoaded: function () {
+  onModelLoaded: function() {
     if (this.data.centerModel) { this.centerModel(); }
     this.updateCollider();
   },
 
-  centerModel: function () {
+  centerModel: function() {
     var el = this.el;
     var model = el.components['gltf-model'] && el.components['gltf-model'].model;
     var box;
@@ -57,7 +57,7 @@ registerComponent('obb-collider', {
     this.el.setObject3D('mesh', model);
   },
 
-  updateCollider: function () {
+  updateCollider: function() {
     var el = this.el;
     var boundingBoxSize = this.boundingBoxSize;
     var aabb = this.aabb = this.aabb || new THREE.OBB();
@@ -77,12 +77,12 @@ registerComponent('obb-collider', {
     }
   },
 
-  showCollider: function () {
+  showCollider: function() {
     this.updateColliderMesh();
     this.renderColliderMesh.visible = true;
   },
 
-  updateColliderMesh: function () {
+  updateColliderMesh: function() {
     var renderColliderMesh = this.renderColliderMesh;
     var boundingBoxSize = this.boundingBoxSize;
     if (!renderColliderMesh) {
@@ -95,34 +95,34 @@ registerComponent('obb-collider', {
     renderColliderMesh.geometry = new THREE.BoxGeometry(boundingBoxSize.x, boundingBoxSize.y, boundingBoxSize.z);
   },
 
-  hideCollider: function () {
+  hideCollider: function() {
     if (!this.renderColliderMesh) { return; }
     this.renderColliderMesh.visible = false;
   },
 
-  initColliderMesh: function () {
+  initColliderMesh: function() {
     var boundingBoxSize;
     var renderColliderGeometry;
     var renderColliderMesh;
 
     boundingBoxSize = this.boundingBoxSize;
     renderColliderGeometry = this.renderColliderGeometry = new THREE.BoxGeometry(boundingBoxSize.x, boundingBoxSize.y, boundingBoxSize.z);
-    renderColliderMesh = this.renderColliderMesh = new THREE.Mesh(renderColliderGeometry, new THREE.MeshLambertMaterial({color: 0x00ff00, side: THREE.DoubleSide}));
+    renderColliderMesh = this.renderColliderMesh = new THREE.Mesh(renderColliderGeometry, new THREE.MeshLambertMaterial({ color: 0x00ff00, side: THREE.DoubleSide }));
     renderColliderMesh.matrixAutoUpdate = false;
     renderColliderMesh.matrixWorldAutoUpdate = false;
     // THREE scene forces matrix world update even if matrixWorldAutoUpdate set to false.
-    renderColliderMesh.updateMatrixWorld = function () { /* no op */ };
+    renderColliderMesh.updateMatrixWorld = function() { /* no op */ };
     this.el.sceneEl.object3D.add(renderColliderMesh);
   },
 
-  updateBoundingBox: (function () {
+  updateBoundingBox: (function() {
     var auxPosition = new THREE.Vector3();
     var auxScale = new THREE.Vector3();
     var auxQuaternion = new THREE.Quaternion();
     var identityQuaternion = new THREE.Quaternion();
     var auxMatrix = new THREE.Matrix4();
 
-    return function () {
+    return function() {
       var auxEuler = this.auxEuler;
       var boundingBox = this.boundingBox;
       var size = this.data.size;
@@ -164,13 +164,13 @@ registerComponent('obb-collider', {
     };
   })(),
 
-  checkTrackedObject: function () {
+  checkTrackedObject: function() {
     var trackedObject3DPath = this.trackedObject3DPath;
     var trackedObject3D;
 
     if (trackedObject3DPath &&
-        trackedObject3DPath.length &&
-        !this.trackedObject3D) {
+      trackedObject3DPath.length &&
+      !this.trackedObject3D) {
       trackedObject3D = this.el;
       for (var i = 0; i < trackedObject3DPath.length; i++) {
         trackedObject3D = trackedObject3D[trackedObject3DPath[i]];
@@ -184,13 +184,13 @@ registerComponent('obb-collider', {
     return this.trackedObject3D;
   },
 
-  tick: (function () {
+  tick: (function() {
     var auxPosition = new THREE.Vector3();
     var auxScale = new THREE.Vector3();
     var auxQuaternion = new THREE.Quaternion();
     var auxMatrix = new THREE.Matrix4();
 
-    return function () {
+    return function() {
       var obb = this.obb;
       var renderColliderMesh = this.renderColliderMesh;
       var trackedObject3D = this.checkTrackedObject() || this.el.object3D;
@@ -202,9 +202,9 @@ registerComponent('obb-collider', {
       trackedObject3D.matrixWorld.decompose(auxPosition, auxQuaternion, auxScale);
 
       // Recalculate collider if scale has changed.
-      if ((Math.abs(auxScale.x - this.previousScale.x) > 0.0001)  ||
-          (Math.abs(auxScale.y - this.previousScale.y) > 0.0001) ||
-          (Math.abs(auxScale.z - this.previousScale.z) > 0.0001)) {
+      if ((Math.abs(auxScale.x - this.previousScale.x) > 0.0001) ||
+        (Math.abs(auxScale.y - this.previousScale.y) > 0.0001) ||
+        (Math.abs(auxScale.z - this.previousScale.z) > 0.0001)) {
         this.updateCollider();
       }
 

@@ -1,31 +1,28 @@
-/* global THREE */
-var registerComponent = require('../core/component').registerComponent;
+import * as THREE from 'three';
+import {registerComponent} from '../core/component';
+import {DEFAULT_HANDEDNESS} from '../constants';
+import {AFRAME_CDN_ROOT} from '../constants';
+import {isWebXRAvailable} from '../utils/device';
+import * as trackedControlsUtils from '../utils/tracked-controls';
+import * as utils from '../utils/';
 
-var trackedControlsUtils = require('../utils/tracked-controls');
-var checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
-var emitIfAxesChanged = trackedControlsUtils.emitIfAxesChanged;
-var onButtonEvent = trackedControlsUtils.onButtonEvent;
+const checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
+const emitIfAxesChanged = trackedControlsUtils.emitIfAxesChanged;
+const onButtonEvent = trackedControlsUtils.onButtonEvent;
 
-var utils = require('../utils/');
+const debug = utils.debug('components:windows-motion-controls:debug');
+const warn = utils.debug('components:windows-motion-controls:warn');
 
-var debug = utils.debug('components:windows-motion-controls:debug');
-var warn = utils.debug('components:windows-motion-controls:warn');
+const MODEL_BASE_URL = AFRAME_CDN_ROOT + 'controllers/microsoft/';
+const MODEL_FILENAMES = { left: 'left.glb', right: 'right.glb', default: 'universal.glb' };
 
-var DEFAULT_HANDEDNESS = require('../constants').DEFAULT_HANDEDNESS;
+const GAMEPAD_ID_WEBXR = 'windows-mixed-reality';
+const GAMEPAD_ID_WEBVR = 'Spatial Controller (Spatial Interaction Source) ';
+const GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
 
-var AFRAME_CDN_ROOT = require('../constants').AFRAME_CDN_ROOT;
-var MODEL_BASE_URL = AFRAME_CDN_ROOT + 'controllers/microsoft/';
-var MODEL_FILENAMES = { left: 'left.glb', right: 'right.glb', default: 'universal.glb' };
+const GAMEPAD_ID_PREFIX = isWebXRAvailable ? GAMEPAD_ID_WEBXR : GAMEPAD_ID_WEBVR;
 
-var isWebXRAvailable = require('../utils/').device.isWebXRAvailable;
-
-var GAMEPAD_ID_WEBXR = 'windows-mixed-reality';
-var GAMEPAD_ID_WEBVR = 'Spatial Controller (Spatial Interaction Source) ';
-var GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
-
-var GAMEPAD_ID_PREFIX = isWebXRAvailable ? GAMEPAD_ID_WEBXR : GAMEPAD_ID_WEBVR;
-
-var INPUT_MAPPING_WEBVR = {
+const INPUT_MAPPING_WEBVR = {
   // A-Frame specific semantic axis names
   axes: {'thumbstick': [0, 1], 'trackpad': [2, 3]},
   // A-Frame specific semantic button names
@@ -52,7 +49,7 @@ var INPUT_MAPPING_WEBVR = {
   pointingPoseMeshName: 'POINTING_POSE'
 };
 
-var INPUT_MAPPING_WEBXR = {
+const INPUT_MAPPING_WEBXR = {
   // A-Frame specific semantic axis names
   axes: {'touchpad': [0, 1], 'thumbstick': [2, 3]},
   // A-Frame specific semantic button names
@@ -79,7 +76,7 @@ var INPUT_MAPPING_WEBXR = {
   pointingPoseMeshName: 'POINTING_POSE'
 };
 
-var INPUT_MAPPING = isWebXRAvailable ? INPUT_MAPPING_WEBXR : INPUT_MAPPING_WEBVR;
+const INPUT_MAPPING = isWebXRAvailable ? INPUT_MAPPING_WEBXR : INPUT_MAPPING_WEBVR;
 
 /**
  * Windows Motion Controller controls.
@@ -87,7 +84,7 @@ var INPUT_MAPPING = isWebXRAvailable ? INPUT_MAPPING_WEBXR : INPUT_MAPPING_WEBVR
  * controller buttons: trackpad, trigger, grip, menu, thumbstick
  * Load a controller model and transform the pressed buttons.
  */
-module.exports.Component = registerComponent('windows-motion-controls', {
+export const Component = registerComponent('windows-motion-controls', {
   schema: {
     hand: {default: DEFAULT_HANDEDNESS},
     // It is possible to have multiple pairs of controllers attached (a pair has both left and right).

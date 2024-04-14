@@ -1,20 +1,20 @@
-var registerSystem = require('../core/system').registerSystem;
+import { registerSystem } from '../core/system';
 
-var utils = require('../utils/');
-var warn = utils.debug('systems:webxr:warn');
+import * as utils from '../utils/';
+const warn = utils.debug('systems:webxr:warn');
 
 /**
  * WebXR session initialization and XR module support.
  */
-module.exports.System = registerSystem('webxr', {
+export const System = registerSystem('webxr', {
   schema: {
-    referenceSpaceType: {type: 'string', default: 'local-floor'},
-    requiredFeatures: {type: 'array', default: ['local-floor']},
-    optionalFeatures: {type: 'array', default: ['bounded-floor']},
-    overlayElement: {type: 'selector'}
+    referenceSpaceType: { type: 'string', default: 'local-floor' },
+    requiredFeatures: { type: 'array', default: ['local-floor'] },
+    optionalFeatures: { type: 'array', default: ['bounded-floor'] },
+    overlayElement: { type: 'selector' }
   },
 
-  update: function () {
+  update: function() {
     var data = this.data;
     this.sessionConfiguration = {
       requiredFeatures: data.requiredFeatures,
@@ -30,28 +30,28 @@ module.exports.System = registerSystem('webxr', {
         this.el.setAttribute('webxr', data);
       }
       this.warnIfFeatureNotRequested('dom-overlay');
-      this.sessionConfiguration.domOverlay = {root: data.overlayElement};
+      this.sessionConfiguration.domOverlay = { root: data.overlayElement };
       data.overlayElement.classList.add('a-dom-overlay');
     }
   },
 
-  wasFeatureRequested: function (feature) {
+  wasFeatureRequested: function(feature) {
     // Features available by default for immersive sessions don't need to
     // be requested explicitly.
     if (feature === 'viewer' || feature === 'local') { return true; }
 
     if (this.sessionConfiguration.requiredFeatures.includes(feature) ||
-        this.sessionConfiguration.optionalFeatures.includes(feature)) {
+      this.sessionConfiguration.optionalFeatures.includes(feature)) {
       return true;
     }
 
     return false;
   },
 
-  warnIfFeatureNotRequested: function (feature, optIntro) {
+  warnIfFeatureNotRequested: function(feature, optIntro) {
     if (!this.wasFeatureRequested(feature)) {
       var msg = 'Please add the feature "' + feature + '" to a-scene\'s ' +
-          'webxr system options in requiredFeatures/optionalFeatures.';
+        'webxr system options in requiredFeatures/optionalFeatures.';
       warn((optIntro ? optIntro + ' ' : '') + msg);
     }
   }

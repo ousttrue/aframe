@@ -1,11 +1,11 @@
-var utils = require('../utils/');
-var PropertyTypes = require('./propertyTypes');
+import * as utils from '../utils/';
+import * as PropertyTypes from './propertyTypes';
 
-var debug = utils.debug;
-var isValidDefaultValue = PropertyTypes.isValidDefaultValue;
-var propertyTypes = PropertyTypes.propertyTypes;
+const debug = utils.debug;
+const isValidDefaultValue = PropertyTypes.isValidDefaultValue;
+const propertyTypes = PropertyTypes.propertyTypes;
 
-var warn = debug('core:schema:warn');
+const warn = debug('core:schema:warn');
 
 /**
  * A schema is classified as a schema for a single property if:
@@ -13,13 +13,12 @@ var warn = debug('core:schema:warn');
  * - OR `default` is defined on the schema, as a reserved keyword.
  * - OR schema is empty.
  */
-function isSingleProperty (schema) {
+export function isSingleProperty(schema) {
   if ('type' in schema) {
     return typeof schema.type === 'string';
   }
   return 'default' in schema;
 }
-module.exports.isSingleProperty = isSingleProperty;
 
 /**
  * Build step to schema to use `type` to inject default value, parser, and stringifier.
@@ -28,7 +27,7 @@ module.exports.isSingleProperty = isSingleProperty;
  * @param {string} componentName
  * @returns {object} Schema.
  */
-module.exports.process = function (schema, componentName) {
+export function process(schema, componentName) {
   var propName;
 
   // For single property schema, run processPropDefinition over the whole schema.
@@ -41,7 +40,7 @@ module.exports.process = function (schema, componentName) {
     schema[propName] = processPropertyDefinition(schema[propName], componentName);
   }
   return schema;
-};
+}
 
 /**
  * Inject default value, parser, stringifier for single property.
@@ -49,7 +48,7 @@ module.exports.process = function (schema, componentName) {
  * @param {object} propDefinition
  * @param {string} componentName
  */
-function processPropertyDefinition (propDefinition, componentName) {
+export function processPropertyDefinition(propDefinition, componentName) {
   var defaultVal = propDefinition.default;
   var isCustomType;
   var propType;
@@ -58,7 +57,7 @@ function processPropertyDefinition (propDefinition, componentName) {
   // Type inference.
   if (!propDefinition.type) {
     if (defaultVal !== undefined &&
-        (typeof defaultVal === 'boolean' || typeof defaultVal === 'number')) {
+      (typeof defaultVal === 'boolean' || typeof defaultVal === 'number')) {
       // Type inference.
       typeName = typeof defaultVal;
     } else if (Array.isArray(defaultVal)) {
@@ -92,7 +91,7 @@ function processPropertyDefinition (propDefinition, componentName) {
     // Check that default values are valid.
     if (!isCustomType && !isValidDefaultValue(typeName, defaultVal)) {
       warn('Default value `' + defaultVal + '` does not match type `' + typeName +
-           '` in component `' + componentName + '`');
+        '` in component `' + componentName + '`');
     }
   } else {
     // Fill in default value.
@@ -101,7 +100,6 @@ function processPropertyDefinition (propDefinition, componentName) {
 
   return propDefinition;
 }
-module.exports.processPropertyDefinition = processPropertyDefinition;
 
 /**
  * Parse propData using schema. Use default values if not existing in propData.
@@ -113,10 +111,10 @@ module.exports.processPropertyDefinition = processPropertyDefinition;
  * @param {string } componentName - Name of the component, used for the property warning.
  * @param {boolean} silent - Suppress warning messages.
  */
-module.exports.parseProperties = (function () {
+export const parseProperties = (function() {
   var propNames = [];
 
-  return function (propData, schema, getPartialData, componentName, silent) {
+  return function(propData, schema, getPartialData, componentName, silent) {
     var i;
     var propName;
     var propDefinition;
@@ -134,7 +132,7 @@ module.exports.parseProperties = (function () {
     for (propName in propData) {
       if (propData[propName] !== undefined && !schema[propName] && !silent) {
         warn('Unknown property `' + propName +
-             '` for component/system `' + componentName + '`.');
+          '` for component/system `' + componentName + '`.');
       }
     }
 
@@ -157,7 +155,7 @@ module.exports.parseProperties = (function () {
  * @param {object} propDefinition - The single property schema for the property.
  * @param {any} target - Optional target value to parse into (reuse).
  */
-function parseProperty (value, propDefinition, target) {
+export function parseProperty(value, propDefinition, target) {
   // Use default value if value is falsy.
   if (value === undefined || value === null || value === '') {
     value = propDefinition.default;
@@ -166,12 +164,11 @@ function parseProperty (value, propDefinition, target) {
   // Invoke property type parser.
   return propDefinition.parse(value, propDefinition.default, target);
 }
-module.exports.parseProperty = parseProperty;
 
 /**
  * Serialize a group of properties.
  */
-module.exports.stringifyProperties = function (propData, schema) {
+export function stringifyProperties(propData, schema) {
   var propName;
   var propDefinition;
   var propValue;
@@ -189,12 +186,12 @@ module.exports.stringifyProperties = function (propData, schema) {
     stringifiedData[propName] = value;
   }
   return stringifiedData;
-};
+}
 
 /**
  * Serialize a single property.
  */
-function stringifyProperty (value, propDefinition) {
+export function stringifyProperty(value, propDefinition) {
   // This function stringifies but it's used in a context where
   // there's always second stringification pass. By returning the original
   // value when it's not an object we save one unnecessary call
@@ -204,4 +201,3 @@ function stringifyProperty (value, propDefinition) {
   if (!propDefinition || value === null) { return JSON.stringify(value); }
   return propDefinition.stringify(value);
 }
-module.exports.stringifyProperty = stringifyProperty;

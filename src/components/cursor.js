@@ -1,8 +1,8 @@
-/* global THREE, MouseEvent, TouchEvent */
-var registerComponent = require('../core/component').registerComponent;
-var utils = require('../utils/');
+import * as THREE from 'three';
+import { registerComponent } from '../core/component';
+import * as utils from '../utils/';
 
-var EVENTS = {
+const EVENTS = {
   CLICK: 'click',
   FUSING: 'fusing',
   MOUSEENTER: 'mouseenter',
@@ -11,23 +11,23 @@ var EVENTS = {
   MOUSEUP: 'mouseup'
 };
 
-var STATES = {
+const STATES = {
   FUSING: 'cursor-fusing',
   HOVERING: 'cursor-hovering',
   HOVERED: 'cursor-hovered'
 };
 
-var CANVAS_EVENTS = {
+const CANVAS_EVENTS = {
   DOWN: ['mousedown', 'touchstart'],
   UP: ['mouseup', 'touchend']
 };
 
-var WEBXR_EVENTS = {
+const WEBXR_EVENTS = {
   DOWN: ['selectstart'],
   UP: ['selectend']
 };
 
-var CANVAS_HOVER_CLASS = 'a-mouse-cursor-hover';
+const CANVAS_HOVER_CLASS = 'a-mouse-cursor-hover';
 
 /**
  * Cursor component. Applies the raycaster component specifically for starting the raycaster
@@ -41,23 +41,23 @@ var CANVAS_HOVER_CLASS = 'a-mouse-cursor-hover';
  * @member {Element} intersectedEl - Currently-intersected entity. Used to keep track to
  *         emit events when unintersecting.
  */
-module.exports.Component = registerComponent('cursor', {
+export const Component = registerComponent('cursor', {
   dependencies: ['raycaster'],
 
   schema: {
-    downEvents: {default: []},
-    fuse: {default: utils.device.isMobile()},
-    fuseTimeout: {default: 1500, min: 0},
-    mouseCursorStylesEnabled: {default: true},
-    upEvents: {default: []},
-    rayOrigin: {default: 'entity', oneOf: ['mouse', 'entity', 'xrselect']}
+    downEvents: { default: [] },
+    fuse: { default: utils.device.isMobile() },
+    fuseTimeout: { default: 1500, min: 0 },
+    mouseCursorStylesEnabled: { default: true },
+    upEvents: { default: [] },
+    rayOrigin: { default: 'entity', oneOf: ['mouse', 'entity', 'xrselect'] }
   },
 
   after: ['tracked-controls'],
 
   multiple: true,
 
-  init: function () {
+  init: function() {
     var self = this;
 
     this.fuseTimeout = undefined;
@@ -68,12 +68,12 @@ module.exports.Component = registerComponent('cursor', {
     this.activeXRInput = null;
 
     // Debounce.
-    this.updateCanvasBounds = utils.debounce(function updateCanvasBounds () {
+    this.updateCanvasBounds = utils.debounce(function updateCanvasBounds() {
       self.canvasBounds = self.el.sceneEl.canvas.getBoundingClientRect();
     }, 500);
 
     this.eventDetail = {};
-    this.intersectedEventDetail = {cursorEl: this.el};
+    this.intersectedEventDetail = { cursorEl: this.el };
 
     // Bind methods.
     this.onCursorDown = this.onCursorDown.bind(this);
@@ -84,12 +84,12 @@ module.exports.Component = registerComponent('cursor', {
     this.onEnterVR = this.onEnterVR.bind(this);
   },
 
-  update: function (oldData) {
+  update: function(oldData) {
     if (this.data.rayOrigin === oldData.rayOrigin) { return; }
     this.updateMouseEventListeners();
   },
 
-  tick: function () {
+  tick: function() {
     // Update on frame to allow someone to select and mousemove
     var frame = this.el.sceneEl.frame;
     var inputSource = this.activeXRInput;
@@ -102,15 +102,15 @@ module.exports.Component = registerComponent('cursor', {
     }
   },
 
-  play: function () {
+  play: function() {
     this.addEventListeners();
   },
 
-  pause: function () {
+  pause: function() {
     this.removeEventListeners();
   },
 
-  remove: function () {
+  remove: function() {
     var el = this.el;
     el.removeState(STATES.HOVERING);
     el.removeState(STATES.FUSING);
@@ -119,19 +119,19 @@ module.exports.Component = registerComponent('cursor', {
     this.removeEventListeners();
   },
 
-  addEventListeners: function () {
+  addEventListeners: function() {
     var canvas;
     var data = this.data;
     var el = this.el;
     var self = this;
 
-    function addCanvasListeners () {
+    function addCanvasListeners() {
       canvas = el.sceneEl.canvas;
       if (data.downEvents.length || data.upEvents.length) { return; }
-      CANVAS_EVENTS.DOWN.forEach(function (downEvent) {
+      CANVAS_EVENTS.DOWN.forEach(function(downEvent) {
         canvas.addEventListener(downEvent, self.onCursorDown);
       });
-      CANVAS_EVENTS.UP.forEach(function (upEvent) {
+      CANVAS_EVENTS.UP.forEach(function(upEvent) {
         canvas.addEventListener(upEvent, self.onCursorUp);
       });
     }
@@ -143,10 +143,10 @@ module.exports.Component = registerComponent('cursor', {
       el.sceneEl.addEventListener('render-target-loaded', addCanvasListeners);
     }
 
-    data.downEvents.forEach(function (downEvent) {
+    data.downEvents.forEach(function(downEvent) {
       el.addEventListener(downEvent, self.onCursorDown);
     });
-    data.upEvents.forEach(function (upEvent) {
+    data.upEvents.forEach(function(upEvent) {
       el.addEventListener(upEvent, self.onCursorUp);
     });
     el.addEventListener('raycaster-intersection', this.onIntersection);
@@ -162,7 +162,7 @@ module.exports.Component = registerComponent('cursor', {
     this.updateMouseEventListeners();
   },
 
-  removeEventListeners: function () {
+  removeEventListeners: function() {
     var canvas;
     var data = this.data;
     var el = this.el;
@@ -170,18 +170,18 @@ module.exports.Component = registerComponent('cursor', {
 
     canvas = el.sceneEl.canvas;
     if (canvas && !data.downEvents.length && !data.upEvents.length) {
-      CANVAS_EVENTS.DOWN.forEach(function (downEvent) {
+      CANVAS_EVENTS.DOWN.forEach(function(downEvent) {
         canvas.removeEventListener(downEvent, self.onCursorDown);
       });
-      CANVAS_EVENTS.UP.forEach(function (upEvent) {
+      CANVAS_EVENTS.UP.forEach(function(upEvent) {
         canvas.removeEventListener(upEvent, self.onCursorUp);
       });
     }
 
-    data.downEvents.forEach(function (downEvent) {
+    data.downEvents.forEach(function(downEvent) {
       el.removeEventListener(downEvent, self.onCursorDown);
     });
-    data.upEvents.forEach(function (upEvent) {
+    data.upEvents.forEach(function(upEvent) {
       el.removeEventListener(upEvent, self.onCursorUp);
     });
     el.removeEventListener('raycaster-intersection', this.onIntersection);
@@ -196,7 +196,7 @@ module.exports.Component = registerComponent('cursor', {
     window.removeEventListener('scroll', this.updateCanvasBounds);
   },
 
-  updateMouseEventListeners: function () {
+  updateMouseEventListeners: function() {
     var canvas;
     var el = this.el;
 
@@ -211,13 +211,13 @@ module.exports.Component = registerComponent('cursor', {
     this.updateCanvasBounds();
   },
 
-  onMouseMove: (function () {
+  onMouseMove: (function() {
     var direction = new THREE.Vector3();
     var mouse = new THREE.Vector2();
     var origin = new THREE.Vector3();
-    var rayCasterConfig = {origin: origin, direction: direction};
+    var rayCasterConfig = { origin: origin, direction: direction };
 
-    return function (evt) {
+    return function(evt) {
       var bounds = this.canvasBounds;
       var camera = this.el.sceneEl.camera;
       var left;
@@ -275,7 +275,7 @@ module.exports.Component = registerComponent('cursor', {
   /**
    * Trigger mousedown and keep track of the mousedowned entity.
    */
-  onCursorDown: function (evt) {
+  onCursorDown: function(evt) {
     this.isCursorDown = true;
     // Raycast again for touch.
     if (this.data.rayOrigin === 'mouse' && evt.type === 'touchstart') {
@@ -312,7 +312,7 @@ module.exports.Component = registerComponent('cursor', {
    * - Currently-intersected entity is the same as the one when mousedown was triggered,
    *   in case user mousedowned one entity, dragged to another, and mouseupped.
    */
-  onCursorUp: function (evt) {
+  onCursorUp: function(evt) {
     if (!this.isCursorDown) { return; }
 
     this.isCursorDown = false;
@@ -333,7 +333,7 @@ module.exports.Component = registerComponent('cursor', {
     }
 
     if ((!data.fuse || data.rayOrigin === 'mouse' || data.rayOrigin === 'xrselect') &&
-        this.intersectedEl && this.cursorDownEl === this.intersectedEl) {
+      this.intersectedEl && this.cursorDownEl === this.intersectedEl) {
       this.twoWayEmit(EVENTS.CLICK, evt);
     }
 
@@ -352,7 +352,7 @@ module.exports.Component = registerComponent('cursor', {
   /**
    * Handle intersection.
    */
-  onIntersection: function (evt) {
+  onIntersection: function(evt) {
     var currentIntersection;
     var cursorEl = this.el;
     var index;
@@ -385,28 +385,28 @@ module.exports.Component = registerComponent('cursor', {
   /**
    * Handle intersection cleared.
    */
-  onIntersectionCleared: function (evt) {
+  onIntersectionCleared: function(evt) {
     var clearedEls = evt.detail.clearedEls;
     // Check if the current intersection has ended
     if (clearedEls.indexOf(this.intersectedEl) === -1) { return; }
     this.clearCurrentIntersection();
   },
 
-  onEnterVR: function () {
+  onEnterVR: function() {
     this.clearCurrentIntersection(true);
     var xrSession = this.el.sceneEl.xrSession;
     var self = this;
     if (!xrSession) { return; }
     if (this.data.rayOrigin === 'mouse') { return; }
-    WEBXR_EVENTS.DOWN.forEach(function (downEvent) {
+    WEBXR_EVENTS.DOWN.forEach(function(downEvent) {
       xrSession.addEventListener(downEvent, self.onCursorDown);
     });
-    WEBXR_EVENTS.UP.forEach(function (upEvent) {
+    WEBXR_EVENTS.UP.forEach(function(upEvent) {
       xrSession.addEventListener(upEvent, self.onCursorUp);
     });
   },
 
-  setIntersection: function (intersectedEl, intersection) {
+  setIntersection: function(intersectedEl, intersection) {
     var cursorEl = this.el;
     var data = this.data;
     var self = this;
@@ -430,13 +430,13 @@ module.exports.Component = registerComponent('cursor', {
     if (data.fuseTimeout === 0 || !data.fuse || data.rayOrigin === 'xrselect' || data.rayOrigin === 'mouse') { return; }
     cursorEl.addState(STATES.FUSING);
     this.twoWayEmit(EVENTS.FUSING);
-    this.fuseTimeout = setTimeout(function fuse () {
+    this.fuseTimeout = setTimeout(function fuse() {
       cursorEl.removeState(STATES.FUSING);
       self.twoWayEmit(EVENTS.CLICK);
     }, data.fuseTimeout);
   },
 
-  clearCurrentIntersection: function (ignoreRemaining) {
+  clearCurrentIntersection: function(ignoreRemaining) {
     var index;
     var intersection;
     var intersections;
@@ -475,16 +475,16 @@ module.exports.Component = registerComponent('cursor', {
   /**
    * Helper to emit on both the cursor and the intersected entity (if exists).
    */
-  twoWayEmit: function (evtName, originalEvent) {
+  twoWayEmit: function(evtName, originalEvent) {
     var el = this.el;
     var intersectedEl = this.intersectedEl;
     var intersection;
 
-    function addOriginalEvent (detail, evt) {
+    function addOriginalEvent(detail, evt) {
       if (originalEvent instanceof MouseEvent) {
         detail.mouseEvent = originalEvent;
       } else if (typeof TouchEvent !== 'undefined' &&
-                 originalEvent instanceof TouchEvent) {
+        originalEvent instanceof TouchEvent) {
         detail.touchEvent = originalEvent;
       }
     }

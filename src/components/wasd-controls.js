@@ -1,13 +1,13 @@
-var KEYCODE_TO_CODE = require('../constants').keyboardevent.KEYCODE_TO_CODE;
-var registerComponent = require('../core/component').registerComponent;
-var THREE = require('../lib/three');
-var utils = require('../utils/');
+import {KEYCODE_TO_CODE} from '../constants/keyboardevent';
+import {registerComponent} from '../core/component';
+import * as THREE from 'three';
+import * as utils from '../utils/';
 
-var shouldCaptureKeyEvent = utils.shouldCaptureKeyEvent;
+const shouldCaptureKeyEvent = utils.shouldCaptureKeyEvent;
 
-var CLAMP_VELOCITY = 0.00001;
-var MAX_DELTA = 0.2;
-var KEYS = [
+const CLAMP_VELOCITY = 0.00001;
+const MAX_DELTA = 0.2;
+const KEYS = [
   'KeyW', 'KeyA', 'KeyS', 'KeyD',
   'ArrowUp', 'ArrowLeft', 'ArrowRight', 'ArrowDown'
 ];
@@ -15,7 +15,7 @@ var KEYS = [
 /**
  * WASD component to control entities using WASD keys.
  */
-module.exports.Component = registerComponent('wasd-controls', {
+export const Component = registerComponent('wasd-controls', {
   schema: {
     acceleration: {default: 65},
     adAxis: {default: 'x', oneOf: ['x', 'y', 'z']},

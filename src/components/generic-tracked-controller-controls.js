@@ -1,11 +1,11 @@
-var registerComponent = require('../core/component').registerComponent;
+import { registerComponent } from '../core/component';
+import * as trackedControlsUtils from '../utils/tracked-controls';
 
-var trackedControlsUtils = require('../utils/tracked-controls');
-var checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
-var emitIfAxesChanged = trackedControlsUtils.emitIfAxesChanged;
-var onButtonEvent = trackedControlsUtils.onButtonEvent;
+const checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
+const emitIfAxesChanged = trackedControlsUtils.emitIfAxesChanged;
+const onButtonEvent = trackedControlsUtils.onButtonEvent;
 
-var GAMEPAD_ID_PREFIX = 'generic';
+const GAMEPAD_ID_PREFIX = 'generic';
 
 /**
  * Button indices:
@@ -19,7 +19,7 @@ var GAMEPAD_ID_PREFIX = 'generic';
  * 1 - thumbstick
  *
  */
-var INPUT_MAPPING = {
+const INPUT_MAPPING = {
   axes: {
     touchpad: [0, 1],
     thumbstick: [2, 3]
@@ -33,13 +33,13 @@ var INPUT_MAPPING = {
  * controller buttons: trackpad, trigger
  * Load a controller model and highlight the pressed buttons.
  */
-module.exports.Component = registerComponent('generic-tracked-controller-controls', {
+export const Component = registerComponent('generic-tracked-controller-controls', {
   schema: {
-    hand: {default: ''},  // This informs the degenerate arm model.
-    defaultModel: {default: true},
-    defaultModelColor: {default: 'gray'},
-    orientationOffset: {type: 'vec3'},
-    disabled: {default: false}
+    hand: { default: '' },  // This informs the degenerate arm model.
+    defaultModel: { default: true },
+    defaultModelColor: { default: 'gray' },
+    orientationOffset: { type: 'vec3' },
+    disabled: { default: false }
   },
 
   after: ['tracked-controls'],
@@ -51,20 +51,20 @@ module.exports.Component = registerComponent('generic-tracked-controller-control
    */
   mapping: INPUT_MAPPING,
 
-  bindMethods: function () {
+  bindMethods: function() {
     this.onControllersUpdate = this.onControllersUpdate.bind(this);
     this.checkIfControllerPresent = this.checkIfControllerPresent.bind(this);
     this.removeControllersUpdateListener = this.removeControllersUpdateListener.bind(this);
     this.onAxisMoved = this.onAxisMoved.bind(this);
   },
 
-  init: function () {
+  init: function() {
     var self = this;
     this.onButtonChanged = this.onButtonChanged.bind(this);
-    this.onButtonDown = function (evt) { onButtonEvent(evt.detail.id, 'down', self); };
-    this.onButtonUp = function (evt) { onButtonEvent(evt.detail.id, 'up', self); };
-    this.onButtonTouchStart = function (evt) { onButtonEvent(evt.detail.id, 'touchstart', self); };
-    this.onButtonTouchEnd = function (evt) { onButtonEvent(evt.detail.id, 'touchend', self); };
+    this.onButtonDown = function(evt) { onButtonEvent(evt.detail.id, 'down', self); };
+    this.onButtonUp = function(evt) { onButtonEvent(evt.detail.id, 'up', self); };
+    this.onButtonTouchStart = function(evt) { onButtonEvent(evt.detail.id, 'touchstart', self); };
+    this.onButtonTouchEnd = function(evt) { onButtonEvent(evt.detail.id, 'touchend', self); };
     this.controllerPresent = false;
     this.wasControllerConnected = false;
     this.lastControllerCheck = 0;
@@ -72,7 +72,7 @@ module.exports.Component = registerComponent('generic-tracked-controller-control
 
     // generic-tracked-controller-controls has the lowest precedence.
     // Disable this component if there are more specialized controls components.
-    this.el.addEventListener('controllerconnected', function (evt) {
+    this.el.addEventListener('controllerconnected', function(evt) {
       if (evt.detail.name === self.name) { return; }
       self.wasControllerConnected = true;
       self.removeEventListeners();
@@ -80,7 +80,7 @@ module.exports.Component = registerComponent('generic-tracked-controller-control
     });
   },
 
-  addEventListeners: function () {
+  addEventListeners: function() {
     var el = this.el;
     el.addEventListener('buttonchanged', this.onButtonChanged);
     el.addEventListener('buttondown', this.onButtonDown);
@@ -91,7 +91,7 @@ module.exports.Component = registerComponent('generic-tracked-controller-control
     this.controllerEventsActive = true;
   },
 
-  removeEventListeners: function () {
+  removeEventListeners: function() {
     var el = this.el;
     el.removeEventListener('buttonchanged', this.onButtonChanged);
     el.removeEventListener('buttondown', this.onButtonDown);
@@ -102,26 +102,26 @@ module.exports.Component = registerComponent('generic-tracked-controller-control
     this.controllerEventsActive = false;
   },
 
-  checkIfControllerPresent: function () {
+  checkIfControllerPresent: function() {
     var data = this.data;
     var hand = data.hand ? data.hand : undefined;
     checkControllerPresentAndSetup(
       this, GAMEPAD_ID_PREFIX,
-      {hand: hand, iterateControllerProfiles: true});
+      { hand: hand, iterateControllerProfiles: true });
   },
 
-  play: function () {
+  play: function() {
     if (this.wasControllerConnected) { return; }
     this.checkIfControllerPresent();
     this.addControllersUpdateListener();
   },
 
-  pause: function () {
+  pause: function() {
     this.removeEventListeners();
     this.removeControllersUpdateListener();
   },
 
-  injectTrackedControls: function () {
+  injectTrackedControls: function() {
     var el = this.el;
     var data = this.data;
 
@@ -141,42 +141,42 @@ module.exports.Component = registerComponent('generic-tracked-controller-control
     this.initDefaultModel();
   },
 
-  addControllersUpdateListener: function () {
+  addControllersUpdateListener: function() {
     this.el.sceneEl.addEventListener('controllersupdated', this.onControllersUpdate, false);
   },
 
-  removeControllersUpdateListener: function () {
+  removeControllersUpdateListener: function() {
     this.el.sceneEl.removeEventListener('controllersupdated', this.onControllersUpdate, false);
   },
 
-  onControllersUpdate: function () {
+  onControllersUpdate: function() {
     if (!this.wasControllerConnected) { return; }
     this.checkIfControllerPresent();
   },
 
-  onButtonChanged: function (evt) {
+  onButtonChanged: function(evt) {
     var button = this.mapping.buttons[evt.detail.id];
     if (!button) return;
     // Pass along changed event with button state, using button mapping for convenience.
     this.el.emit(button + 'changed', evt.detail.state);
   },
 
-  onAxisMoved: function (evt) {
+  onAxisMoved: function(evt) {
     emitIfAxesChanged(this, this.mapping.axes, evt);
   },
 
-  initDefaultModel: function () {
+  initDefaultModel: function() {
     var modelEl = this.modelEl = document.createElement('a-entity');
     modelEl.setAttribute('geometry', {
       primitive: 'sphere',
       radius: 0.03
     });
-    modelEl.setAttribute('material', {color: this.data.color});
+    modelEl.setAttribute('material', { color: this.data.color });
     this.el.appendChild(modelEl);
     this.el.emit('controllermodelready', {
       name: 'generic-tracked-controller-controls',
       model: this.modelEl,
-      rayOrigin: {origin: {x: 0, y: 0, z: -0.01}, direction: {x: 0, y: 0, z: -1}}
+      rayOrigin: { origin: { x: 0, y: 0, z: -0.01 }, direction: { x: 0, y: 0, z: -1 } }
     });
   }
 });

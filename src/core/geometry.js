@@ -1,16 +1,16 @@
-var schema = require('./schema');
+import * as THREE from 'three';
+import * as schema from './schema';
 
-var processSchema = schema.process;
-var geometries = module.exports.geometries = {};  // Registered geometries.
-var geometryNames = module.exports.geometryNames = [];  // Names of registered geometries.
-var THREE = require('../lib/three');
+const processSchema = schema.process;
+export const geometries = {};  // Registered geometries.
+export const geometryNames = [];  // Names of registered geometries.
 
 /**
  * Geometry class definition.
  *
  * Geometries extend the geometry component API to create and register geometry types.
  */
-var Geometry = module.exports.Geometry = function () {};
+export const Geometry = function() { };
 
 Geometry.prototype = {
   /**
@@ -23,7 +23,7 @@ Geometry.prototype = {
    * Init handler. Similar to attachedCallback.
    * Called during shader initialization and is only run once.
    */
-  init: function (data) {
+  init: function(data) {
     this.geometry = new THREE.BufferGeometry();
     return this.geometry;
   },
@@ -34,7 +34,7 @@ Geometry.prototype = {
    *
    * @param {object} data - New geometry data.
    */
-  update: function (data) { /* no-op */ }
+  update: function(data) { /* no-op */ }
 };
 
 /**
@@ -44,12 +44,12 @@ Geometry.prototype = {
  * @param {object} definition - Geometry property and methods.
  * @returns {object} Geometry.
  */
-module.exports.registerGeometry = function (name, definition) {
+export function registerGeometry(name, definition) {
   var NewGeometry;
   var proto = {};
 
   // Format definition object to prototype object.
-  Object.keys(definition).forEach(function expandDefinition (key) {
+  Object.keys(definition).forEach(function expandDefinition(key) {
     proto[key] = {
       value: definition[key],
       writable: true
@@ -59,7 +59,7 @@ module.exports.registerGeometry = function (name, definition) {
   if (geometries[name]) {
     throw new Error('The geometry `' + name + '` has been already registered');
   }
-  NewGeometry = function () { Geometry.call(this); };
+  NewGeometry = function() { Geometry.call(this); };
   NewGeometry.prototype = Object.create(Geometry.prototype, proto);
   NewGeometry.prototype.name = name;
   NewGeometry.prototype.constructor = NewGeometry;
@@ -69,4 +69,4 @@ module.exports.registerGeometry = function (name, definition) {
   };
   geometryNames.push(name);
   return NewGeometry;
-};
+}

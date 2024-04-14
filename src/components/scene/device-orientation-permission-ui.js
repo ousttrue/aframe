@@ -1,22 +1,21 @@
 /* global DeviceOrientationEvent, location  */
-var registerComponent = require('../../core/component').registerComponent;
+import {registerComponent} from '../../core/component';
+import * as constants from '../../constants/';
 
-var constants = require('../../constants/');
-
-var MODAL_CLASS = 'a-modal';
-var DIALOG_CLASS = 'a-dialog';
-var DIALOG_TEXT_CLASS = 'a-dialog-text';
-var DIALOG_TEXT_CONTAINER_CLASS = 'a-dialog-text-container';
-var DIALOG_BUTTONS_CONTAINER_CLASS = 'a-dialog-buttons-container';
-var DIALOG_BUTTON_CLASS = 'a-dialog-button';
-var DIALOG_ALLOW_BUTTON_CLASS = 'a-dialog-allow-button';
-var DIALOG_DENY_BUTTON_CLASS = 'a-dialog-deny-button';
-var DIALOG_OK_BUTTON_CLASS = 'a-dialog-ok-button';
+const MODAL_CLASS = 'a-modal';
+const DIALOG_CLASS = 'a-dialog';
+const DIALOG_TEXT_CLASS = 'a-dialog-text';
+const DIALOG_TEXT_CONTAINER_CLASS = 'a-dialog-text-container';
+const DIALOG_BUTTONS_CONTAINER_CLASS = 'a-dialog-buttons-container';
+const DIALOG_BUTTON_CLASS = 'a-dialog-button';
+const DIALOG_ALLOW_BUTTON_CLASS = 'a-dialog-allow-button';
+const DIALOG_DENY_BUTTON_CLASS = 'a-dialog-deny-button';
+const DIALOG_OK_BUTTON_CLASS = 'a-dialog-ok-button';
 
 /**
  * UI for enabling device motion permission
  */
-module.exports.Component = registerComponent('device-orientation-permission-ui', {
+export const Component = registerComponent('device-orientation-permission-ui', {
   schema: {
     enabled: {default: true},
     deviceMotionMessage: {

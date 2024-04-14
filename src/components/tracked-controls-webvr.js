@@ -1,18 +1,18 @@
-var registerComponent = require('../core/component').registerComponent;
-var controllerUtils = require('../utils/tracked-controls');
-var DEFAULT_CAMERA_HEIGHT = require('../constants').DEFAULT_CAMERA_HEIGHT;
-var THREE = require('../lib/three');
+import { registerComponent } from '../core/component';
+import { DEFAULT_CAMERA_HEIGHT } from '../constants';
+import { DEFAULT_HANDEDNESS } from '../constants';
+import * as  THREE from 'three';
+import * as controllerUtils from '../utils/tracked-controls';
 
-var DEFAULT_HANDEDNESS = require('../constants').DEFAULT_HANDEDNESS;
 // Vector from eyes to elbow (divided by user height).
-var EYES_TO_ELBOW = {x: 0.175, y: -0.3, z: -0.03};
+const EYES_TO_ELBOW = { x: 0.175, y: -0.3, z: -0.03 };
 // Vector from eyes to elbow (divided by user height).
-var FOREARM = {x: 0, y: 0, z: -0.175};
+const FOREARM = { x: 0, y: 0, z: -0.175 };
 
 // Due to unfortunate name collision, add empty touches array to avoid Daydream error.
-var EMPTY_DAYDREAM_TOUCHES = {touches: []};
+const EMPTY_DAYDREAM_TOUCHES = { touches: [] };
 
-var EVENTS = {
+const EVENTS = {
   AXISMOVE: 'axismove',
   BUTTONCHANGED: 'buttonchanged',
   BUTTONDOWN: 'buttondown',
@@ -33,20 +33,20 @@ var EVENTS = {
  * @property {number} hand - If multiple controllers found with id, choose the one with the
  *  given value for hand. If set, we ignore 'controller' property
  */
-module.exports.Component = registerComponent('tracked-controls-webvr', {
+export const Component = registerComponent('tracked-controls-webvr', {
   schema: {
-    autoHide: {default: true},
-    controller: {default: 0},
-    id: {type: 'string', default: ''},
-    hand: {type: 'string', default: ''},
-    idPrefix: {type: 'string', default: ''},
-    orientationOffset: {type: 'vec3'},
+    autoHide: { default: true },
+    controller: { default: 0 },
+    id: { type: 'string', default: '' },
+    hand: { type: 'string', default: '' },
+    idPrefix: { type: 'string', default: '' },
+    orientationOffset: { type: 'vec3' },
     // Arm model parameters when not 6DoF.
-    armModel: {default: false},
-    headElement: {type: 'selector'}
+    armModel: { default: false },
+    headElement: { type: 'selector' }
   },
 
-  init: function () {
+  init: function() {
     // Copy variables back to tracked-controls for backwards compatibility.
     // Some 3rd components rely on them.
     this.axis = this.el.components['tracked-controls'].axis = [0, 0, 0];
@@ -54,7 +54,7 @@ module.exports.Component = registerComponent('tracked-controls-webvr', {
     this.changedAxes = [];
     this.targetControllerNumber = this.data.controller;
 
-    this.axisMoveEventDetail = {axis: this.axis, changed: this.changedAxes};
+    this.axisMoveEventDetail = { axis: this.axis, changed: this.changedAxes };
     this.deltaControllerPosition = new THREE.Vector3();
     this.controllerQuaternion = new THREE.Quaternion();
     this.controllerEuler = new THREE.Euler();
@@ -64,7 +64,7 @@ module.exports.Component = registerComponent('tracked-controls-webvr', {
     this.buttonEventDetails = {};
   },
 
-  tick: function (time, delta) {
+  tick: function(time, delta) {
     var mesh = this.el.getObject3D('mesh');
     // Update mesh animations.
     if (mesh && mesh.update) { mesh.update(delta / 1000); }
@@ -76,21 +76,21 @@ module.exports.Component = registerComponent('tracked-controls-webvr', {
   /**
    * Return default user height to use for non-6DOF arm model.
    */
-  defaultUserHeight: function () {
+  defaultUserHeight: function() {
     return DEFAULT_CAMERA_HEIGHT;
   },
 
   /**
    * Return head element to use for non-6DOF arm model.
    */
-  getHeadElement: function () {
+  getHeadElement: function() {
     return this.data.headElement || this.el.sceneEl.camera.el;
   },
 
   /**
    * Handle update controller match criteria (such as `id`, `idPrefix`, `hand`, `controller`)
    */
-  updateGamepad: function () {
+  updateGamepad: function() {
     var data = this.data;
     var controller = controllerUtils.findMatchingControllerWebVR(
       this.system.controllers,
@@ -113,7 +113,7 @@ module.exports.Component = registerComponent('tracked-controls-webvr', {
    *
    * @param {object} controllerPosition - Existing vector to update with controller position.
    */
-  applyArmModel: function (controllerPosition) {
+  applyArmModel: function(controllerPosition) {
     // Use controllerPosition and deltaControllerPosition to avoid creating variables.
     var controller = this.controller;
     var controllerEuler = this.controllerEuler;
@@ -166,7 +166,7 @@ module.exports.Component = registerComponent('tracked-controls-webvr', {
   /**
    * Read pose from controller (from Gamepad API), apply transforms, apply to entity.
    */
-  updatePose: function () {
+  updatePose: function() {
     var controller = this.controller;
     var data = this.data;
     var object3D = this.el.object3D;
@@ -206,7 +206,7 @@ module.exports.Component = registerComponent('tracked-controls-webvr', {
   /**
    * Handle button changes including axes, presses, touches, values.
    */
-  updateButtons: function () {
+  updateButtons: function() {
     var buttonState;
     var controller = this.controller;
     var id;
@@ -217,10 +217,10 @@ module.exports.Component = registerComponent('tracked-controls-webvr', {
     for (id = 0; id < controller.buttons.length; ++id) {
       // Initialize button state.
       if (!this.buttonStates[id]) {
-        this.buttonStates[id] = {pressed: false, touched: false, value: 0};
+        this.buttonStates[id] = { pressed: false, touched: false, value: 0 };
       }
       if (!this.buttonEventDetails[id]) {
-        this.buttonEventDetails[id] = {id: id, state: this.buttonStates[id]};
+        this.buttonEventDetails[id] = { id: id, state: this.buttonStates[id] };
       }
 
       buttonState = controller.buttons[id];
@@ -237,11 +237,11 @@ module.exports.Component = registerComponent('tracked-controls-webvr', {
    * @param {number} buttonState - Value of button state from 0 to 1.
    * @returns {boolean} Whether button has changed in any way.
    */
-  handleButton: function (id, buttonState) {
+  handleButton: function(id, buttonState) {
     var changed;
     changed = this.handlePress(id, buttonState) |
-              this.handleTouch(id, buttonState) |
-              this.handleValue(id, buttonState);
+      this.handleTouch(id, buttonState) |
+      this.handleValue(id, buttonState);
     if (!changed) { return false; }
     this.el.emit(EVENTS.BUTTONCHANGED, this.buttonEventDetails[id], false);
     return true;
@@ -253,7 +253,7 @@ module.exports.Component = registerComponent('tracked-controls-webvr', {
    *
    * @returns {boolean} Whether axes changed.
    */
-  handleAxes: function () {
+  handleAxes: function() {
     var changed = false;
     var controllerAxes = this.controller.axes;
     var i;
@@ -283,7 +283,7 @@ module.exports.Component = registerComponent('tracked-controls-webvr', {
    * @param {object} buttonState - State of the button to check.
    * @returns {boolean} Whether button press state changed.
    */
-  handlePress: function (id, buttonState) {
+  handlePress: function(id, buttonState) {
     var evtName;
     var previousButtonState = this.buttonStates[id];
 
@@ -303,7 +303,7 @@ module.exports.Component = registerComponent('tracked-controls-webvr', {
    * @param {object} buttonState - State of the button to check.
    * @returns {boolean} Whether button touch state changed.
    */
-  handleTouch: function (id, buttonState) {
+  handleTouch: function(id, buttonState) {
     var evtName;
     var previousButtonState = this.buttonStates[id];
 
@@ -323,7 +323,7 @@ module.exports.Component = registerComponent('tracked-controls-webvr', {
    * @param {object} buttonState - State of the button to check.
    * @returns {boolean} Whether button value changed.
    */
-  handleValue: function (id, buttonState) {
+  handleValue: function(id, buttonState) {
     var previousButtonState = this.buttonStates[id];
 
     // Not changed.

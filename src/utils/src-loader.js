@@ -1,7 +1,7 @@
 /* global Image, XMLHttpRequest */
-var debug = require('./debug');
+import debug from './debug';
 
-var warn = debug('utils:src-loader:warn');
+const warn = debug('utils:src-loader:warn');
 
 /**
  * Validate a texture, either as a selector or as a URL.
@@ -14,8 +14,8 @@ var warn = debug('utils:src-loader:warn');
  * @params {function} isImageCb - callback if texture is an image.
  * @params {function} isVideoCb - callback if texture is a video.
  */
-function validateSrc (src, isImageCb, isVideoCb) {
-  checkIsImage(src, function isAnImageUrl (isImage) {
+export function validateSrc(src, isImageCb, isVideoCb) {
+  checkIsImage(src, function isAnImageUrl(isImage) {
     if (isImage) {
       isImageCb(src);
       return;
@@ -32,7 +32,7 @@ function validateSrc (src, isImageCb, isVideoCb) {
  * @param {*} isCubemapCb - callback if src is a cubemap.
  * @param {*} isEquirectCb - callback is src is a singular equirectangular image.
  */
-function validateEnvMapSrc (src, isCubemapCb, isEquirectCb) {
+export function validateEnvMapSrc(src, isCubemapCb, isEquirectCb) {
   var el;
   var cubemapSrcRegex = '';
   var i;
@@ -48,7 +48,7 @@ function validateEnvMapSrc (src, isCubemapCb, isEquirectCb) {
 
     // `src` is a comma-separated list of URLs.
     // In this case, re-use validateSrc for each side of the cube.
-    function isImageCb (url) {
+    function isImageCb(url) {
       validatedUrls.push(url);
       if (validatedUrls.length === 6) {
         isCubemapCb(validatedUrls);
@@ -99,8 +99,8 @@ function validateEnvMapSrc (src, isCubemapCb, isEquirectCb) {
           must be wrapped by `url()`.
  * @param {function} cb - callback if src is a cubemap.
  */
-function validateCubemapSrc (src, cb) {
-  return validateEnvMapSrc(src, cb, function isEquirectCb () {
+export function validateCubemapSrc(src, cb) {
+  return validateEnvMapSrc(src, cb, function isEquirectCb() {
     warn('Expected cubemap but got image');
   });
 }
@@ -110,7 +110,7 @@ function validateCubemapSrc (src, cb) {
  * @param  {string} src - String to parse.
  * @return {string} The parsed src, if parseable.
  */
-function parseUrl (src) {
+export function parseUrl(src) {
   var parsedSrc = src.match(/url\((.+)\)/);
   if (!parsedSrc) { return; }
   return parsedSrc[1];
@@ -122,7 +122,7 @@ function parseUrl (src) {
  * @param {string|Element} src - URL or element that will be tested.
  * @param {function} onResult - Callback with whether `src` is an image.
  */
-function checkIsImage (src, onResult) {
+function checkIsImage(src, onResult) {
   var request;
 
   if (src.tagName) {
@@ -133,7 +133,7 @@ function checkIsImage (src, onResult) {
 
   // Try to send HEAD request to check if image first.
   request.open('HEAD', src);
-  request.addEventListener('load', function (event) {
+  request.addEventListener('load', function(event) {
     var contentType;
     if (request.status >= 200 && request.status < 300) {
       contentType = request.getResponseHeader('Content-Type');
@@ -154,12 +154,12 @@ function checkIsImage (src, onResult) {
   request.send();
 }
 
-function checkIsImageFallback (src, onResult) {
+function checkIsImageFallback(src, onResult) {
   var tester = new Image();
   tester.addEventListener('load', onLoad);
-  function onLoad () { onResult(true); }
+  function onLoad() { onResult(true); }
   tester.addEventListener('error', onError);
-  function onError () { onResult(false); }
+  function onError() { onResult(false); }
   tester.src = src;
 }
 
@@ -171,7 +171,7 @@ function checkIsImageFallback (src, onResult) {
            null if query yields no results.
            undefined if `selector` is not a valid selector.
  */
-function validateAndGetQuerySelector (selector) {
+function validateAndGetQuerySelector(selector) {
   try {
     var el = document.querySelector(selector);
     if (!el) {
@@ -183,10 +183,3 @@ function validateAndGetQuerySelector (selector) {
     return undefined;
   }
 }
-
-module.exports = {
-  parseUrl: parseUrl,
-  validateSrc: validateSrc,
-  validateCubemapSrc: validateCubemapSrc,
-  validateEnvMapSrc: validateEnvMapSrc
-};

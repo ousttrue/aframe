@@ -1,7 +1,7 @@
-const components = require('./component');
-const schema = require('./schema');
-const utils = require('../utils/');
-const ready = require('./readyState');
+import * as components from './component';
+import * as schema from './schema';
+import * as utils from '../utils/';
+import * as ready from './readyState';
 
 const parseProperties = schema.parseProperties;
 const parseProperty = schema.parseProperty;
@@ -9,7 +9,7 @@ const processSchema = schema.process;
 const isSingleProp = schema.isSingleProperty;
 const styleParser = utils.styleParser;
 
-const systems = module.exports.systems = {};  // Keep track of registered systems.
+export const systems = {};  // Keep track of registered systems.
 
 /**
  * System class definition.
@@ -28,7 +28,7 @@ const systems = module.exports.systems = {};  // Keep track of registered system
  * @member {string} name - Name that system is registered under.
  * @member {Element} sceneEl - Handle to the scene element where system applies to.
  */
-class System {
+export class System {
   constructor(sceneEl) {
     const component = components && components.components[this.name];
 
@@ -113,7 +113,6 @@ class System {
    */
   pause() { /* no-op */ }
 }
-module.exports.System = System;
 
 /**
  * Registers a system to A-Frame.
@@ -123,7 +122,7 @@ module.exports.System = System;
  * @param {object} schema - Contains the type schema and defaults for the data values. Data is coerced into the types of the values of the defaults.
  * @returns {object} Component.
  */
-module.exports.registerSystemClass = function(name, NewSystem, schema = {}) {
+export function registerSystemClass(name, NewSystem, schema = {}) {
   if (systems[name]) {
     throw new Error('The system `' + name + '` has been already registered. ' +
       'Check that you are not loading two versions of the same system ' +
@@ -131,7 +130,7 @@ module.exports.registerSystemClass = function(name, NewSystem, schema = {}) {
   }
 
   NewSystem.prototype.name = name;
-  NewSystem.prototype.schema = utils.extend(processSchema(schema));
+  NewSystem.prototype.schema = Object.assign(processSchema(schema));
   systems[name] = NewSystem;
 
   // Initialize systems for existing scenes
@@ -141,7 +140,7 @@ module.exports.registerSystemClass = function(name, NewSystem, schema = {}) {
       scenes[i].initSystem(name);
     }
   }
-};
+}
 
 /**
  * Registers a system to A-Frame.
@@ -150,7 +149,7 @@ module.exports.registerSystemClass = function(name, NewSystem, schema = {}) {
  * @param {object} definition - Component property and methods.
  * @returns {object} Component.
  */
-module.exports.registerSystem = function(name, definition) {
+export function registerSystem(name, definition) {
   class NewSystem extends System { }
   Object.keys(definition).forEach(function(key) {
     // Format definition object to prototype object.
@@ -161,5 +160,5 @@ module.exports.registerSystem = function(name, definition) {
       });
   });
 
-  module.exports.registerSystemClass(name, NewSystem, NewSystem.prototype.schema);
-};
+  registerSystemClass(name, NewSystem, NewSystem.prototype.schema);
+}

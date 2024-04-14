@@ -1,5 +1,5 @@
 /* global THREE, XRWebGLBinding */
-var register = require('../../core/component').registerComponent;
+import {registerComponent} from '../../core/component';
 
 // source: view-source:https://storage.googleapis.com/chromium-webxr-test/r886480/proposals/lighting-estimation.html
 function updateLights (estimate, probeLight, directionalLight, directionalLightPosition) {
@@ -22,7 +22,7 @@ function updateLights (estimate, probeLight, directionalLight, directionalLightP
   }
 }
 
-module.exports.Component = register('reflection', {
+export const Component = registerComponent('reflection', {
   schema: {
     directionalLight: { type: 'selector' }
   },

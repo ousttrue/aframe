@@ -1,8 +1,8 @@
-var registerComponent = require('../../core/component').registerComponent;
-var THREE = require('../../lib/three');
+import { registerComponent } from '../../core/component';
+import * as THREE from 'three';
 
-var originalPosition = new THREE.Vector3();
-var originalRotation = new THREE.Vector3();
+const originalPosition = new THREE.Vector3();
+const originalRotation = new THREE.Vector3();
 
 /**
  * Wrap el.object3D within an outer group. Apply pivot to el.object3D as position.
@@ -10,9 +10,9 @@ var originalRotation = new THREE.Vector3();
 registerComponent('pivot', {
   dependencies: ['position'],
 
-  schema: {type: 'vec3'},
+  schema: { type: 'vec3' },
 
-  init: function () {
+  init: function() {
     var data = this.data;
     var el = this.el;
     var originalParent = el.object3D.parent;
@@ -38,7 +38,7 @@ registerComponent('pivot', {
     // Offset the pivot so that world position not affected.
     // And restore position onto outer group.
     outerGroup.position.set(data.x + originalPosition.x, data.y + originalPosition.y,
-                            data.z + originalPosition.z);
+      data.z + originalPosition.z);
 
     // Transfer rotation to outer group.
     outerGroup.rotation.copy(originalGroup.rotation);

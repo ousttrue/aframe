@@ -1,20 +1,20 @@
-var registerComponent = require('../core/component').registerComponent;
-var THREE = require('../lib/three');
+import { registerComponent } from '../core/component';
+import * as THREE from 'three';
 
-var trackedControlsUtils = require('../utils/tracked-controls');
-var checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
-var emitIfAxesChanged = trackedControlsUtils.emitIfAxesChanged;
-var onButtonEvent = trackedControlsUtils.onButtonEvent;
+import * as trackedControlsUtils from '../utils/tracked-controls';
+const checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
+const emitIfAxesChanged = trackedControlsUtils.emitIfAxesChanged;
+const onButtonEvent = trackedControlsUtils.onButtonEvent;
 
 // See Profiles Registry:
 // https://github.com/immersive-web/webxr-input-profiles/tree/master/packages/registry
 // TODO: Add a more robust system for deriving gamepad name.
-var GAMEPAD_ID = 'hp-mixed-reality';
-var AFRAME_CDN_ROOT = require('../constants').AFRAME_CDN_ROOT;
-var HP_MIXED_REALITY_MODEL_GLB_BASE_URL = AFRAME_CDN_ROOT + 'controllers/hp/mixed-reality/';
+const GAMEPAD_ID = 'hp-mixed-reality';
+import { AFRAME_CDN_ROOT } from '../constants';
+const HP_MIXED_REALITY_MODEL_GLB_BASE_URL = AFRAME_CDN_ROOT + 'controllers/hp/mixed-reality/';
 
-var HP_MIXED_REALITY_POSITION_OFFSET = {x: 0, y: 0, z: 0.06};
-var HP_MIXED_REALITY_ROTATION_OFFSET = {_x: Math.PI / 4, _y: 0, _z: 0, _order: 'XYZ'};
+const HP_MIXED_REALITY_POSITION_OFFSET = { x: 0, y: 0, z: 0.06 };
+const HP_MIXED_REALITY_ROTATION_OFFSET = { _x: Math.PI / 4, _y: 0, _z: 0, _order: 'XYZ' };
 
 /**
  * Button IDs:
@@ -27,13 +27,13 @@ var HP_MIXED_REALITY_ROTATION_OFFSET = {_x: Math.PI / 4, _y: 0, _z: 0, _order: '
  * 2 - joystick x axis
  * 3 - joystick y axis
  */
-var INPUT_MAPPING_WEBXR = {
+const INPUT_MAPPING_WEBXR = {
   left: {
-    axes: {touchpad: [2, 3]},
+    axes: { touchpad: [2, 3] },
     buttons: ['trigger', 'grip', 'none', 'thumbstick', 'xbutton', 'ybutton']
   },
   right: {
-    axes: {touchpad: [2, 3]},
+    axes: { touchpad: [2, 3] },
     buttons: ['trigger', 'grip', 'none', 'thumbstick', 'abutton', 'bbutton']
   }
 };
@@ -41,45 +41,45 @@ var INPUT_MAPPING_WEBXR = {
 /**
  * HP Mixed Reality Controls
  */
-module.exports.Component = registerComponent('hp-mixed-reality-controls', {
+export const Component = registerComponent('hp-mixed-reality-controls', {
   schema: {
-    hand: {default: 'none'},
-    model: {default: true},
-    orientationOffset: {type: 'vec3'}
+    hand: { default: 'none' },
+    model: { default: true },
+    orientationOffset: { type: 'vec3' }
   },
 
   mapping: INPUT_MAPPING_WEBXR,
 
-  init: function () {
+  init: function() {
     var self = this;
     this.controllerPresent = false;
     this.lastControllerCheck = 0;
     this.onButtonChanged = this.onButtonChanged.bind(this);
-    this.onButtonDown = function (evt) { onButtonEvent(evt.detail.id, 'down', self, self.data.hand); };
-    this.onButtonUp = function (evt) { onButtonEvent(evt.detail.id, 'up', self, self.data.hand); };
-    this.onButtonTouchEnd = function (evt) { onButtonEvent(evt.detail.id, 'touchend', self, self.data.hand); };
-    this.onButtonTouchStart = function (evt) { onButtonEvent(evt.detail.id, 'touchstart', self, self.data.hand); };
+    this.onButtonDown = function(evt) { onButtonEvent(evt.detail.id, 'down', self, self.data.hand); };
+    this.onButtonUp = function(evt) { onButtonEvent(evt.detail.id, 'up', self, self.data.hand); };
+    this.onButtonTouchEnd = function(evt) { onButtonEvent(evt.detail.id, 'touchend', self, self.data.hand); };
+    this.onButtonTouchStart = function(evt) { onButtonEvent(evt.detail.id, 'touchstart', self, self.data.hand); };
     this.previousButtonValues = {};
 
     this.bindMethods();
   },
 
-  update: function () {
+  update: function() {
     var data = this.data;
     this.controllerIndex = data.hand === 'right' ? 0 : data.hand === 'left' ? 1 : 2;
   },
 
-  play: function () {
+  play: function() {
     this.checkIfControllerPresent();
     this.addControllersUpdateListener();
   },
 
-  pause: function () {
+  pause: function() {
     this.removeEventListeners();
     this.removeControllersUpdateListener();
   },
 
-  bindMethods: function () {
+  bindMethods: function() {
     this.onModelLoaded = this.onModelLoaded.bind(this);
     this.onControllersUpdate = this.onControllersUpdate.bind(this);
     this.checkIfControllerPresent = this.checkIfControllerPresent.bind(this);
@@ -87,7 +87,7 @@ module.exports.Component = registerComponent('hp-mixed-reality-controls', {
     this.onAxisMoved = this.onAxisMoved.bind(this);
   },
 
-  addEventListeners: function () {
+  addEventListeners: function() {
     var el = this.el;
     el.addEventListener('buttonchanged', this.onButtonChanged);
     el.addEventListener('buttondown', this.onButtonDown);
@@ -99,7 +99,7 @@ module.exports.Component = registerComponent('hp-mixed-reality-controls', {
     this.controllerEventsActive = true;
   },
 
-  removeEventListeners: function () {
+  removeEventListeners: function() {
     var el = this.el;
     el.removeEventListener('buttonchanged', this.onButtonChanged);
     el.removeEventListener('buttondown', this.onButtonDown);
@@ -111,13 +111,13 @@ module.exports.Component = registerComponent('hp-mixed-reality-controls', {
     this.controllerEventsActive = false;
   },
 
-  checkIfControllerPresent: function () {
+  checkIfControllerPresent: function() {
     var data = this.data;
     checkControllerPresentAndSetup(this, GAMEPAD_ID,
-                                   {index: this.controllerIndex, hand: data.hand});
+      { index: this.controllerIndex, hand: data.hand });
   },
 
-  injectTrackedControls: function () {
+  injectTrackedControls: function() {
     var el = this.el;
     var data = this.data;
 
@@ -134,20 +134,20 @@ module.exports.Component = registerComponent('hp-mixed-reality-controls', {
     this.el.setAttribute('gltf-model', HP_MIXED_REALITY_MODEL_GLB_BASE_URL + this.data.hand + '.glb');
   },
 
-  addControllersUpdateListener: function () {
+  addControllersUpdateListener: function() {
     this.el.sceneEl.addEventListener('controllersupdated', this.onControllersUpdate, false);
   },
 
-  removeControllersUpdateListener: function () {
+  removeControllersUpdateListener: function() {
     this.el.sceneEl.removeEventListener('controllersupdated', this.onControllersUpdate, false);
   },
 
-  onControllersUpdate: function () {
+  onControllersUpdate: function() {
     // Note that due to gamepadconnected event propagation issues, we don't rely on events.
     this.checkIfControllerPresent();
   },
 
-  onButtonChanged: function (evt) {
+  onButtonChanged: function(evt) {
     var button = this.mapping[this.data.hand].buttons[evt.detail.id];
     var analogValue;
 
@@ -161,7 +161,7 @@ module.exports.Component = registerComponent('hp-mixed-reality-controls', {
     this.el.emit(button + 'changed', evt.detail.state);
   },
 
-  onModelLoaded: function (evt) {
+  onModelLoaded: function(evt) {
     var controllerObject3D = evt.detail.model;
 
     if (!this.data.model) { return; }
@@ -176,7 +176,7 @@ module.exports.Component = registerComponent('hp-mixed-reality-controls', {
     });
   },
 
-  onAxisMoved: function (evt) {
+  onAxisMoved: function(evt) {
     emitIfAxesChanged(this, this.mapping.axes, evt);
   }
 });

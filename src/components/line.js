@@ -1,18 +1,18 @@
 /* global THREE */
-var registerComponent = require('../core/component').registerComponent;
+import { registerComponent } from '../core/component';
 
-module.exports.Component = registerComponent('line', {
+export const Component = registerComponent('line', {
   schema: {
-    start: {type: 'vec3', default: {x: 0, y: 0, z: 0}},
-    end: {type: 'vec3', default: {x: 0, y: 0, z: 0}},
-    color: {type: 'color', default: '#74BEC1'},
-    opacity: {type: 'number', default: 1},
-    visible: {default: true}
+    start: { type: 'vec3', default: { x: 0, y: 0, z: 0 } },
+    end: { type: 'vec3', default: { x: 0, y: 0, z: 0 } },
+    color: { type: 'color', default: '#74BEC1' },
+    opacity: { type: 'number', default: 1 },
+    visible: { default: true }
   },
 
   multiple: true,
 
-  init: function () {
+  init: function() {
     var data = this.data;
     var geometry;
     var material;
@@ -29,7 +29,7 @@ module.exports.Component = registerComponent('line', {
     this.el.setObject3D(this.attrName, this.line);
   },
 
-  update: function (oldData) {
+  update: function(oldData) {
     var data = this.data;
     var geometry = this.geometry;
     var geoNeedsUpdate = false;
@@ -62,12 +62,12 @@ module.exports.Component = registerComponent('line', {
     material.visible = data.visible;
   },
 
-  remove: function () {
+  remove: function() {
     this.el.removeObject3D(this.attrName, this.line);
   }
 });
 
-function isEqualVec3 (a, b) {
+function isEqualVec3(a, b) {
   if (!a || !b) { return false; }
   return (a.x === b.x && a.y === b.y && a.z === b.z);
 }
