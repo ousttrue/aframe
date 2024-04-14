@@ -115,7 +115,21 @@ class System {
 }
 module.exports.System = System;
 
+/**
+ * Registers a system to A-Frame.
+ *
+ * @param {string} name - Component name.
+ * @param {object} definition - Component property and methods.
+ * @param {object} schema - Contains the type schema and defaults for the data values. Data is coerced into the types of the values of the defaults.
+ * @returns {object} Component.
+ */
 module.exports.registerSystemClass = function(name, NewSystem, schema = {}) {
+  if (systems[name]) {
+    throw new Error('The system `' + name + '` has been already registered. ' +
+      'Check that you are not loading two versions of the same system ' +
+      'or two different systems of the same name.');
+  }
+
   NewSystem.prototype.name = name;
   NewSystem.prototype.schema = utils.extend(processSchema(schema));
   systems[name] = NewSystem;
@@ -137,12 +151,6 @@ module.exports.registerSystemClass = function(name, NewSystem, schema = {}) {
  * @returns {object} Component.
  */
 module.exports.registerSystem = function(name, definition) {
-  if (systems[name]) {
-    throw new Error('The system `' + name + '` has been already registered. ' +
-      'Check that you are not loading two versions of the same system ' +
-      'or two different systems of the same name.');
-  }
-
   class NewSystem extends System { }
   Object.keys(definition).forEach(function(key) {
     // Format definition object to prototype object.

@@ -1,37 +1,28 @@
-var registerComponent = require('../core/component').registerComponent;
+const { registerComponentClass, Component } = require('../core/component');
 var THREE = require('../lib/three');
 
 /**
  * Camera component.
  * Pairs along with camera system to handle tracking the active camera.
  */
-module.exports.Component = registerComponent('camera', {
-  schema: {
-    active: {default: true},
-    far: {default: 10000},
-    fov: {default: 80, min: 0},
-    near: {default: 0.005, min: 0},
-    spectator: {default: false},
-    zoom: {default: 1, min: 0}
-  },
-
+class CameraComponent extends Component {
   /**
    * Initialize three.js camera and add it to the entity.
    * Add reference from scene to this entity as the camera.
    */
-  init: function () {
+  init() {
     var camera;
     var el = this.el;
 
     // Create camera.
     camera = this.camera = new THREE.PerspectiveCamera();
     el.setObject3D('camera', camera);
-  },
+  }
 
   /**
    * Update three.js camera.
    */
-  update: function (oldData) {
+  update(oldData) {
     var data = this.data;
     var camera = this.camera;
 
@@ -45,9 +36,9 @@ module.exports.Component = registerComponent('camera', {
 
     this.updateActiveCamera(oldData);
     this.updateSpectatorCamera(oldData);
-  },
+  }
 
-  updateActiveCamera: function (oldData) {
+  updateActiveCamera(oldData) {
     var data = this.data;
     var el = this.el;
     var system = this.system;
@@ -62,9 +53,9 @@ module.exports.Component = registerComponent('camera', {
       // Camera disabled. Set camera to another camera.
       system.disableActiveCamera();
     }
-  },
+  }
 
-  updateSpectatorCamera: function (oldData) {
+  updateSpectatorCamera(oldData) {
     var data = this.data;
     var el = this.el;
     var system = this.system;
@@ -79,12 +70,22 @@ module.exports.Component = registerComponent('camera', {
       // Camera disabled. Set camera to another camera.
       system.disableSpectatorCamera();
     }
-  },
+  }
 
   /**
    * Remove camera on remove (callback).
    */
-  remove: function () {
+  remove() {
     this.el.removeObject3D('camera');
   }
-});
+};
+module.exports.Component = CameraComponent;
+registerComponentClass('camera', CameraComponent,
+  {
+    active: { default: true },
+    far: { default: 10000 },
+    fov: { default: 80, min: 0 },
+    near: { default: 0.005, min: 0 },
+    spectator: { default: false },
+    zoom: { default: 1, min: 0 }
+  });

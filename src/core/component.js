@@ -1,32 +1,32 @@
 /* global Node */
-var schema = require('./schema');
-var scenes = require('./scene/scenes');
-var systems = require('./system');
-var utils = require('../utils/');
+const schema = require('./schema');
+const scenes = require('./scene/scenes');
+const systems = require('./system');
+const utils = require('../utils/');
 
-var components = module.exports.components = {}; // Keep track of registered components.
-var parseProperty = schema.parseProperty;
-var processSchema = schema.process;
-var isSingleProp = schema.isSingleProperty;
-var stringifyProperties = schema.stringifyProperties;
-var stringifyProperty = schema.stringifyProperty;
-var styleParser = utils.styleParser;
-var warn = utils.debug('core:component:warn');
+const components = module.exports.components = {}; // Keep track of registered components.
+const parseProperty = schema.parseProperty;
+const processSchema = schema.process;
+const isSingleProp = schema.isSingleProperty;
+const stringifyProperties = schema.stringifyProperties;
+const stringifyProperty = schema.stringifyProperty;
+const styleParser = utils.styleParser;
+const warn = utils.debug('core:component:warn');
 
-var aframeScript = document.currentScript;
-var upperCaseRegExp = new RegExp('[A-Z]+');
+const aframeScript = document.currentScript;
+const upperCaseRegExp = new RegExp('[A-Z]+');
 
 // Object pools by component, created upon registration.
-var objectPools = {};
-var emptyInitialOldData = Object.freeze({});
-var encounteredUnknownProperties = [];
+const objectPools = {};
+const emptyInitialOldData = Object.freeze({});
+const encounteredUnknownProperties = [];
 
 // Handler translating get/set into getComputedPropertyValue and recomputeProperty.
-var attrValueProxyHandler = {
-  get: function (target, prop) {
+const attrValueProxyHandler = {
+  get: function(target, prop) {
     return target.getComputedPropertyValue(prop);
   },
-  set: function (target, prop, newValue) {
+  set: function(target, prop, newValue) {
     if (prop in target.schema) {
       target.recomputeProperty(prop, newValue);
     } else if (newValue !== undefined) {
@@ -48,85 +48,72 @@ var attrValueProxyHandler = {
  * @member {string} attrValue - Value of the corresponding HTML attribute.
  * @member {string} id - Optional id for differentiating multiple instances on the same entity.
  */
-var Component = module.exports.Component = function (el, attrValue, id) {
-  var self = this;
+class Component {
+  constructor(el, attrValue, id) {
+    var self = this;
 
-  // If component is sceneOnly check the entity is the scene element
-  if (this.sceneOnly && !el.isScene) {
-    throw new Error('Component `' + this.name + '` can only be applied to <a-scene>');
+    // If component is sceneOnly check the entity is the scene element
+    if (this.sceneOnly && !el.isScene) {
+      throw new Error('Component `' + this.name + '` can only be applied to <a-scene>');
+    }
+
+    // If component name has an id we check component type multiplicity.
+    if (id && !this.multiple) {
+      throw new Error('Trying to initialize multiple ' +
+        'components of type `' + this.name +
+        '`. There can only be one component of this type per entity.');
+    }
+
+    this.el = el;
+    this.id = id;
+    this.attrName = this.name + (id ? '__' + id : '');
+    this.evtDetail = { id: this.id, name: this.name };
+    this.initialized = false;
+    this.el.components[this.attrName] = this;
+    this.objectPool = objectPools[this.name];
+
+    var events = this.events;
+    this.events = {};
+    eventsBind(this, events);
+
+    // Allocate data and oldData.
+    this.attrValue = undefined;
+    if (this.isObjectBased) {
+      this.data = this.objectPool.use();
+      // Drop any properties added by dynamic schemas in previous use
+      utils.objectPool.removeUnusedKeys(this.data, this.schema);
+      this.oldData = this.objectPool.use();
+      utils.objectPool.removeUnusedKeys(this.oldData, this.schema);
+
+      this.attrValueProxy = new Proxy(this, attrValueProxyHandler);
+    } else {
+      this.data = undefined;
+      this.oldData = undefined;
+      this.attrValueProxy = undefined;
+    }
+
+    // Dynamic schema requires special handling of unknown properties to avoid false-positives.
+    this.deferUnknownPropertyWarnings = !!this.updateSchema;
+    this.silenceUnknownPropertyWarnings = false;
+
+    // Last value passed to updateProperties.
+    // This type of throttle ensures that when a burst of changes occurs, the final change to the
+    // component always triggers an event (so a consumer of this event will end up reading the correct
+    // final state, following a burst of changes).
+    this.throttledEmitComponentChanged = utils.throttleLeadingAndTrailing(function emitChange() {
+      el.emit('componentchanged', self.evtDetail, false);
+    }, 200);
+
+    // Initial call to updateProperties, force clobber to trigger an initial computation of all properties.
+    this.updateProperties(attrValue, true);
   }
-
-  // If component name has an id we check component type multiplicity.
-  if (id && !this.multiple) {
-    throw new Error('Trying to initialize multiple ' +
-                    'components of type `' + this.name +
-                    '`. There can only be one component of this type per entity.');
-  }
-
-  this.el = el;
-  this.id = id;
-  this.attrName = this.name + (id ? '__' + id : '');
-  this.evtDetail = {id: this.id, name: this.name};
-  this.initialized = false;
-  this.el.components[this.attrName] = this;
-  this.objectPool = objectPools[this.name];
-
-  var events = this.events;
-  this.events = {};
-  eventsBind(this, events);
-
-  // Allocate data and oldData.
-  this.attrValue = undefined;
-  if (this.isObjectBased) {
-    this.data = this.objectPool.use();
-    // Drop any properties added by dynamic schemas in previous use
-    utils.objectPool.removeUnusedKeys(this.data, this.schema);
-    this.oldData = this.objectPool.use();
-    utils.objectPool.removeUnusedKeys(this.oldData, this.schema);
-
-    this.attrValueProxy = new Proxy(this, attrValueProxyHandler);
-  } else {
-    this.data = undefined;
-    this.oldData = undefined;
-    this.attrValueProxy = undefined;
-  }
-
-  // Dynamic schema requires special handling of unknown properties to avoid false-positives.
-  this.deferUnknownPropertyWarnings = !!this.updateSchema;
-  this.silenceUnknownPropertyWarnings = false;
-
-  // Last value passed to updateProperties.
-  // This type of throttle ensures that when a burst of changes occurs, the final change to the
-  // component always triggers an event (so a consumer of this event will end up reading the correct
-  // final state, following a burst of changes).
-  this.throttledEmitComponentChanged = utils.throttleLeadingAndTrailing(function emitChange () {
-    el.emit('componentchanged', self.evtDetail, false);
-  }, 200);
-
-  // Initial call to updateProperties, force clobber to trigger an initial computation of all properties.
-  this.updateProperties(attrValue, true);
-};
-
-Component.prototype = {
-  /**
-   * Contains the type schema and defaults for the data values.
-   * Data is coerced into the types of the values of the defaults.
-   */
-  schema: {},
 
   /**
    * Init handler. Similar to attachedCallback.
    * Called during component initialization and is only run once.
    * Components can use this to set initial state.
    */
-  init: function () { /* no-op */ },
-
-  /**
-   * Map of event names to bound event handlers that will be lifecycle-handled.
-   * Will be detached on pause / remove.
-   * Will be attached on play.
-   */
-  events: {},
+  init() { /* no-op */ }
 
   /**
    * Update handler. Similar to attributeChangedCallback.
@@ -135,7 +122,7 @@ Component.prototype = {
    *
    * @param {object} prevData - Previous attributes of the component.
    */
-  update: function (prevData) { /* no-op */ },
+  update(prevData) { /* no-op */ }
 
   /**
    * Update schema handler. Allows the component to dynamically change its schema.
@@ -144,7 +131,7 @@ Component.prototype = {
    *
    * @param {object} data - The data causing the schema change
    */
-  updateSchema: undefined,
+  updateSchema(data) { }
 
   /**
    * Tick handler.
@@ -154,7 +141,7 @@ Component.prototype = {
    * @param {number} time - Scene tick time.
    * @param {number} timeDelta - Difference in current render time and previous render time.
    */
-  tick: undefined,
+  tick(time, timeDelta) { }
 
   /**
    * Tock handler.
@@ -165,24 +152,24 @@ Component.prototype = {
    * @param {number} timeDelta - Difference in current render time and previous render time.
    * @param {object} camera - Camera used to render the last frame.
    */
-  tock: undefined,
+  tock(time, timeDelta, camera) { }
 
   /**
    * Called to start any dynamic behavior (e.g., animation, AI, events, physics).
    */
-  play: function () { /* no-op */ },
+  play() { /* no-op */ }
 
   /**
    * Called to stop any dynamic behavior (e.g., animation, AI, events, physics).
    */
-  pause: function () { /* no-op */ },
+  pause() { /* no-op */ }
 
   /**
    * Remove handler. Similar to detachedCallback.
    * Called whenever component is removed from the entity (i.e., removeAttribute).
    * Components can use this to reset behavior on the entity.
    */
-  remove: function () { /* no-op */ },
+  remove() { /* no-op */ }
 
   /**
    * Stringify properties if necessary.
@@ -193,13 +180,13 @@ Component.prototype = {
    * @param {object} data - Complete component data.
    * @returns {string}
    */
-  stringify: function (data) {
+  stringify(data) {
     var schema = this.schema;
     if (typeof data === 'string') { return data; }
     if (this.isSingleProperty) { return stringifyProperty(data, schema); }
     data = stringifyProperties(data, schema);
     return styleParser.stringify(data);
-  },
+  }
 
   /**
    * Write cached attribute data to the entity DOM element.
@@ -207,12 +194,12 @@ Component.prototype = {
    * @param {boolean} isDefault - Whether component is a default component. Always flush for
    *   default components.
    */
-  flushToDOM: function (isDefault) {
+  flushToDOM(isDefault) {
     var attrValue = isDefault ? this.data : this.attrValue;
     if (attrValue === null || attrValue === undefined) { return; }
     window.HTMLElement.prototype.setAttribute.call(this.el, this.attrName,
-                                                   this.stringify(attrValue));
-  },
+      this.stringify(attrValue));
+  }
 
   /**
    * Apply new component data if data has changed (from setAttribute).
@@ -221,7 +208,7 @@ Component.prototype = {
    *        If undefined, use the cached attribute value and continue updating properties.
    * @param {boolean} clobber - The previous component data is overwritten by the attrValue.
    */
-  updateProperties: function (attrValue, clobber) {
+  updateProperties(attrValue, clobber) {
     var el = this.el;
 
     // Update data
@@ -238,9 +225,9 @@ Component.prototype = {
     } else {
       this.initComponent();
     }
-  },
+  }
 
-  initComponent: function () {
+  initComponent() {
     var el = this.el;
     var initialOldData;
 
@@ -265,13 +252,13 @@ Component.prototype = {
     // Play the component if the entity is playing.
     if (el.isPlaying) { this.play(); }
     el.emit('componentinitialized', this.evtDetail, false);
-  },
+  }
 
   /**
    * @param {string|object} attrValue - Passed argument from setAttribute.
    * @param {bool} clobber - Whether or not to overwrite previous data by the attrValue.
    */
-  updateData: function (attrValue, clobber) {
+  updateData(attrValue, clobber) {
     // Single property (including object based single property)
     if (this.isSingleProperty) {
       this.recomputeProperty(undefined, attrValue);
@@ -295,14 +282,14 @@ Component.prototype = {
 
     // Update schema if needed
     this.updateSchemaIfNeeded(attrValue);
-  },
+  }
 
-  updateSchemaIfNeeded: function (attrValue) {
+  updateSchemaIfNeeded(attrValue) {
     if (!this.schemaChangeRequired || !this.updateSchema) {
       // Log any pending unknown property warning
       for (var i = 0; i < encounteredUnknownProperties.length; i++) {
         warn('Unknown property `' + encounteredUnknownProperties[i] +
-              '` for component `' + this.name + '`.');
+          '` for component `' + this.name + '`.');
       }
       encounteredUnknownProperties.length = 0;
       return;
@@ -315,12 +302,12 @@ Component.prototype = {
     this.recomputeData(attrValue);
     this.silenceUnknownPropertyWarnings = false;
     this.schemaChangeRequired = false;
-  },
+  }
 
   /**
    * Check if component should fire update and fire update lifecycle handler.
    */
-  callUpdateHandler: function () {
+  callUpdateHandler() {
     // Don't update if properties haven't changed.
     // Always update rotation, position, scale.
     if (!this.isPositionRotationScale && !this.dataChanged) { return; }
@@ -342,13 +329,13 @@ Component.prototype = {
     this.storeOldData();
 
     this.throttledEmitComponentChanged();
-  },
+  }
 
-  handleMixinUpdate: function () {
+  handleMixinUpdate() {
     this.recomputeData();
     this.updateSchemaIfNeeded();
     this.callUpdateHandler();
-  },
+  }
 
   /**
    * Reset value of a property to the property's default value.
@@ -356,7 +343,7 @@ Component.prototype = {
    *
    * @param {string} propertyName - Name of property to reset.
    */
-  resetProperty: function (propertyName) {
+  resetProperty(propertyName) {
     if (!this.isSingleProperty && !(propertyName in this.schema)) { return; }
 
     // Reset attrValue for single- and multi-property components
@@ -372,7 +359,7 @@ Component.prototype = {
     this.recomputeProperty(propertyName, undefined);
     this.updateSchemaIfNeeded();
     this.callUpdateHandler();
-  },
+  }
 
   /**
    * Extend schema of component given a partial schema.
@@ -383,7 +370,7 @@ Component.prototype = {
    *
    * @param {object} schemaAddon - Schema chunk that extend base schema.
    */
-  extendSchema: function (schemaAddon) {
+  extendSchema(schemaAddon) {
     var extendedSchema;
     // Clone base schema.
     extendedSchema = utils.extend({}, components[this.name].schema);
@@ -391,9 +378,9 @@ Component.prototype = {
     utils.extend(extendedSchema, schemaAddon);
     this.schema = processSchema(extendedSchema);
     this.el.emit('schemachanged', this.evtDetail);
-  },
+  }
 
-  getComputedPropertyValue: function (key) {
+  getComputedPropertyValue(key) {
     var mixinEls = this.el.mixinEls;
 
     // Defined as attribute on entity
@@ -412,9 +399,9 @@ Component.prototype = {
     // Schema default
     var schemaDefault = key ? this.schema[key].default : this.schema.default;
     return schemaDefault;
-  },
+  }
 
-  recomputeProperty: function (key, newValue) {
+  recomputeProperty(key, newValue) {
     var propertySchema = key ? this.schema[key] : this.schema;
 
     if (newValue !== undefined && newValue !== null) {
@@ -477,9 +464,9 @@ Component.prototype = {
     }
 
     return newComputedValue;
-  },
+  }
 
-  handleUnknownProperty: function (key, newValue) {
+  handleUnknownProperty(key, newValue) {
     // Persist the raw value on attrValue
     if (this.attrValue === undefined) {
       this.attrValue = this.objectPool.use();
@@ -497,13 +484,13 @@ Component.prototype = {
         warn('Unknown property `' + key + '` for component `' + this.name + '`.');
       }
     }
-  },
+  }
 
   /**
    * Updates oldData to the current state of data taking care to
    * copy and clone objects where necessary.
    */
-  storeOldData: function () {
+  storeOldData() {
     // Non object based single properties
     if (!this.isObjectBased) {
       this.oldData = this.data;
@@ -526,14 +513,14 @@ Component.prototype = {
         this.oldData[key] = this.data[key];
       }
     }
-  },
+  }
 
   /**
    * Triggers a recompute of the data object.
    *
    * @param {string|object} attrValue - Optional additional data updates
    */
-  recomputeData: function (attrValue) {
+  recomputeData(attrValue) {
     var key;
 
     if (this.isSingleProperty) {
@@ -564,42 +551,49 @@ Component.prototype = {
         warn('Unknown property `' + key + '` for component `' + this.name + '`.');
       }
     }
-  },
+  }
 
   /**
    * Attach events from component-defined events map.
    */
-  eventsAttach: function () {
+  eventsAttach() {
     var eventName;
     // Safety detach to prevent double-registration.
     this.eventsDetach();
     for (eventName in this.events) {
       this.el.addEventListener(eventName, this.events[eventName]);
     }
-  },
+  }
 
   /**
    * Detach events from component-defined events map.
    */
-  eventsDetach: function () {
+  eventsDetach() {
     var eventName;
     for (eventName in this.events) {
       this.el.removeEventListener(eventName, this.events[eventName]);
     }
-  },
+  }
 
   /**
    * Release and free memory.
    */
-  destroy: function () {
+  destroy() {
     this.objectPool.recycle(this.attrValue);
     this.objectPool.recycle(this.data);
     this.objectPool.recycle(this.oldData);
     this.attrValue = this.data = this.oldData = this.attrValueProxy = undefined;
   }
-};
+}
+/**
+ * Map of event names to bound event handlers that will be lifecycle-handled.
+ * Will be detached on pause / remove.
+ * Will be attached on play.
+ */
+Component.prototype.events = {};
+module.exports.Component = Component;
 
-function eventsBind (component, events) {
+function eventsBind(component, events) {
   var eventName;
   for (eventName in events) {
     component.events[eventName] = events[eventName].bind(component);
@@ -616,27 +610,24 @@ if (window.debug) {
  *
  * @param {string} name - Component name.
  * @param {object} definition - Component schema and lifecycle method handlers.
+ * @param {object} schema - Contains the type schema and defaults for the data values. Data is coerced into the types of the values of the defaults.
  * @returns {object} Component.
  */
-module.exports.registerComponent = function (name, definition) {
-  var NewComponent;
-  var proto = {};
-  var schema;
-  var schemaIsSingleProp;
-
+module.exports.registerComponentClass = function(name, NewComponent, schema = {}) {
+  NewComponent.prototype.schema = schema;
   // Warning if component is statically registered after the scene.
   if (document.currentScript && document.currentScript !== aframeScript) {
-    scenes.forEach(function checkPosition (sceneEl) {
+    scenes.forEach(function checkPosition(sceneEl) {
       // Okay to register component after the scene at runtime.
       if (sceneEl.hasLoaded) { return; }
 
       // Check that component is declared before the scene.
       if (document.currentScript.compareDocumentPosition(sceneEl) ===
-          Node.DOCUMENT_POSITION_FOLLOWING) { return; }
+        Node.DOCUMENT_POSITION_FOLLOWING) { return; }
 
       warn('The component `' + name + '` was registered in a <script> tag after the scene. ' +
-           'Component <script> tags in an HTML file should be declared *before* the scene ' +
-           'such that the component is available to entities during scene initialization.');
+        'Component <script> tags in an HTML file should be declared *before* the scene ' +
+        'such that the component is available to entities during scene initialization.');
 
       // For testing.
       if (window.debug) { registrationOrderWarnings[name] = true; }
@@ -645,48 +636,34 @@ module.exports.registerComponent = function (name, definition) {
 
   if (upperCaseRegExp.test(name) === true) {
     warn('The component name `' + name + '` contains uppercase characters, but ' +
-         'HTML will ignore the capitalization of attribute names. ' +
-         'Change the name to be lowercase: `' + name.toLowerCase() + '`');
+      'HTML will ignore the capitalization of attribute names. ' +
+      'Change the name to be lowercase: `' + name.toLowerCase() + '`');
   }
 
   if (name.indexOf('__') !== -1) {
     throw new Error('The component name `' + name + '` is not allowed. ' +
-                    'The sequence __ (double underscore) is reserved to specify an id' +
-                    ' for multiple components of the same type');
+      'The sequence __ (double underscore) is reserved to specify an id' +
+      ' for multiple components of the same type');
   }
-
-  // Format definition object to prototype object.
-  Object.keys(definition).forEach(function (key) {
-    proto[key] = {
-      value: definition[key],
-      writable: true
-    };
-  });
 
   if (components[name]) {
     throw new Error('The component `' + name + '` has been already registered. ' +
-                    'Check that you are not loading two versions of the same component ' +
-                    'or two different components of the same name.');
+      'Check that you are not loading two versions of the same component ' +
+      'or two different components of the same name.');
   }
 
-  NewComponent = function (el, attr, id) {
-    Component.call(this, el, attr, id);
-  };
-
-  NewComponent.prototype = Object.create(Component.prototype, proto);
   NewComponent.prototype.name = name;
   NewComponent.prototype.isPositionRotationScale =
     name === 'position' || name === 'rotation' || name === 'scale';
-  NewComponent.prototype.constructor = NewComponent;
   NewComponent.prototype.system = systems && systems.systems[name];
   NewComponent.prototype.play = wrapPlay(NewComponent.prototype.play);
   NewComponent.prototype.pause = wrapPause(NewComponent.prototype.pause);
 
-  schema = utils.extend(processSchema(NewComponent.prototype.schema,
-                                      NewComponent.prototype.name));
-  NewComponent.prototype.isSingleProperty = schemaIsSingleProp = isSingleProp(NewComponent.prototype.schema);
+  schema = utils.extend(processSchema(NewComponent.prototype.schema, NewComponent.prototype.name));
+  const schemaIsSingleProp = isSingleProp(NewComponent.prototype.schema);
+  NewComponent.prototype.isSingleProperty = schemaIsSingleProp;
   NewComponent.prototype.isObjectBased = !schemaIsSingleProp ||
-              (schemaIsSingleProp && (isObject(schema.default) || isObject(parseProperty(undefined, schema))));
+    (schemaIsSingleProp && (isObject(schema.default) || isObject(parseProperty(undefined, schema))));
 
   // Create object pool for class of components.
   objectPools[name] = utils.objectPool.createPool();
@@ -707,8 +684,29 @@ module.exports.registerComponent = function (name, definition) {
 
   // Notify all scenes
   for (var i = 0; i < scenes.length; i++) {
-    scenes[i].emit('componentregistered', {name: name}, false);
+    scenes[i].emit('componentregistered', { name: name }, false);
   }
+};
+
+/**
+ * Register a component to A-Frame.
+ *
+ * @param {string} name - Component name.
+ * @param {object} definition - Component schema and lifecycle method handlers.
+ * @returns {object} Component.
+ */
+module.exports.registerComponent = function(name, definition) {
+  class NewComponent extends Component { }
+  Object.keys(definition).forEach(function(key) {
+    // Format definition object to prototype object.
+    Object.defineProperty(NewComponent.prototype, key,
+      {
+        value: definition[key],
+        writable: true
+      });
+  });
+
+  module.exports.registerComponentClass(name, NewComponent, NewComponent.prototype.schema);
 
   return NewComponent;
 };
@@ -716,7 +714,7 @@ module.exports.registerComponent = function (name, definition) {
 /**
  * Checks if a component has defined a method that needs to run every frame.
  */
-function hasBehavior (component) {
+function hasBehavior(component) {
   return component.tick || component.tock;
 }
 
@@ -726,8 +724,8 @@ function hasBehavior (component) {
  *
  * @param pauseMethod {function}
  */
-function wrapPause (pauseMethod) {
-  return function pause () {
+function wrapPause(pauseMethod) {
+  return function pause() {
     var sceneEl = this.el.sceneEl;
     if (!this.isPlaying) { return; }
     pauseMethod.call(this);
@@ -745,8 +743,8 @@ function wrapPause (pauseMethod) {
  *
  * @param playMethod {function}
  */
-function wrapPlay (playMethod) {
-  return function play () {
+function wrapPlay(playMethod) {
+  return function play() {
     var sceneEl = this.el.sceneEl;
     var shouldPlay = this.el.isPlaying && !this.isPlaying;
     if (!this.initialized || !shouldPlay) { return; }
@@ -759,6 +757,6 @@ function wrapPlay (playMethod) {
   };
 }
 
-function isObject (value) {
+function isObject(value) {
   return value && value.constructor === Object && !(value instanceof window.HTMLElement);
 }
