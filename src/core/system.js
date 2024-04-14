@@ -1,15 +1,15 @@
-var components = require('./component');
-var schema = require('./schema');
-var utils = require('../utils/');
-var ready = require('./readyState');
+const components = require('./component');
+const schema = require('./schema');
+const utils = require('../utils/');
+const ready = require('./readyState');
 
-var parseProperties = schema.parseProperties;
-var parseProperty = schema.parseProperty;
-var processSchema = schema.process;
-var isSingleProp = schema.isSingleProperty;
-var styleParser = utils.styleParser;
+const parseProperties = schema.parseProperties;
+const parseProperty = schema.parseProperty;
+const processSchema = schema.process;
+const isSingleProp = schema.isSingleProperty;
+const styleParser = utils.styleParser;
 
-var systems = module.exports.systems = {};  // Keep track of registered systems.
+const systems = module.exports.systems = {};  // Keep track of registered systems.
 
 /**
  * System class definition.
@@ -28,57 +28,52 @@ var systems = module.exports.systems = {};  // Keep track of registered systems.
  * @member {string} name - Name that system is registered under.
  * @member {Element} sceneEl - Handle to the scene element where system applies to.
  */
-var System = module.exports.System = function (sceneEl) {
-  var component = components && components.components[this.name];
+class System {
+  constructor(sceneEl) {
+    const component = components && components.components[this.name];
 
-  // Set reference to scene.
-  this.el = sceneEl;
-  this.sceneEl = sceneEl;
+    // Set reference to scene.
+    this.el = sceneEl;
+    this.sceneEl = sceneEl;
 
-  // Set reference to matching component (if exists).
-  if (component) { component.Component.prototype.system = this; }
+    // Set reference to matching component (if exists).
+    if (component) { component.Component.prototype.system = this; }
 
-  // Process system configuration.
-  this.buildData();
-  this.init();
-  this.update({});
-};
-
-System.prototype = {
-  /**
-   * Schema to configure system.
-   */
-  schema: {},
+    // Process system configuration.
+    this.buildData();
+    this.init();
+    this.update({});
+  }
 
   /**
    * Init handler. Called during scene initialization and is only run once.
    * Systems can use this to set initial state.
    */
-  init: function () { /* no-op */ },
+  init() { /* no-op */ }
 
   /**
    * Update handler. Called during scene attribute updates.
    * Systems can use this to dynamically update their state.
    */
-  update: function (oldData) { /* no-op */ },
+  update(oldData) { /* no-op */ }
 
   /**
    * Build data and call update handler.
    *
    * @private
    */
-  updateProperties: function (rawData) {
-    var oldData = this.data;
+  updateProperties(rawData) {
+    const oldData = this.data;
     if (!Object.keys(schema).length) { return; }
     this.buildData(rawData);
     this.update(oldData);
-  },
+  }
 
   /**
    * Parse data.
    */
-  buildData: function (rawData) {
-    var schema = this.schema;
+  buildData(rawData) {
+    const schema = this.schema;
     if (!Object.keys(schema).length) { return; }
     rawData = rawData || window.HTMLElement.prototype.getAttribute.call(this.sceneEl, this.name);
     if (isSingleProp(schema)) {
@@ -86,7 +81,7 @@ System.prototype = {
     } else {
       this.data = parseProperties(styleParser.parse(rawData) || {}, schema, false, this.name);
     }
-  },
+  }
 
   /**
    * Tick handler.
@@ -96,7 +91,7 @@ System.prototype = {
    * @param {number} time - Scene tick time.
    * @param {number} timeDelta - Difference in current render time and previous render time.
    */
-  tick: undefined,
+  tick(time, timeDelta) { }
 
   /**
    * Tock handler.
@@ -106,17 +101,32 @@ System.prototype = {
    * @param {number} time - Scene tick time.
    * @param {number} timeDelta - Difference in current render time and previous render time.
    */
-  tock: undefined,
+  tock(time, timeDelta) { }
 
   /**
    * Called to start any dynamic behavior (e.g., animation, AI, events, physics).
    */
-  play: function () { /* no-op */ },
+  play() { /* no-op */ }
 
   /**
    * Called to stop any dynamic behavior (e.g., animation, AI, events, physics).
    */
-  pause: function () { /* no-op */ }
+  pause() { /* no-op */ }
+}
+module.exports.System = System;
+
+module.exports.registerSystemClass = function(name, NewSystem, schema = {}) {
+  NewSystem.prototype.name = name;
+  NewSystem.prototype.schema = utils.extend(processSchema(schema));
+  systems[name] = NewSystem;
+
+  // Initialize systems for existing scenes
+  if (ready.canInitializeElements) {
+    const scenes = utils.findAllScenes(document);
+    for (let i = 0; i < scenes.length; i++) {
+      scenes[i].initSystem(name);
+    }
+  }
 };
 
 /**
@@ -126,34 +136,22 @@ System.prototype = {
  * @param {object} definition - Component property and methods.
  * @returns {object} Component.
  */
-module.exports.registerSystem = function (name, definition) {
-  var i;
-  var NewSystem;
-  var proto = {};
-  var scenes = utils.findAllScenes(document);
-
-  // Format definition object to prototype object.
-  Object.keys(definition).forEach(function (key) {
-    proto[key] = {
-      value: definition[key],
-      writable: true
-    };
-  });
-
+module.exports.registerSystem = function(name, definition) {
   if (systems[name]) {
     throw new Error('The system `' + name + '` has been already registered. ' +
-                    'Check that you are not loading two versions of the same system ' +
-                    'or two different systems of the same name.');
+      'Check that you are not loading two versions of the same system ' +
+      'or two different systems of the same name.');
   }
-  NewSystem = function (sceneEl) { System.call(this, sceneEl); };
-  NewSystem.prototype = Object.create(System.prototype, proto);
-  NewSystem.prototype.name = name;
-  NewSystem.prototype.constructor = NewSystem;
-  NewSystem.prototype.schema = utils.extend(processSchema(NewSystem.prototype.schema));
-  systems[name] = NewSystem;
 
-  // Initialize systems for existing scenes
-  if (ready.canInitializeElements) {
-    for (i = 0; i < scenes.length; i++) { scenes[i].initSystem(name); }
-  }
+  class NewSystem extends System { }
+  Object.keys(definition).forEach(function(key) {
+    // Format definition object to prototype object.
+    Object.defineProperty(NewSystem.prototype, key,
+      {
+        value: definition[key],
+        writable: true
+      });
+  });
+
+  module.exports.registerSystemClass(name, NewSystem, NewSystem.prototype.schema);
 };

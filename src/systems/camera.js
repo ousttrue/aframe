@@ -1,5 +1,5 @@
 var constants = require('../constants/');
-var registerSystem = require('../core/system').registerSystem;
+const { registerSystemClass, System } = require('../core/system');
 
 var DEFAULT_CAMERA_ATTR = 'data-aframe-default-camera';
 
@@ -8,8 +8,8 @@ var DEFAULT_CAMERA_ATTR = 'data-aframe-default-camera';
  *
  * @member {object} activeCameraEl - Active camera entity.
  */
-module.exports.System = registerSystem('camera', {
-  init: function () {
+class CameraSystem extends System {
+  init() {
     this.activeCameraEl = null;
 
     this.render = this.render.bind(this);
@@ -20,7 +20,7 @@ module.exports.System = registerSystem('camera', {
     this.numUserCameras = 0;
     this.numUserCamerasChecked = 0;
     this.setupInitialCamera();
-  },
+  }
 
   /**
    * Setup initial camera, either searching for camera or
@@ -30,7 +30,7 @@ module.exports.System = registerSystem('camera', {
    *
    * Default camera offset height is at average eye level (~1.6m).
    */
-  setupInitialCamera: function () {
+  setupInitialCamera() {
     var cameraEls;
     var i;
     var sceneEl = this.sceneEl;
@@ -38,7 +38,7 @@ module.exports.System = registerSystem('camera', {
 
     // Camera already defined or the one defined it is an spectator one.
     if (sceneEl.camera && !sceneEl.camera.el.getAttribute('camera').spectator) {
-      sceneEl.emit('cameraready', {cameraEl: sceneEl.camera.el});
+      sceneEl.emit('cameraready', { cameraEl: sceneEl.camera.el });
       return;
     }
 
@@ -53,7 +53,7 @@ module.exports.System = registerSystem('camera', {
 
     this.numUserCameras = cameraEls.length;
     for (i = 0; i < cameraEls.length; i++) {
-      cameraEls[i].addEventListener('object3dset', function (evt) {
+      cameraEls[i].addEventListener('object3dset', function(evt) {
         if (evt.detail.type !== 'camera') { return; }
         self.checkUserCamera(this);
       });
@@ -62,12 +62,12 @@ module.exports.System = registerSystem('camera', {
       if (cameraEls[i].isNode) {
         cameraEls[i].load();
       } else {
-        cameraEls[i].addEventListener('nodeready', function () {
+        cameraEls[i].addEventListener('nodeready', function() {
           this.load();
         });
       }
     }
-  },
+  }
 
   /**
    * Check if a user-defined camera entity is appropriate to be initial camera.
@@ -75,7 +75,7 @@ module.exports.System = registerSystem('camera', {
    *
    * Keep track of the number of cameras we checked and whether we found one.
    */
-  checkUserCamera: function (cameraEl) {
+  checkUserCamera(cameraEl) {
     var cameraData;
     var sceneEl = this.el.sceneEl;
     this.numUserCamerasChecked++;
@@ -95,16 +95,16 @@ module.exports.System = registerSystem('camera', {
 
     this.initialCameraFound = true;
     sceneEl.camera = cameraEl.getObject3D('camera');
-    sceneEl.emit('cameraready', {cameraEl: cameraEl});
-  },
+    sceneEl.emit('cameraready', { cameraEl: cameraEl });
+  }
 
-  createDefaultCamera: function () {
+  createDefaultCamera() {
     var defaultCameraEl;
     var sceneEl = this.sceneEl;
 
     // Set up default camera.
     defaultCameraEl = document.createElement('a-entity');
-    defaultCameraEl.setAttribute('camera', {active: true});
+    defaultCameraEl.setAttribute('camera', { active: true });
     defaultCameraEl.setAttribute('position', {
       x: 0,
       y: constants.DEFAULT_CAMERA_HEIGHT,
@@ -114,14 +114,14 @@ module.exports.System = registerSystem('camera', {
     defaultCameraEl.setAttribute('look-controls', '');
     defaultCameraEl.setAttribute(constants.AFRAME_INJECTED, '');
 
-    defaultCameraEl.addEventListener('object3dset', function (evt) {
+    defaultCameraEl.addEventListener('object3dset', function(evt) {
       if (evt.detail.type !== 'camera') { return; }
       sceneEl.camera = evt.detail.object;
-      sceneEl.emit('cameraready', {cameraEl: defaultCameraEl});
+      sceneEl.emit('cameraready', { cameraEl: defaultCameraEl });
     });
 
     sceneEl.appendChild(defaultCameraEl);
-  },
+  }
 
   /**
    * Set a different active camera.
@@ -129,13 +129,13 @@ module.exports.System = registerSystem('camera', {
    * true. The camera component will call `setActiveCamera` and handle passing the torch to
    * the new camera.
    */
-  disableActiveCamera: function () {
+  disableActiveCamera() {
     var cameraEls;
     var newActiveCameraEl;
     cameraEls = this.sceneEl.querySelectorAll(':not(a-mixin)[camera]');
     newActiveCameraEl = cameraEls[cameraEls.length - 1];
     newActiveCameraEl.setAttribute('camera', 'active', true);
-  },
+  }
 
   /**
    * Set active camera to be used by renderer.
@@ -144,7 +144,7 @@ module.exports.System = registerSystem('camera', {
    *
    * @param {Element} newCameraEl - Entity with camera component.
    */
-  setActiveCamera: function (newCameraEl) {
+  setActiveCamera(newCameraEl) {
     var cameraEl;
     var cameraEls;
     var i;
@@ -159,7 +159,7 @@ module.exports.System = registerSystem('camera', {
     // Grab the default camera.
     var defaultCameraWrapper = sceneEl.querySelector('[' + DEFAULT_CAMERA_ATTR + ']');
     var defaultCameraEl = defaultCameraWrapper &&
-                          defaultCameraWrapper.querySelector(':not(a-mixin)[camera]');
+      defaultCameraWrapper.querySelector(':not(a-mixin)[camera]');
 
     // Remove default camera if new camera is not the default camera.
     if (newCameraEl !== defaultCameraEl) { removeDefaultCamera(sceneEl); }
@@ -182,15 +182,15 @@ module.exports.System = registerSystem('camera', {
       cameraEl.setAttribute('camera', 'active', false);
       cameraEl.pause();
     }
-    sceneEl.emit('camera-set-active', {cameraEl: newCameraEl});
-  },
+    sceneEl.emit('camera-set-active', { cameraEl: newCameraEl });
+  }
 
   /**
    * Set spectator camera to render the scene on a 2D display.
    *
    * @param {Element} newCameraEl - Entity with camera component.
    */
-  setSpectatorCamera: function (newCameraEl) {
+  setSpectatorCamera(newCameraEl) {
     var newCamera;
     var previousCamera = this.spectatorCameraEl;
     var sceneEl = this.sceneEl;
@@ -213,33 +213,33 @@ module.exports.System = registerSystem('camera', {
     spectatorCameraEl.setAttribute('camera', 'active', false);
     spectatorCameraEl.play();
 
-    sceneEl.emit('camera-set-spectator', {cameraEl: newCameraEl});
-  },
+    sceneEl.emit('camera-set-spectator', { cameraEl: newCameraEl });
+  }
 
   /**
    * Disables current spectator camera.
    */
-  disableSpectatorCamera: function () {
+  disableSpectatorCamera() {
     this.spectatorCameraEl = undefined;
-  },
+  }
 
   /**
    * Wrap the render method of the renderer to render
    * the spectator camera after vrDisplay.submitFrame.
    */
-  wrapRender: function () {
+  wrapRender() {
     if (!this.spectatorCameraEl || this.originalRender) { return; }
     this.originalRender = this.sceneEl.renderer.render;
     this.sceneEl.renderer.render = this.render;
-  },
+  }
 
-  unwrapRender: function () {
+  unwrapRender() {
     if (!this.originalRender) { return; }
     this.sceneEl.renderer.render = this.originalRender;
     this.originalRender = undefined;
-  },
+  }
 
-  render: function (scene, camera) {
+  render(scene, camera) {
     var isVREnabled;
     var sceneEl = this.sceneEl;
     var spectatorCamera;
@@ -252,14 +252,16 @@ module.exports.System = registerSystem('camera', {
     this.originalRender.call(sceneEl.renderer, scene, spectatorCamera);
     sceneEl.renderer.xr.enabled = isVREnabled;
   }
-});
+}
+module.exports.System = CameraSystem;
+registerSystemClass('camera', CameraSystem);
 
 /**
  * Remove injected default camera from scene, if present.
  *
  * @param {Element} sceneEl
  */
-function removeDefaultCamera (sceneEl) {
+function removeDefaultCamera(sceneEl) {
   var defaultCamera;
   var camera = sceneEl.camera;
   if (!camera) { return; }
