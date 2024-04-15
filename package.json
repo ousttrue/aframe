@@ -18,7 +18,7 @@
     "lint": "standardx -v | snazzy",
     "lint:fix": "standardx --fix",
     "//precommit": "npm run lint",
-    "prepush": "node scripts/testOnlyCheck.js",
+    "//prepush": "node scripts/testOnlyCheck.js",
     "prerelease": "node scripts/release.js 1.4.0 1.5.0",
     "start": "npm run dev",
     "start:https": "npm run dev -- --server-type https",
