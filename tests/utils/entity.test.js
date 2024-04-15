@@ -1,4 +1,4 @@
-import { assert, describe, it, expect, beforeEach } from 'vitest'
+import { assert, describe, it, expect, beforeEach } from 'vitest';
 import sinon from 'sinon';
 import * as helpers from '../helpers';
 import { entity } from '@/utils';

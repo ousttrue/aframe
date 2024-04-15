@@ -1,4 +1,4 @@
-import { assert, describe, it, expect, beforeEach } from 'vitest'
+import { assert, describe, it, expect, beforeEach } from 'vitest';
 import * as  srcLoader from '@/utils/src-loader';
 import { entityFactory } from '../helpers';
 

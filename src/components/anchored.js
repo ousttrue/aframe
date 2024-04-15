@@ -1,3 +1,4 @@
+/* global XRRigidTransform */
 import * as THREE from 'three';
 import { registerComponent } from '../core/component';
 import * as utils from '../utils/';
@@ -95,7 +96,7 @@ export const Component = registerComponent('anchored', {
     if (this.data.persistent) {
       if (this.el.id) {
         this.persistentHandle = await anchor.requestPersistentHandle();
-        localStorage.setItem(this.el.id, this.persistentHandle);
+        window.localStorage.setItem(this.el.id, this.persistentHandle);
       } else {
         warn('The anchor won\'t be persisted because the entity has no assigned id.');
       }
@@ -116,7 +117,7 @@ export const Component = registerComponent('anchored', {
       return;
     }
     if (persistentAnchors) {
-      storedPersistentHandle = localStorage.getItem(this.el.id);
+      storedPersistentHandle = window.localStorage.getItem(this.el.id);
       for (var i = 0; i < persistentAnchors.length; ++i) {
         if (storedPersistentHandle !== persistentAnchors[i]) { continue; }
         this.anchor = await session.restorePersistentAnchor(persistentAnchors[i]);

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vitest';
 import sinon from 'sinon';
 import { throttleTick } from '@/utils';
 

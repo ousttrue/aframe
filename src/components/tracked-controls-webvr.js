@@ -1,6 +1,5 @@
 import { registerComponent } from '../core/component';
-import { DEFAULT_CAMERA_HEIGHT } from '../constants';
-import { DEFAULT_HANDEDNESS } from '../constants';
+import { DEFAULT_CAMERA_HEIGHT, DEFAULT_HANDEDNESS } from '../constants';
 import * as  THREE from 'three';
 import * as controllerUtils from '../utils/tracked-controls';
 

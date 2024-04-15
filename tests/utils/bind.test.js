@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vitest';
 import { bind } from '@/utils';
 
 describe('utils.bind', function() {

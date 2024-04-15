@@ -1,4 +1,4 @@
-import { assert, describe, it, expect, beforeEach } from 'vitest'
+import { assert, describe, it, expect, beforeEach } from 'vitest';
 import { isIOSOlderThan10 } from '@/utils/isIOSOlderThan10';
 
 describe('isIOSOlderThan10', function() {

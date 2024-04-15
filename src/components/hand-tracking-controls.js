@@ -4,9 +4,9 @@ import { registerComponent } from '../core/component';
 import { AEntity } from '../core/a-entity';
 
 import * as trackedControlsUtils from '../utils/tracked-controls';
-const checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
 
 import { AFRAME_CDN_ROOT } from '../constants';
+const checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
 const LEFT_HAND_MODEL_URL = AFRAME_CDN_ROOT + 'controllers/oculus-hands/v4/left.glb';
 const RIGHT_HAND_MODEL_URL = AFRAME_CDN_ROOT + 'controllers/oculus-hands/v4/right.glb';
 

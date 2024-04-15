@@ -1,4 +1,4 @@
-import { assert, describe, it, expect, beforeEach } from 'vitest'
+import { assert, describe, it, expect, beforeEach } from 'vitest';
 import { diff, deepEqual } from '@/utils';
 
 /**

@@ -2,6 +2,7 @@ import { registerComponent } from '../core/component';
 import * as THREE from 'three';
 
 import * as trackedControlsUtils from '../utils/tracked-controls';
+import { AFRAME_CDN_ROOT } from '../constants';
 const checkControllerPresentAndSetup = trackedControlsUtils.checkControllerPresentAndSetup;
 const emitIfAxesChanged = trackedControlsUtils.emitIfAxesChanged;
 const onButtonEvent = trackedControlsUtils.onButtonEvent;
@@ -10,7 +11,6 @@ const onButtonEvent = trackedControlsUtils.onButtonEvent;
 // https://github.com/immersive-web/webxr-input-profiles/tree/master/packages/registry
 // TODO: Add a more robust system for deriving gamepad name.
 const GAMEPAD_ID = 'hp-mixed-reality';
-import { AFRAME_CDN_ROOT } from '../constants';
 const HP_MIXED_REALITY_MODEL_GLB_BASE_URL = AFRAME_CDN_ROOT + 'controllers/hp/mixed-reality/';
 
 const HP_MIXED_REALITY_POSITION_OFFSET = { x: 0, y: 0, z: 0.06 };

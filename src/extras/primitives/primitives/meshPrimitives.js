@@ -2,8 +2,7 @@
  * Automated mesh primitive registration.
  */
 import { getMeshMixin } from '../getMeshMixin';
-import { geometries } from '../../../core/geometry';
-import { geometryNames } from '../../../core/geometry';
+import { geometries, geometryNames } from '../../../core/geometry';
 import { registerPrimitive } from '../primitives';
 import * as utils from '../../../utils/';
 

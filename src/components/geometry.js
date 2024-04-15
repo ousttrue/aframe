@@ -1,5 +1,4 @@
-import { geometries } from '../core/geometry';
-import { geometryNames } from '../core/geometry';
+import { geometries, geometryNames } from '../core/geometry';
 import { registerComponent } from '../core/component';
 import * as THREE from 'three';
 

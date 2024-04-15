@@ -17,34 +17,40 @@ var ONCE = { once: true };
  *
  * To be able to take components, the scene element inherits from the entity definition.
  *
- * @member {object} components - entity's currently initialized components.
- * @member {object} object3D - three.js object.
- * @member {array} states.
- * @member {boolean} isPlaying - false if dynamic behavior of the entity is paused.
  */
 export class AEntity extends ANode {
-  constructor() {
-    super();
-    this.components = {};
-    // To avoid double initializations and infinite loops.
-    this.initializingComponents = {};
-    this.componentsToUpdate = {};
-    this.isEntity = true;
-    this.isPlaying = false;
-    this.object3D = new THREE.Group();
-    this.object3D.rotation.order = 'YXZ';
-    this.object3D.el = this;
-    this.object3DMap = {};
-    this.parentEl = null;
-    this.rotationObj = {};
-    this.states = [];
-  }
+  /** @type {Object.<string, any>} components - entity's currently initialized components. */
+  components = {};
+
+  // To avoid double initializations and infinite loops.
+  initializingComponents = {};
+  componentsToUpdate = {};
+  isEntity = true;
+  /** @type {boolean} isPlaying - false if dynamic behavior of the entity is paused. */
+  isPlaying = false;
+  /** @type {THREE.Object3D & {el: AEntity}} object3D - three.js object. */
+  object3D = (() => {
+    const o = /** @type {any} */ (new THREE.Group());
+    o.rotation.order = 'YXZ';
+    o.el = this;
+    return o;
+  })();
+
+  object3DMap = {};
+  parentEl = null;
+  rotationObj = {};
+  /** @type{any[]} */
+  states = [];
 
   /**
    * Handle changes coming from the browser DOM inspector.
+   *
+   * @param {string} attr
+   * @param {any} oldVal
+   * @param {any} newVal
    */
   attributeChangedCallback(attr, oldVal, newVal) {
-    var component = this.components[attr];
+    const component = this.components[attr];
 
     super.attributeChangedCallback();
     // If the empty string is passed by the component initialization
@@ -60,13 +66,12 @@ export class AEntity extends ANode {
 
   doConnectedCallback() {
     var self = this;  // Component.
-    var assetsEl;  // Asset management system element.
-    var sceneEl;
 
     // ANode method.
     super.doConnectedCallback();
 
-    sceneEl = this.sceneEl;
+    // Asset management system element.
+    const sceneEl = this.sceneEl;
 
     this.addToParent();
 
@@ -80,7 +85,7 @@ export class AEntity extends ANode {
     }
 
     // Wait for asset management system to finish before loading.
-    assetsEl = sceneEl.querySelector('a-assets');
+    const assetsEl = sceneEl.querySelector('a-assets');
     if (assetsEl && !assetsEl.hasLoaded) {
       assetsEl.addEventListener('loaded', function() { self.load(); });
       return;

@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import {registerComponent} from '../core/component';
-import {DEFAULT_HANDEDNESS} from '../constants';
-import {AFRAME_CDN_ROOT} from '../constants';
+import {DEFAULT_HANDEDNESS, AFRAME_CDN_ROOT} from '../constants';
 import {isWebXRAvailable} from '../utils/device';
 import * as trackedControlsUtils from '../utils/tracked-controls';
 import * as utils from '../utils/';

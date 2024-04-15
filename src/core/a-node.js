@@ -14,10 +14,6 @@ export const knownTags = {
   'a-entity': true
 };
 
-function isNode(node) {
-  return node.tagName.toLowerCase() in knownTags || node.isNode;
-}
-
 /**
  * Base class for A-Frame that manages loading of objects.
  *
@@ -25,13 +21,14 @@ function isNode(node) {
  * Nodes emit a `loaded` event when they and their children have initialized.
  */
 export class ANode extends HTMLElement {
-  constructor() {
-    super();
-    this.computedMixinStr = '';
-    this.hasLoaded = false;
-    this.isNode = true;
-    this.mixinEls = [];
-  }
+  computedMixinStr = '';
+  isLoading = false;
+  hasLoaded = false;
+  isNode = true;
+  isScene = false;
+  isMixin = false;
+  /** @type {any[]} */
+  mixinEls = [];
 
   connectedCallback() {
     // Defer if not ready to initialize.
@@ -93,9 +90,10 @@ export class ANode extends HTMLElement {
    * @param {string} selector - Selector of element to find.
    */
   closest(selector) {
-    var matches = this.matches || this.mozMatchesSelector ||
+    let matches = this.matches || this.mozMatchesSelector ||
       this.msMatchesSelector || this.oMatchesSelector || this.webkitMatchesSelector;
-    var element = this;
+    /** @type {HTMLElement|null} */
+    let element = this;
     while (element) {
       if (matches.call(element, selector)) { break; }
       element = element.parentElement;
@@ -119,6 +117,10 @@ export class ANode extends HTMLElement {
     if (this.hasLoaded) { return; }
 
     // Default to waiting for all nodes.
+    /** @param {HTMLElement} node */
+    function isNode(node) {
+      return node.tagName.toLowerCase() in knownTags || node.isNode;
+    }
     childFilter = childFilter || isNode;
     // Wait for children to load (if any), then load.
     children = this.getChildren();
