@@ -1,5 +1,4 @@
-import * as utils from '../utils';
-import { diff } from '../utils/diff';
+import { diff } from '../utils';
 import debug from '../utils/debug';
 import { registerComponent } from '../core/component';
 import * as THREE from 'three';
