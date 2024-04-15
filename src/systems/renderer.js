@@ -1,4 +1,4 @@
-import { registerSystem } from '../core/system';
+import { registerSystemClass, System } from '../core/system';
 import * as utils from '../utils/';
 import * as THREE from 'three';
 
@@ -8,27 +8,8 @@ const warn = debug('components:renderer:warn');
 /**
  * Determines state of various renderer properties.
  */
-export const System = registerSystem('renderer', {
-  schema: {
-    antialias: { default: 'auto', oneOf: ['true', 'false', 'auto'] },
-    highRefreshRate: { default: utils.device.isOculusBrowser() },
-    logarithmicDepthBuffer: { default: 'auto', oneOf: ['true', 'false', 'auto'] },
-    maxCanvasWidth: { default: -1 },
-    maxCanvasHeight: { default: -1 },
-    multiviewStereo: { default: false },
-    physicallyCorrectLights: { default: false },
-    exposure: { default: 1, if: { toneMapping: ['ACESFilmic', 'linear', 'reinhard', 'cineon'] } },
-    toneMapping: { default: 'no', oneOf: ['no', 'ACESFilmic', 'linear', 'reinhard', 'cineon'] },
-    precision: { default: 'high', oneOf: ['high', 'medium', 'low'] },
-    anisotropy: { default: 1 },
-    sortTransparentObjects: { default: false },
-    colorManagement: { default: true },
-    alpha: { default: true },
-    stencil: { default: false },
-    foveationLevel: { default: 1 }
-  },
-
-  init: function() {
+export class RendererSystem extends System {
+  init() {
     var data = this.data;
     var sceneEl = this.el;
     var toneMappingName = this.data.toneMapping.charAt(0).toUpperCase() + this.data.toneMapping.slice(1);
@@ -55,9 +36,9 @@ export const System = registerSystem('renderer', {
     // These properties are always the same, regardless of rendered configuration
     renderer.sortObjects = true;
     renderer.setOpaqueSort(sortFrontToBack);
-  },
+  }
 
-  update: function() {
+  update() {
     var data = this.data;
     var sceneEl = this.el;
     var renderer = sceneEl.renderer;
@@ -74,9 +55,9 @@ export const System = registerSystem('renderer', {
     } else {
       renderer.setTransparentSort(sortRenderOrderOnly);
     }
-  },
+  }
 
-  applyColorCorrection: function(texture) {
+  applyColorCorrection(texture) {
     if (!this.data.colorManagement || !texture) {
       return;
     }
@@ -85,9 +66,9 @@ export const System = registerSystem('renderer', {
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.needsUpdate = true;
     }
-  },
+  }
 
-  setWebXRFrameRate: function(xrSession) {
+  setWebXRFrameRate(xrSession) {
     var data = this.data;
     var rates = xrSession.supportedFrameRates;
     if (rates && xrSession.updateTargetFrameRate) {
@@ -102,7 +83,26 @@ export const System = registerSystem('renderer', {
       });
     }
   }
-});
+}
+registerSystemClass('renderer', RendererSystem,
+  {
+    antialias: { default: 'auto', oneOf: ['true', 'false', 'auto'] },
+    highRefreshRate: { default: utils.device.isOculusBrowser() },
+    logarithmicDepthBuffer: { default: 'auto', oneOf: ['true', 'false', 'auto'] },
+    maxCanvasWidth: { default: -1 },
+    maxCanvasHeight: { default: -1 },
+    multiviewStereo: { default: false },
+    physicallyCorrectLights: { default: false },
+    exposure: { default: 1, if: { toneMapping: ['ACESFilmic', 'linear', 'reinhard', 'cineon'] } },
+    toneMapping: { default: 'no', oneOf: ['no', 'ACESFilmic', 'linear', 'reinhard', 'cineon'] },
+    precision: { default: 'high', oneOf: ['high', 'medium', 'low'] },
+    anisotropy: { default: 1 },
+    sortTransparentObjects: { default: false },
+    colorManagement: { default: true },
+    alpha: { default: true },
+    stencil: { default: false },
+    foveationLevel: { default: 1 }
+  });
 
 // Custom A-Frame sort functions.
 // Variations of Three.js default sort orders here:

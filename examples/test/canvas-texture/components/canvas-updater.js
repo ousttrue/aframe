@@ -1,9 +1,8 @@
-/* global AFRAME */
-
+import * as AFRAME from '../../../../src/index.js';
 AFRAME.registerComponent('canvas-updater', {
   dependencies: ['geometry', 'material'],
 
-  tick: function () {
+  tick: function() {
     var el = this.el;
     var material;
 

@@ -1,4 +1,4 @@
-/* global THREE */
+import * as THREE from 'three';
 import debug from './debug';
 
 const warn = debug('utils:coordinates:warn');

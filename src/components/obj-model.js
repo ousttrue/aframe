@@ -1,6 +1,8 @@
 import debug from '../utils/debug';
 import {registerComponent} from '../core/component';
 import * as THREE from 'three';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 
 const warn = debug('components:obj-model:warn');
 
@@ -14,8 +16,8 @@ export const Component = registerComponent('obj-model', {
     var self = this;
 
     this.model = null;
-    this.objLoader = new THREE.OBJLoader();
-    this.mtlLoader = new THREE.MTLLoader(this.objLoader.manager);
+    this.objLoader = new OBJLoader();
+    this.mtlLoader = new MTLLoader(this.objLoader.manager);
     // Allow cross-origin images to be loaded.
     this.mtlLoader.crossOrigin = '';
 

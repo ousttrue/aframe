@@ -4,13 +4,7 @@
     <meta charset="utf-8">
     <title>Embedded - A-Frame</title>
     <meta name="description" content="Embedded - A-Frame">
-    <script src="../../../dist/aframe-master.js"></script>
-    <style>
-      a-scene {
-        height: 300px;
-        width: 50%;
-      }
-    </style>
+    <script type="module" src="/src/index.js"></script>
   </head>
   <body>
     <h2>Through the looking glass.</h2>
@@ -30,5 +24,11 @@ Beware the Jubjub bird, and shun
       <a-cylinder position="1 0.75 -3" radius="0.5" height="1.5" color="#FFC65D"></a-cylinder>
       <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
     </a-scene>
+    <style>
+      a-scene {
+        height: 300px;
+        width: 50%;
+      }
+    </style>
   </body>
 </html>

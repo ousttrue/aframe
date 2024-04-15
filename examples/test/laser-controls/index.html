@@ -4,29 +4,27 @@
     <meta charset="utf-8">
     <title>Laser Controls</title>
     <meta name="description" content="Laser Controls - A-Frame">
-    <script src="../../../dist/aframe-master.js"></script>
-    <script src="components/intersect-color-change.js"></script>
+    <script type="module" src="/src/index.js"></script>
+    <script type="module" src="components/intersect-color-change.js"></script>
   </head>
   <body>
-    <script>
+    <script type="module">
       // Create boxes.
+      import * as AFRAME from '/src/index.js';
       AFRAME.registerComponent('boxes', {
         init: function () {
-          var box;
-          var columns = 20;
-          var el = this.el;
-          var i;
-          var j;
-          var rows = 15;
+          const columns = 20;
+          const el = this.el;
+          let rows = 15;
 
           if (el.sceneEl.isMobile) {
             columns = 10;
             rows = 5;
           };
 
-          for (x = columns / -2; x < columns / 2; x++) {
-            for (y = 0.5; y < rows; y++) {
-              box = document.createElement('a-entity');
+          for (let x = columns / -2; x < columns / 2; x++) {
+            for (let y = 0.5; y < rows; y++) {
+              const box = document.createElement('a-entity');
               box.setAttribute('mixin', 'box');
               box.setAttribute('position', {x: x * .6, y: y * .6, z: 1.5});
               el.appendChild(box);

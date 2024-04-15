@@ -4,8 +4,10 @@
     <meta charset="utf-8">
     <title>Physically-Based Materials</title>
     <meta name="description" content="Physically-Based Materials - A-Frame">
-    <script src="../../../dist/aframe-master.js"></script>
-    <script>
+    <script type="module" src="/src/index.js"></script>
+    <script type="module">
+      import * as AFRAME from '/src/index.js';
+      import * as THREE from 'three';
       AFRAME.registerComponent('generate', {
         /**
          * Creates matrix of objects with varying diffuse colors, metalnesses, and

@@ -1,4 +1,4 @@
-/* global AFRAME */
+import * as AFRAME from '../../../../src/index.js';
 
 /**
  * Change color if entity when intersected by raycaster.

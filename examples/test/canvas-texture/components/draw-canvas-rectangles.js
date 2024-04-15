@@ -1,19 +1,19 @@
-/* global AFRAME */
+import * as AFRAME from '../../../../src/index.js';
 
 /**
  * Draw dynamic colorful rectangles.
  */
 AFRAME.registerComponent('draw-canvas-rectangles', {
-  schema: {canvas: {type: 'selector'}},
+  schema: { canvas: { type: 'selector' } },
 
-  init: function () {
+  init: function() {
     var canvas = this.canvas = this.data.canvas;
     var ctx = this.ctx = canvas.getContext('2d');
     ctx.fillStyle = 'rgb(0, 0, 0)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   },
 
-  tick: function (t) {
+  tick: function(t) {
     var canvas = this.canvas;
     var ctx = this.ctx;
     var x;

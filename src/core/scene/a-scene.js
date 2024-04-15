@@ -9,12 +9,12 @@ import { systems } from '../system';
 import { components } from '../component';
 import * as THREE from 'three';
 import * as utils from '../../utils/';
-const warn = utils.debug('core:a-scene:warn');
 // Require after.
 import { AEntity } from '../a-entity';
 import { ANode } from '../a-node';
 import initPostMessageAPI from './postMessage';
 
+const warn = utils.debug('core:a-scene:warn');
 var isIOS = utils.device.isIOS();
 var isMobile = utils.device.isMobile();
 var isWebXRAvailable = utils.device.isWebXRAvailable;
@@ -39,9 +39,8 @@ if (isIOS) { require('../../utils/ios-orientationchange-blank-bug'); }
 
 export class AScene extends AEntity {
   constructor() {
-    var self;
     super();
-    self = this;
+    const self = this;
     self.clock = new THREE.Clock();
     self.isIOS = isIOS;
     self.isMobile = isMobile;
@@ -666,7 +665,10 @@ export class AScene extends AEntity {
     if (this.camera) { renderer.xr.setPoseTarget(this.camera.el.object3D); }
     this.addEventListener('camera-set-active', function() {
       // https://github.com/aframevr/aframe/issues/3672
-      renderer.xr.setPoseTarget(self.camera.el.object3D);
+      // https://github.com/mrdoob/three.js/issues/18633
+      // https://github.com/supermedium/three.js/tree/dev/src/renderers
+      console.warn(renderer.xr);
+      // renderer.xr.setPoseTarget(self.camera.el.object3D);
     });
   }
 

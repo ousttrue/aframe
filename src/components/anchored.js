@@ -1,4 +1,4 @@
-/* global THREE, XRRigidTransform, localStorage */
+import * as THREE from 'three';
 import { registerComponent } from '../core/component';
 import * as utils from '../utils/';
 const warn = utils.debug('components:anchored:warn');
