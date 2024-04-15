@@ -1,24 +1,24 @@
-/* global assert, suite, test */
-var bind = require('utils').bind;
+import { describe, it, expect } from 'vitest'
+import { bind } from '@/utils';
 
-suite('utils.bind', function () {
-  test('utils.bind binds to object', function () {
+describe('utils.bind', function() {
+  it('utils.bind binds to object', function() {
     var obj = {
       propName: 'aframe',
-      getProp: function (arg) {
+      getProp: function() {
         return this.propName;
       }
     };
-    assert.equal(obj.getProp(), bind(obj.getProp, obj)());
+    expect(obj.getProp()).toEqual(bind(obj.getProp, obj)());
   });
 
-  test('utils.bind binds properly when called by other object', function () {
+  it('utils.bind binds properly when called by other object', function() {
     var obj = {
       propName: 'aframe',
-      getProp: function (arg) {
+      getProp: function() {
         return this.propName;
       },
-      getPropByCallback: function (cb) {
+      getPropByCallback: function(cb) {
         return cb();
       }
     };
@@ -26,19 +26,19 @@ suite('utils.bind', function () {
       propName: 'webvr'
     };
     var bound = bind(obj.getProp, obj2);
-    assert.equal(obj2.propName, bound());
-    assert.equal(obj2.propName, obj.getPropByCallback(bound));
+    expect(obj2.propName).toEqual(bound());
+    expect(obj2.propName).toEqual(obj.getPropByCallback(bound));
   });
 
-  test('utils.bind accepts and handles additional arguments properly', function () {
+  it('utils.bind accepts and handles additional arguments properly', function() {
     var firstArg = 'awesome';
     var secondArg = {};
     var obj = {
       propName: 'aframe',
-      getPropertyByCallback: function (arg1, arg2, arg3) {
-        assert.equal(arg1, firstArg);
-        assert.equal(arg2, secondArg);
-        assert.equal(arg3, obj.propName);
+      getPropertyByCallback: function(arg1, arg2, arg3) {
+        expect(arg1).toEqual(firstArg);
+        expect(arg2).toEqual(secondArg);
+        expect(arg3).toEqual(obj.propName);
       }
     };
     var bound = bind(obj.getPropertyByCallback, obj, firstArg, secondArg);

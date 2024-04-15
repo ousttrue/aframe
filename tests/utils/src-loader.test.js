@@ -1,11 +1,13 @@
-/* global assert, suite, setup, test, Image */
-var srcLoader = require('utils/src-loader');
-var entityFactory = require('../helpers').entityFactory;
+import { assert, describe, it, expect, beforeEach } from 'vitest'
+import * as  srcLoader from '@/utils/src-loader';
+import { entityFactory } from '../helpers';
 
-suite('utils.src-loader', function () {
-  suite('validateEnvMapSrc', function () {
-    setup(function (done) {
-      var el;
+/**
+ * @vitest-environment jsdom
+ */
+describe('utils.src-loader', function() {
+  describe('validateEnvMapSrc', function() {
+    beforeEach(function(done) {
       var imgAsset = document.createElement('img');
       imgAsset.setAttribute('id', 'image');
       imgAsset.setAttribute('src', 'base/tests/assets/test.png');
@@ -14,75 +16,77 @@ suite('utils.src-loader', function () {
       var assetCubemap = constructACubemap('a-asset-item');
       assetCubemap.setAttribute('id', 'cubemap-assets');
 
-      el = this.el = entityFactory({assets: [imgAsset, imgCubemap, assetCubemap]});
+      const el = entityFactory({ assets: [imgAsset, imgCubemap, assetCubemap] });
       if (el.hasLoaded) { done(); }
-      el.addEventListener('loaded', function () {
+      el.addEventListener('loaded', function() {
         done();
       });
     });
 
-    test('validates six urls as cubemap', function (done) {
+    it('validates six urls as cubemap', function(done) {
       const srcs = `url(base/tests/assets/test.png),
               url(base/tests/assets/test.png),
               url(base/tests/assets/test.png),
               url(base/tests/assets/test.png),
               url(base/tests/assets/test.png),
               url(base/tests/assets/test.png)`;
-      srcLoader.validateEnvMapSrc(srcs, function isCubemapCb () {
+      srcLoader.validateEnvMapSrc(srcs, function isCubemapCb() {
         done();
-      }, function isEquirectCb () {
+      }, function isEquirectCb() {
         assert.fail();
       });
     });
 
-    test('validates one url as equirectangular map', function (done) {
+    it('validates one url as equirectangular map', function(done) {
       const srcs = 'url(base/tests/assets/test.png)';
-      srcLoader.validateEnvMapSrc(srcs, function isCubemapCb () {
+      srcLoader.validateEnvMapSrc(srcs, function isCubemapCb() {
         assert.fail();
-      }, function isEquirectCb () {
+      }, function isEquirectCb() {
         done();
       });
     });
 
-    test('validates selector to <img> as equirectangular map', function (done) {
-      const srcs = '#image';
-      srcLoader.validateEnvMapSrc(srcs, function isCubemapCb () {
-        assert.fail();
-      }, function isEquirectCb () {
-        done();
-      });
-    });
+    it('validates selector to <img> as equirectangular map', () => new Promise
+      ((done, reject) => {
+        const srcs = '#image';
+        srcLoader.validateEnvMapSrc(srcs, function isCubemapCb() {
+          reject();
+        }, function isEquirectCb() {
+          expect();
+          done();
+        });
+      }));
 
-    test('validates selector to <a-cubemap> (with <img> children) as cubemap', function (done) {
+    it('validates selector to <a-cubemap> (with <img> children) as cubemap', function(done) {
       const srcs = '#cubemap-imgs';
-      srcLoader.validateEnvMapSrc(srcs, function isCubemapCb () {
+      srcLoader.validateEnvMapSrc(srcs, function isCubemapCb() {
         done();
-      }, function isEquirectCb () {
+      }, function isEquirectCb() {
         assert.fail();
       });
     });
 
-    test('validates selector to <a-cubemap> (without <img> children) as cubemap', function (done) {
+    it('validates selector to <a-cubemap> (without <img> children) as cubemap', function(done) {
       const srcs = '#cubemap-assets';
-      srcLoader.validateEnvMapSrc(srcs, function isCubemapCb () {
+      srcLoader.validateEnvMapSrc(srcs, function isCubemapCb() {
         done();
-      }, function isEquirectCb () {
+      }, function isEquirectCb() {
         assert.fail();
       });
     });
 
-    test('validates single non-wrapped URL as equirectangular map', function (done) {
+    it('validates single non-wrapped URL as equirectangular map', function(done) {
       const srcs = 'base/tests/assets/test.png';
-      srcLoader.validateEnvMapSrc(srcs, function isCubemapCb () {
+      srcLoader.validateEnvMapSrc(srcs, function isCubemapCb() {
         assert.fail();
-      }, function isEquirectCb () {
+      }, function isEquirectCb() {
         done();
       });
     });
   });
 });
 
-function constructACubemap (childTag) {
+function constructACubemap(childTag) {
   var aCubemap = document.createElement('a-cubemap');
   for (let i = 0; i < 6; i++) {
     var child = document.createElement(childTag);

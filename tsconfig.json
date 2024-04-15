@@ -21,9 +21,19 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     /**/
-    "allowJs": true
+    "allowJs": true,
+    "checkJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "traceResolution": true
   },
   "include": [
-    "src"
+    "./src/**/*",
+    // for tsserver
+    "./tests/**/*"
   ]
 }

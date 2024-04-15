@@ -13,10 +13,10 @@
       import * as AFRAME from '/src/index.js';
       AFRAME.registerComponent('boxes', {
         init: function () {
-          const columns = 20;
           const el = this.el;
-          let rows = 15;
 
+          let columns = 20;
+          let rows = 15;
           if (el.sceneEl.isMobile) {
             columns = 10;
             rows = 5;

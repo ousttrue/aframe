@@ -1,26 +1,27 @@
-/* global assert, sinon, suite, test */
-var trackedControlsUtils = require('utils/tracked-controls');
+import { describe, it, expect } from 'vitest'
+import sinon from 'sinon';
+import * as trackedControlsUtils from '@/utils/tracked-controls';
 
-suite('onButtonEvent', function () {
-  test('reemit button event based on mappings', function () {
+describe('onButtonEvent', function() {
+  it('reemit button event based on mappings', function() {
     var mockedComponent = {
-      el: {emit: sinon.stub()},
-      mapping: {buttons: ['testbutton']},
+      el: { emit: sinon.stub() },
+      mapping: { buttons: ['testbutton'] },
       updateModel: sinon.stub()
     };
     trackedControlsUtils.onButtonEvent(0, 'up', mockedComponent);
-    assert.isTrue(mockedComponent.updateModel.called);
-    assert.isTrue(mockedComponent.el.emit.calledWith('testbuttonup'));
+    expect(mockedComponent.updateModel.called).toBeTruthy();
+    expect(mockedComponent.el.emit.calledWith('testbuttonup')).toBeTruthy();
   });
 
-  test('reemit button event based on mappings with handedness', function () {
+  it('reemit button event based on mappings with handedness', function() {
     var mockedComponent = {
-      el: {emit: sinon.stub()},
-      mapping: {left: {buttons: ['testbutton']}},
+      el: { emit: sinon.stub() },
+      mapping: { left: { buttons: ['testbutton'] } },
       updateModel: sinon.stub()
     };
     trackedControlsUtils.onButtonEvent(0, 'up', mockedComponent, 'left');
-    assert.isTrue(mockedComponent.updateModel.called);
-    assert.isTrue(mockedComponent.el.emit.calledWith('testbuttonup'));
+    expect(mockedComponent.updateModel.called).toBeTruthy();
+    expect(mockedComponent.el.emit.calledWith('testbuttonup')).toBeTruthy();
   });
 });

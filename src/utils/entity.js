@@ -25,10 +25,9 @@ export function getComponentPropertyPath(str, delimiter) {
  * delimiter.
  */
 export function getComponentProperty(el, name, delimiter) {
-  var splitName;
   delimiter = delimiter || '.';
   if (name.indexOf(delimiter) !== -1) {
-    splitName = getComponentPropertyPath(name, delimiter);
+    const splitName = getComponentPropertyPath(name, delimiter);
     if (splitName.constructor === String) {
       return el.getAttribute(splitName);
     }
@@ -42,10 +41,9 @@ export function getComponentProperty(el, name, delimiter) {
  * delimiter.
  */
 export function setComponentProperty(el, name, value, delimiter) {
-  var splitName;
   delimiter = delimiter || '.';
   if (name.indexOf(delimiter) !== -1) {
-    splitName = getComponentPropertyPath(name, delimiter);
+    const splitName = getComponentPropertyPath(name, delimiter);
     if (splitName.constructor === String) {
       el.setAttribute(splitName, value);
     } else {

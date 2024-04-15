@@ -1,92 +1,93 @@
-/* global assert, suite, test */
-var throttleTick = require('utils').throttleTick;
+import { describe, it, expect } from 'vitest'
+import sinon from 'sinon';
+import { throttleTick } from '@/utils';
 
-suite('utils.throttleTick', function () {
+describe('utils.throttleTick', function() {
   var ts;
   var dts;
   var interval = 1000;
-  var functionToThrottle = function (t, dt) { ts.push(t); dts.push(dt); };
+  var functionToThrottle = function(t, dt) { ts.push(t); dts.push(dt); };
   var throttleTickFn = throttleTick(functionToThrottle, interval);
   var arbitraryLargeTime = 987634578;
   var arbitraryLargeDelta = 12345;
 
-  test('fires callback on first tick whatever', function () {
+  it('fires callback on first tick whatever', function() {
     ts = [];
     dts = [];
-    assert.equal(ts.length, 0);
-    assert.equal(dts.length, 0);
+    expect(ts.length).toEqual(0);
+    expect(dts.length).toEqual(0);
     throttleTickFn = throttleTick(functionToThrottle, interval);
     throttleTickFn(arbitraryLargeTime, arbitraryLargeDelta);
-    assert.equal(ts.length, 1);
-    assert.equal(ts[0], arbitraryLargeTime);
-    assert.equal(dts.length, 1);
-    assert.equal(dts[0], arbitraryLargeDelta);
+    expect(ts.length).toEqual(1);
+    expect(ts[0]).toEqual(arbitraryLargeTime);
+    expect(dts.length).toEqual(1);
+    expect(dts[0]).toEqual(arbitraryLargeDelta);
   });
 
-  test('fires callback on first tick zero', function () {
+  it('fires callback on first tick zero', function() {
     ts = [];
     dts = [];
-    assert.equal(ts.length, 0);
-    assert.equal(dts.length, 0);
-    throttleTickFn = throttleTick(function (t, dt) { ts.push(t); dts.push(dt); }, interval);
+    expect(ts.length).toEqual(0);
+    expect(dts.length).toEqual(0);
+    throttleTickFn = throttleTick(function(t, dt) { ts.push(t); dts.push(dt); }, interval);
     throttleTickFn(0, arbitraryLargeDelta);
-    assert.equal(ts.length, 1);
-    assert.equal(ts[0], 0);
-    assert.equal(dts.length, 1);
-    assert.equal(dts[0], arbitraryLargeDelta);
+    expect(ts.length).toEqual(1);
+    expect(ts[0]).toEqual(0);
+    expect(dts.length).toEqual(1);
+    expect(dts[0]).toEqual(arbitraryLargeDelta);
   });
 
-  test('does not fire callback on ticks too soon', function () {
+  it('does not fire callback on ticks too soon', function() {
     var tlen = ts.length;
     var dtlen = dts.length;
-    assert.equal(ts.length, dts.length);
+    expect(ts.length).toEqual(dts.length);
     throttleTickFn(1);
-    assert.equal(ts.length, tlen);
-    assert.equal(dts.length, dtlen);
+    expect(ts.length).toEqual(tlen);
+    expect(dts.length).toEqual(dtlen);
     throttleTickFn(interval / 2);
-    assert.equal(ts.length, tlen);
-    assert.equal(dts.length, dtlen);
+    expect(ts.length).toEqual(tlen);
+    expect(dts.length).toEqual(dtlen);
     throttleTickFn(interval - 1);
-    assert.equal(ts.length, tlen);
-    assert.equal(dts.length, dtlen);
+    expect(ts.length).toEqual(tlen);
+    expect(dts.length).toEqual(dtlen);
   });
 
-  test('does fire callback on ticks after enough', function () {
+  it('does fire callback on ticks after enough', function() {
     var tlen = ts.length;
     var dtlen = dts.length;
-    assert.equal(ts.length, dts.length);
+    expect(ts.length).toEqual(dts.length);
     throttleTickFn(interval);
-    assert.equal(ts.length, tlen + 1);
-    assert.ok(ts[tlen] - ts[tlen - 1] >= interval);
-    assert.equal(dts.length, dtlen + 1);
-    assert.ok(ts[tlen] - ts[tlen - 1] === dts[tlen]);
+    expect(ts.length).toEqual(tlen + 1);
+    expect(ts[tlen] - ts[tlen - 1] >= interval).toBeTruthy();
+    expect(dts.length).toEqual(dtlen + 1);
+    expect(ts[tlen] - ts[tlen - 1] === dts[tlen]).toBeTruthy();
   });
 
-  test('fires only one callback on multiply late ticks', function () {
+  it('fires only one callback on multiply late ticks', function() {
     var tlen = ts.length;
     var dtlen = dts.length;
-    assert.equal(ts.length, dts.length);
+    expect(ts.length).toEqual(dts.length);
     throttleTickFn(interval * 5);
-    assert.equal(ts.length, tlen + 1);
-    assert.ok(ts[tlen] - ts[tlen - 1] >= interval);
-    assert.equal(dts.length, dtlen + 1);
-    assert.ok(ts[tlen] - ts[tlen - 1] === dts[tlen]);
+    expect(ts.length).toEqual(tlen + 1);
+    expect(ts[tlen] - ts[tlen - 1] >= interval).toBeTruthy();
+    expect(dts.length).toEqual(dtlen + 1);
+    expect(ts[tlen] - ts[tlen - 1] === dts[tlen]).toBeTruthy();
     throttleTickFn(interval * 9);
-    assert.equal(ts.length, tlen + 2);
-    assert.ok(ts[tlen + 1] - ts[tlen] >= interval);
-    assert.equal(dts.length, dtlen + 2);
-    assert.ok(ts[tlen + 1] - ts[tlen] === dts[tlen + 1]);
+    expect(ts.length).toEqual(tlen + 2);
+    expect(ts[tlen + 1] - ts[tlen] >= interval).toBeTruthy();
+    expect(dts.length).toEqual(dtlen + 2);
+    expect(ts[tlen + 1] - ts[tlen] === dts[tlen + 1]).toBeTruthy();
   });
 
-  test('binds function if context given', function () {
+  it('binds function if context given', function() {
     var obj = {};
-    obj.functionToThrottle = function (t, dt) { this.t = t; this.dt = dt; };
-    var spy = this.sinon.spy(obj, 'functionToThrottle');
+    obj.functionToThrottle = function(t, dt) { this.t = t; this.dt = dt; };
+    var spy = sinon.spy(obj, 'functionToThrottle');
     obj.functionToThrottle = throttleTick(obj.functionToThrottle, interval, obj);
     obj.functionToThrottle(arbitraryLargeTime, arbitraryLargeDelta);
-    assert.ok(spy.calledOnce);
-    assert.ok(spy.calledWith(arbitraryLargeTime, arbitraryLargeDelta));
-    assert.equal(obj.t, arbitraryLargeTime);
-    assert.equal(obj.dt, arbitraryLargeDelta);
+    expect(spy.calledOnce).toBeTruthy();
+    expect(spy.calledWith(arbitraryLargeTime, arbitraryLargeDelta)).toBeTruthy();
+    expect(obj.t).toEqual(arbitraryLargeTime);
+    expect(obj.dt).toEqual(arbitraryLargeDelta);
   });
 });

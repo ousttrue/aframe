@@ -21,21 +21,13 @@ const whitespaceRegex = /\s+/g;
  * @returns {object} An object with keys [x, y, z].
  */
 export function parse(value, defaultVec, target) {
-  var coordinate;
-  var defaultVal;
-  var key;
-  var i;
-  var vec = (target && typeof target === 'object') ? target : {};
-  var x;
-  var y;
-  var z;
-  var w;
+  const vec = (target && typeof target === 'object') ? target : {};
 
   if (value && value instanceof Object) {
-    x = value.x === undefined ? defaultVec && defaultVec.x : value.x;
-    y = value.y === undefined ? defaultVec && defaultVec.y : value.y;
-    z = value.z === undefined ? defaultVec && defaultVec.z : value.z;
-    w = value.w === undefined ? defaultVec && defaultVec.w : value.w;
+    const x = value.x === undefined ? defaultVec && defaultVec.x : value.x;
+    const y = value.y === undefined ? defaultVec && defaultVec.y : value.y;
+    const z = value.z === undefined ? defaultVec && defaultVec.z : value.z;
+    const w = value.w === undefined ? defaultVec && defaultVec.w : value.w;
     if (x !== undefined && x !== null) { vec.x = parseIfString(x); }
     if (y !== undefined && y !== null) { vec.y = parseIfString(y); }
     if (z !== undefined && z !== null) { vec.z = parseIfString(z); }
@@ -47,14 +39,14 @@ export function parse(value, defaultVec, target) {
     return typeof defaultVec === 'object' ? Object.assign(vec, defaultVec) : defaultVec;
   }
 
-  coordinate = value.trim().split(whitespaceRegex);
-  for (i = 0; i < COORDINATE_KEYS.length; i++) {
-    key = COORDINATE_KEYS[i];
+  const coordinate = value.trim().split(whitespaceRegex);
+  for (let i = 0; i < COORDINATE_KEYS.length; i++) {
+    const key = COORDINATE_KEYS[i];
     if (coordinate[i]) {
       vec[key] = parseFloat(coordinate[i], 10);
     } else {
-      defaultVal = defaultVec && defaultVec[key];
-      if (defaultVal === undefined) { continue; }
+      const defaultVal = defaultVec && defaultVec[key];
+      if (!defaultVal) { continue; }
       vec[key] = parseIfString(defaultVal);
     }
   }
