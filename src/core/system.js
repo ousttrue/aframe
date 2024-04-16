@@ -9,6 +9,7 @@ const processSchema = schema.process;
 const isSingleProp = schema.isSingleProperty;
 const styleParser = utils.styleParser;
 
+/** @type {Object.<string, {new(scene: any):System}>} */
 export const systems = {};  // Keep track of registered systems.
 
 /**

@@ -28,19 +28,22 @@ export class AEntity extends ANode {
   isEntity = true;
   /** @type {boolean} isPlaying - false if dynamic behavior of the entity is paused. */
   isPlaying = false;
-  /** @type {THREE.Object3D & {el: AEntity}} object3D - three.js object. */
-  object3D = (() => {
-    const o = /** @type {any} */ (new THREE.Group());
-    o.rotation.order = 'YXZ';
-    o.el = this;
-    return o;
-  })();
+  /** @type {THREE.Object3D} object3D - three.js object. */
+  object3D;
 
   object3DMap = {};
   parentEl = null;
   rotationObj = {};
   /** @type{any[]} */
   states = [];
+
+  constructor() {
+    super();
+    this.object3D = new THREE.Group();
+    this.object3D.rotation.order = 'YXZ';
+    const o = /** @type {any} */ (this.object3D);
+    o.el = this;
+  }
 
   /**
    * Handle changes coming from the browser DOM inspector.

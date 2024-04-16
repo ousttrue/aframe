@@ -5,7 +5,7 @@ import * as loadingScreen from './loadingScreen';
 import { scenes } from './scenes';
 import '../../systems';
 import '../../components';
-import { systems } from '../system';
+import { systems, System } from '../system';
 import { components } from '../component';
 import * as THREE from 'three';
 import * as utils from '../../utils/';
@@ -15,55 +15,59 @@ import { ANode } from '../a-node';
 import initPostMessageAPI from './postMessage';
 
 const warn = utils.debug('core:a-scene:warn');
-var isIOS = utils.device.isIOS();
-var isMobile = utils.device.isMobile();
-var isWebXRAvailable = utils.device.isWebXRAvailable;
+const isIOS = utils.device.isIOS();
+const isMobile = utils.device.isMobile();
+const isWebXRAvailable = utils.device.isWebXRAvailable;
 
-if (isIOS) { require('../../utils/ios-orientationchange-blank-bug'); }
+if (isIOS) { import('../../utils/ios-orientationchange-blank-bug'); }
 
 /**
  * Scene element, holds all entities.
- *
- * @member {array} behaviors - Component instances that have registered themselves to be
-           updated on every tick.
- * @member {object} camera - three.js Camera object.
- * @member {object} canvas
- * @member {bool} isScene - Differentiates as scene entity as opposed to other entities.
- * @member {bool} isMobile - Whether browser is mobile (via UA detection).
- * @member {object} object3D - Root three.js Scene object.
- * @member {object} renderer
- * @member {bool} renderStarted
- * @member {object} systems - Registered instantiated systems.
- * @member {number} time
  */
-
 export class AScene extends AEntity {
+  /** @type {Object.<string, any>} behaviors Component instances that have registered themselves to be updated on every tick. */
+  behaviors = {};
+  /** @type {(THREE.PerspectiveCamera & {el: AEntity})| null} camera three.js Camera object. */
+  camera = null;
+  /** @type {HTMLCanvasElement | null} canvas */
+  canvas = null;
+  /** @type {boolean} isScene Differentiates as scene entity as opposed to other entities. */
+  isScene = true;
+  /** @type {boolean} isMobile Whether browser is mobile (via UA detection). */
+  isMobile = isMobile;
+  /** @type {THREE.Renderer | null} renderer created in doConnectedCallback */
+  renderer = null;
+  /** @type {boolean} renderStarted */
+  renderStarted = false;
+  /** @type {Object.<string, System>} systems Registered instantiated systems. */
+  systems = {};
+  /** @type {string[]} */
+  systemNames = [];
+  /** @member {number} time */
+  time = 0;
+  delta = 0;
+  clock = new THREE.Clock();
+  isIOS = isIOS;
+  hasWebXR = isWebXRAvailable;
+  isAR = false;
+  usedOfferSession = false;
+  hasLoaded = false;
+  isPlaying = false;
+  originalHTML = this.innerHTML;
+  /** @type {string[]} */
+  componentOrder = [];
+
   constructor() {
     super();
+
+    //* @member {object} object3D - Root three.js Scene object.
+    this.object3D = new THREE.Scene();
     const self = this;
-    self.clock = new THREE.Clock();
-    self.isIOS = isIOS;
-    self.isMobile = isMobile;
-    self.hasWebXR = isWebXRAvailable;
-    self.isAR = false;
-    self.isScene = true;
-    self.object3D = new THREE.Scene();
-    self.object3D.onAfterRender = function(renderer, scene, camera) {
+    const o = /** @type {any} */ (this.object3D);
+    o.onAfterRender = function(renderer, scene, camera) {
       // THREE may swap the camera used for the rendering if in VR, so we pass it to tock
       if (self.isPlaying) { self.tock(self.time, self.delta, camera); }
     };
-    self.resize = self.resize.bind(self);
-    self.render = self.render.bind(self);
-    self.systems = {};
-    self.systemNames = [];
-    self.time = self.delta = 0;
-    self.usedOfferSession = false;
-
-    self.componentOrder = [];
-    self.behaviors = {};
-    self.hasLoaded = false;
-    self.isPlaying = false;
-    self.originalHTML = self.innerHTML;
   }
 
   addFullScreenStyles() {
@@ -75,8 +79,7 @@ export class AScene extends AEntity {
   }
 
   doConnectedCallback() {
-    var self = this;
-    var embedded = this.hasAttribute('embedded');
+    const embedded = this.hasAttribute('embedded');
 
     // Default components.
     this.setAttribute('inspector', '');
@@ -103,9 +106,10 @@ export class AScene extends AEntity {
     window.addEventListener('vrdisplaypresentchange', this.onVRPresentChangeBound);
 
     // Bind functions.
+    const self = this;
     this.enterVRBound = function() { self.enterVR(); };
     this.exitVRBound = function() { self.exitVR(); };
-    this.exitVRTrueBound = function() { self.exitVR(true); };
+    this.exitVRTrueBound = function() { self.exitVR(); };
     this.pointerRestrictedBound = function() { self.pointerRestricted(); };
     this.pointerUnrestrictedBound = function() { self.pointerUnrestricted(); };
 
@@ -147,10 +151,10 @@ export class AScene extends AEntity {
   }
 
   attachedCallbackPostCamera() {
-    var resize;
+    // var resize;
     var self = this;
 
-    window.addEventListener('load', resize);
+    // window.addEventListener('load', resize);
     window.addEventListener('resize', function() {
       // Workaround for a Webkit bug (https://bugs.webkit.org/show_bug.cgi?id=170595)
       // where the window does not contain the correct viewport size
@@ -186,6 +190,7 @@ export class AScene extends AEntity {
 
   /**
    * Initialize a system.
+   * @param {string} name
    */
   initSystem(name) {
     if (this.systems[name]) { return; }
@@ -282,23 +287,23 @@ export class AScene extends AEntity {
    * Call `requestFullscreen` on desktop.
    * Handle events, states, fullscreen styles.
    *
-   * @param {bool?} useAR - if true, try immersive-ar mode
-   * @returns {Promise}
+   * @param {boolean} useAR - if true, try immersive-ar mode
+   * @returns {Promise<any>}
    */
-  enterVR(useAR, useOfferSession) {
-    var self = this;
-    var vrDisplay;
-    var vrManager = self.renderer.xr;
-    var xrInit;
+  enterVR(useAR = false, useOfferSession = false) {
+    if (!this.renderer) {
+      throw new Error('no renderer');
+    }
 
     // Don't enter VR if already in VR.
     if (useOfferSession && (!navigator.xr || !navigator.xr.offerSession)) { return Promise.resolve('OfferSession is not supported.'); }
-    if (self.usedOfferSession && useOfferSession) { return Promise.resolve('OfferSession was already called.'); }
+    if (this.usedOfferSession && useOfferSession) { return Promise.resolve('OfferSession was already called.'); }
     if (this.is('vr-mode')) { return Promise.resolve('Already in VR.'); }
 
     // Has VR.
     if (this.checkHeadsetConnected() || this.isMobile) {
-      var rendererSystem = self.getAttribute('renderer');
+      var rendererSystem = this.getAttribute('renderer');
+      const vrManager = this.renderer.xr;
       vrManager.enabled = true;
 
       if (this.hasWebXR) {
@@ -309,7 +314,8 @@ export class AScene extends AEntity {
         var refspace = this.sceneEl.systems.webxr.sessionReferenceSpaceType;
         vrManager.setReferenceSpaceType(refspace);
         var xrMode = useAR ? 'immersive-ar' : 'immersive-vr';
-        xrInit = this.sceneEl.systems.webxr.sessionConfiguration;
+        const xrInit = this.sceneEl.systems.webxr.sessionConfiguration;
+        const self = this;
         return new Promise(function(resolve, reject) {
           var requestSession = useOfferSession ? navigator.xr.offerSession.bind(navigator.xr) : navigator.xr.requestSession.bind(navigator.xr);
           self.usedOfferSession |= useOfferSession;
@@ -336,7 +342,8 @@ export class AScene extends AEntity {
           );
         });
       } else {
-        vrDisplay = utils.device.getVRDisplay();
+        const vrDisplay = utils.device.getVRDisplay();
+        const vrManager = this.renderer.xr;
         vrManager.setDevice(vrDisplay);
         if (vrDisplay.isPresenting &&
           !window.hasNativeWebVRImplementation) {
@@ -356,6 +363,7 @@ export class AScene extends AEntity {
 
     // No VR.
     enterVRSuccess();
+    const self = this;
     return Promise.resolve();
 
     // Callback that happens on enter VR success or enter fullscreen (any API).
@@ -605,13 +613,7 @@ export class AScene extends AEntity {
   }
 
   setupRenderer() {
-    var self = this;
-    var renderer;
-    var rendererAttr;
-    var rendererAttrString;
-    var rendererConfig;
-
-    rendererConfig = {
+    const rendererConfig = {
       alpha: true,
       antialias: !isMobile,
       canvas: this.canvas,
@@ -622,8 +624,8 @@ export class AScene extends AEntity {
     this.maxCanvasSize = { height: -1, width: -1 };
 
     if (this.hasAttribute('renderer')) {
-      rendererAttrString = this.getAttribute('renderer');
-      rendererAttr = utils.styleParser.parse(rendererAttrString);
+      const rendererAttrString = this.getAttribute('renderer');
+      const rendererAttr = utils.styleParser.parse(rendererAttrString);
 
       if (rendererAttr.precision) {
         rendererConfig.precision = rendererAttr.precision + 'p';
@@ -659,15 +661,18 @@ export class AScene extends AEntity {
       };
     }
 
-    renderer = this.renderer = new THREE.WebGLRenderer(rendererConfig);
-    renderer.setPixelRatio(window.devicePixelRatio);
+    // TODO:
+    // support xr.setPoseTarget
+    this.renderer = new THREE.WebGLRenderer(rendererConfig);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
 
-    if (this.camera) { renderer.xr.setPoseTarget(this.camera.el.object3D); }
+    const self = this;
+    if (this.camera) { this.renderer.xr.setPoseTarget(this.camera.el.object3D); }
     this.addEventListener('camera-set-active', function() {
       // https://github.com/aframevr/aframe/issues/3672
       // https://github.com/mrdoob/three.js/issues/18633
       // https://github.com/supermedium/three.js/tree/dev/src/renderers
-      console.warn(renderer.xr);
+      console.warn(self.renderer.xr);
       // renderer.xr.setPoseTarget(self.camera.el.object3D);
     });
   }
@@ -704,7 +709,7 @@ export class AScene extends AEntity {
           vrManager.enabled = true;
           sceneEl.enterVR();
         }
-        renderer.setAnimationLoop(this.render);
+        renderer.setAnimationLoop((...args) => self.render(...args));
         sceneEl.renderStarted = true;
         sceneEl.emit('renderstart');
       }
