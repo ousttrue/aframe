@@ -1,13 +1,13 @@
 {
   "name": "aframe",
   "version": "1.5.0",
-  "type": "module",
   "description": "A web framework for building virtual reality experiences.",
   "homepage": "https://aframe.io/",
   "main": "dist/aframe-master.js",
   "scripts": {
     "vite": "vite",
     "vitest": "vitest",
+    "server": "cross-env NODE_ENV=development node ./server/easyrtc-server.js",
     "dev": "cross-env INSPECTOR_VERSION=dev webpack serve --port 8080",
     "dist": "node scripts/updateVersionLog.js && npm run dist:min && npm run dist:max",
     "dist:max": "webpack --config webpack.config.js",
@@ -96,7 +96,10 @@
     "webpack-cli": "^4.10.0",
     "webpack-dev-server": "^4.11.0",
     "webpack-merge": "^5.8.0",
-    "write-good": "^1.0.8"
+    "write-good": "^1.0.8",
+    "express": "^4.17.3",
+    "open-easyrtc": "^2.0.20",
+    "socket.io": "^2.5.0"
   },
   "link": true,
   "standardx": {
