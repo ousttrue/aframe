@@ -1,5 +1,4 @@
-class ChildEntityCache {
-
+export class ChildEntityCache {
   constructor() {
     this.dict = {};
   }
@@ -25,4 +24,3 @@ class ChildEntityCache {
     return !!this.dict[parentId];
   }
 }
-module.exports = ChildEntityCache;

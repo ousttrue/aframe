@@ -6,7 +6,7 @@ class WebRtcPeer {
     this.remoteId = remoteId;
     this.sendSignalFunc = sendSignalFunc;
     this.open = false;
-    this.channelLabel = "networked-aframe-channel";
+    this.channelLabel = 'networked-aframe-channel';
 
     this.pc = this.createPeerConnection();
     this.channel = null;
@@ -28,7 +28,7 @@ class WebRtcPeer {
 
     // If there are errors with Safari implement this:
     // https://github.com/OpenVidu/openvidu/blob/master/openvidu-browser/src/OpenViduInternal/WebRtcPeer/WebRtcPeer.ts#L154
-    
+
     if (options.sendAudio) {
       options.localAudioStream.getTracks().forEach(
         track => self.pc.addTrack(track, options.localAudioStream));
@@ -39,7 +39,7 @@ class WebRtcPeer {
         self.handleSessionDescription(sdp);
       },
       error => {
-        NAF.log.error("WebRtcPeer.offer: " + error);
+        NAF.log.error('WebRtcPeer.offer: ' + error);
       },
       {
         offerToReceiveAudio: true,
@@ -53,28 +53,28 @@ class WebRtcPeer {
     if (this.localId !== signal.to || this.remoteId !== signal.from) return;
 
     switch (signal.type) {
-      case "offer":
+      case 'offer':
         this.handleOffer(signal);
         break;
 
-      case "answer":
+      case 'answer':
         this.handleAnswer(signal);
         break;
 
-      case "candidate":
+      case 'candidate':
         this.handleCandidate(signal);
         break;
 
       default:
         NAF.log.error(
-          "WebRtcPeer.handleSignal: Unknown signal type " + signal.type
+          'WebRtcPeer.handleSignal: Unknown signal type ' + signal.type
         );
         break;
     }
   }
 
   send(type, data) {
-    if (this.channel === null || this.channel.readyState !== "open") {
+    if (this.channel === null || this.channel.readyState !== 'open') {
       return;
     }
 
@@ -85,14 +85,14 @@ class WebRtcPeer {
     if (this.channel === null) return WebRtcPeer.NOT_CONNECTED;
 
     switch (this.channel.readyState) {
-      case "open":
+      case 'open':
         return WebRtcPeer.IS_CONNECTED;
 
-      case "connecting":
+      case 'connecting':
         return WebRtcPeer.CONNECTING;
 
-      case "closing":
-      case "closed":
+      case 'closing':
+      case 'closed':
       default:
         return WebRtcPeer.NOT_CONNECTED;
     }
@@ -112,7 +112,7 @@ class WebRtcPeer {
 
     if (RTCPeerConnection === undefined) {
       throw new Error(
-        "WebRtcPeer.createPeerConnection: This browser does not seem to support WebRTC."
+        'WebRtcPeer.createPeerConnection: This browser does not seem to support WebRTC.'
       );
     }
 
@@ -123,7 +123,7 @@ class WebRtcPeer {
         self.sendSignalFunc({
           from: self.localId,
           to: self.remoteId,
-          type: "candidate",
+          type: 'candidate',
           sdpMLineIndex: event.candidate.sdpMLineIndex,
           candidate: event.candidate.candidate
         });
@@ -133,7 +133,7 @@ class WebRtcPeer {
     // Note: seems like channel.onclose hander is unreliable on some platforms,
     //       so also tries to detect disconnection here.
     pc.oniceconnectionstatechange = function() {
-      if (self.open && pc.iceConnectionState === "disconnected") {
+      if (self.open && pc.iceConnectionState === 'disconnected') {
         self.open = false;
         self.closedListener(self.remoteId);
       }
@@ -172,7 +172,7 @@ class WebRtcPeer {
 
     // error occurred with a remote peer
     this.channel.onerror = function(error) {
-      NAF.log.error("WebRtcPeer.channel.onerror: " + error);
+      NAF.log.error('WebRtcPeer.channel.onerror: ' + error);
     };
   }
 
@@ -190,7 +190,7 @@ class WebRtcPeer {
         self.handleSessionDescription(sdp);
       },
       function(error) {
-        NAF.log.error("WebRtcPeer.handleOffer: " + error);
+        NAF.log.error('WebRtcPeer.handleOffer: ' + error);
       }
     );
   }
@@ -207,9 +207,9 @@ class WebRtcPeer {
 
     this.pc.addIceCandidate(
       new RTCIceCandidate(message),
-      function() {},
+      function() { },
       function(error) {
-        NAF.log.error("WebRtcPeer.handleCandidate: " + error);
+        NAF.log.error('WebRtcPeer.handleCandidate: ' + error);
       }
     );
   }
@@ -217,9 +217,9 @@ class WebRtcPeer {
   handleSessionDescription(sdp) {
     this.pc.setLocalDescription(
       sdp,
-      function() {},
+      function() { },
       function(error) {
-        NAF.log.error("WebRtcPeer.handleSessionDescription: " + error);
+        NAF.log.error('WebRtcPeer.handleSessionDescription: ' + error);
       }
     );
 
@@ -240,9 +240,9 @@ class WebRtcPeer {
 
     this.pc.setRemoteDescription(
       new RTCSessionDescription(message),
-      function() {},
+      function() { },
       function(error) {
-        NAF.log.error("WebRtcPeer.setRemoteDescription: " + error);
+        NAF.log.error('WebRtcPeer.setRemoteDescription: ' + error);
       }
     );
   }
@@ -254,15 +254,15 @@ class WebRtcPeer {
   }
 }
 
-WebRtcPeer.IS_CONNECTED = "IS_CONNECTED";
-WebRtcPeer.CONNECTING = "CONNECTING";
-WebRtcPeer.NOT_CONNECTED = "NOT_CONNECTED";
+WebRtcPeer.IS_CONNECTED = 'IS_CONNECTED';
+WebRtcPeer.CONNECTING = 'CONNECTING';
+WebRtcPeer.NOT_CONNECTED = 'NOT_CONNECTED';
 
 WebRtcPeer.ICE_SERVERS = [
-  { urls: "stun:stun1.l.google.com:19302" },
-  { urls: "stun:stun2.l.google.com:19302" },
-  { urls: "stun:stun3.l.google.com:19302" },
-  { urls: "stun:stun4.l.google.com:19302" }
+  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'stun:stun2.l.google.com:19302' },
+  { urls: 'stun:stun3.l.google.com:19302' },
+  { urls: 'stun:stun4.l.google.com:19302' }
 ];
 
 /**
@@ -270,13 +270,14 @@ WebRtcPeer.ICE_SERVERS = [
  * For use with uws-server.js
  * networked-scene: serverURL needs to be ws://localhost:8080 when running locally
  */
-class WebrtcAdapter {
+export class WebrtcAdapter {
   constructor() {
-    if (io === undefined)
-      console.warn('It looks like socket.io has not been loaded before WebrtcAdapter. Please do that.')
+    if (io === undefined) {
+      console.warn('It looks like socket.io has not been loaded before WebrtcAdapter. Please do that.');
+    }
 
-    this.app = "default";
-    this.room = "default";
+    this.app = 'default';
+    this.room = 'default';
     this.occupantListener = null;
     this.myRoomJoinTime = null;
     this.myId = null;
@@ -307,14 +308,14 @@ class WebrtcAdapter {
   setWebRtcOptions(options) {
     if (options.datachannel === false) {
       NAF.log.error(
-        "WebrtcAdapter.setWebRtcOptions: datachannel must be true."
+        'WebrtcAdapter.setWebRtcOptions: datachannel must be true.'
       );
     }
     if (options.audio === true) {
       this.sendAudio = true;
     }
     if (options.video === true) {
-      NAF.log.warn("WebrtcAdapter does not support video yet.");
+      NAF.log.warn('WebrtcAdapter does not support video yet.');
     }
   }
 
@@ -337,87 +338,87 @@ class WebrtcAdapter {
     const self = this;
 
     this.updateTimeOffset()
-    .then(() => {
-      if (!self.wsUrl || self.wsUrl === "/") {
-        if (location.protocol === "https:") {
-          self.wsUrl = "wss://" + location.host;
-        } else {
-          self.wsUrl = "ws://" + location.host;
+      .then(() => {
+        if (!self.wsUrl || self.wsUrl === '/') {
+          if (location.protocol === 'https:') {
+            self.wsUrl = 'wss://' + location.host;
+          } else {
+            self.wsUrl = 'ws://' + location.host;
+          }
         }
-      }
-  
-      NAF.log.write("Attempting to connect to socket.io");
-      const socket = self.socket = io(self.wsUrl);
-  
-      socket.on("connect", () => {
-        NAF.log.write("User connected", socket.id);
-        self.myId = socket.id;
-        self.joinRoom();
-      });
-  
-      socket.on("connectSuccess", (data) => {
-        const { joinedTime } = data;
-  
-        self.myRoomJoinTime = joinedTime;
-        NAF.log.write("Successfully joined room", self.room, "at server time", joinedTime);
-  
-        if (self.sendAudio) {
-          const mediaConstraints = {
-            audio: true,
-            video: false
-          };
-          navigator.mediaDevices.getUserMedia(mediaConstraints)
-          .then(localStream => {
-            self.storeAudioStream(self.myId, localStream);
-            self.connectSuccess(self.myId);
-            localStream.getTracks().forEach(
-              track => {
-                Object.keys(self.peers).forEach(peerId => { 
-                self.peers[peerId].pc.addTrack(track, localStream) 
+
+        NAF.log.write('Attempting to connect to socket.io');
+        const socket = self.socket = io(self.wsUrl);
+
+        socket.on('connect', () => {
+          NAF.log.write('User connected', socket.id);
+          self.myId = socket.id;
+          self.joinRoom();
+        });
+
+        socket.on('connectSuccess', (data) => {
+          const { joinedTime } = data;
+
+          self.myRoomJoinTime = joinedTime;
+          NAF.log.write('Successfully joined room', self.room, 'at server time', joinedTime);
+
+          if (self.sendAudio) {
+            const mediaConstraints = {
+              audio: true,
+              video: false
+            };
+            navigator.mediaDevices.getUserMedia(mediaConstraints)
+              .then(localStream => {
+                self.storeAudioStream(self.myId, localStream);
+                self.connectSuccess(self.myId);
+                localStream.getTracks().forEach(
+                  track => {
+                    Object.keys(self.peers).forEach(peerId => {
+                      self.peers[peerId].pc.addTrack(track, localStream)
+                    })
+                  })
               })
-            })
-          })
-          .catch(e => {
-            NAF.log.error(e);
-            console.error("Microphone is disabled due to lack of permissions");
-            self.sendAudio = false;
+              .catch(e => {
+                NAF.log.error(e);
+                console.error('Microphone is disabled due to lack of permissions');
+                self.sendAudio = false;
+                self.connectSuccess(self.myId);
+              });
+          } else {
             self.connectSuccess(self.myId);
-          });
-        } else {
-          self.connectSuccess(self.myId);
+          }
+        });
+
+        socket.on('error', err => {
+          console.error('Socket connection failure', err);
+          self.connectFailure();
+        });
+
+        socket.on('occupantsChanged', data => {
+          const { occupants } = data;
+          NAF.log.write('occupants changed', data);
+          self.receivedOccupants(occupants);
+        });
+
+        function receiveData(packet) {
+          const from = packet.from;
+          const type = packet.type;
+          const data = packet.data;
+          if (type === 'ice-candidate') {
+            self.peers[from].handleSignal(data);
+            return;
+          }
+          self.messageListener(from, type, data);
         }
-      });
-  
-      socket.on("error", err => {
-        console.error("Socket connection failure", err);
-        self.connectFailure();
-      });
-  
-      socket.on("occupantsChanged", data => {
-        const { occupants } = data;
-        NAF.log.write('occupants changed', data);
-        self.receivedOccupants(occupants);
-      });
-  
-      function receiveData(packet) {
-        const from = packet.from;
-        const type = packet.type;
-        const data = packet.data;
-        if (type === 'ice-candidate') {
-          self.peers[from].handleSignal(data);
-          return;
-        }
-        self.messageListener(from, type, data);
-      }
-  
-      socket.on("send", receiveData);
-      socket.on("broadcast", receiveData);
-    })
+
+        socket.on('send', receiveData);
+        socket.on('broadcast', receiveData);
+      })
   }
 
   joinRoom() {
-    NAF.log.write("Joining room", this.room);
-    this.socket.emit("joinRoom", { room: this.room });
+    NAF.log.write('Joining room', this.room);
+    this.socket.emit('joinRoom', { room: this.room });
   }
 
   receivedOccupants(occupants) {
@@ -436,7 +437,7 @@ class WebrtcAdapter {
         localId,
         remoteId,
         (data) => {
-          self.socket.emit('send',{
+          self.socket.emit('send', {
             from: localId,
             to: remoteId,
             type: 'ice-candidate',
@@ -467,13 +468,13 @@ class WebrtcAdapter {
 
     if (this.sendAudio) {
       this.getMediaStream(this.myId)
-      .then(stream => {
-        const options = {
-          sendAudio: true,
-          localAudioStream: stream,
-        };
-        this.peers[remoteId].offer(options);
-      });
+        .then(stream => {
+          const options = {
+            sendAudio: true,
+            localAudioStream: stream,
+          };
+          this.peers[remoteId].offer(options);
+        });
     } else {
       this.peers[remoteId].offer({});
     }
@@ -518,7 +519,7 @@ class WebrtcAdapter {
       sending: true,
     };
 
-    this.socket.emit("send", packet);
+    this.socket.emit('send', packet);
   }
 
   broadcastData(type, data) {
@@ -534,13 +535,13 @@ class WebrtcAdapter {
       data,
       broadcasting: true
     };
-    this.socket.emit("broadcast", packet);
+    this.socket.emit('broadcast', packet);
   }
 
   storeAudioStream(clientId, stream) {
     this.audioStreams[clientId] = stream;
     if (this.pendingAudioRequest[clientId]) {
-      NAF.log.write("Received pending audio for " + clientId);
+      NAF.log.write('Received pending audio for ' + clientId);
       this.pendingAudioRequest[clientId](stream);
       delete this.pendingAudioRequest[clientId](stream);
     }
@@ -553,10 +554,10 @@ class WebrtcAdapter {
   getMediaStream(clientId) {
     const self = this;
     if (this.audioStreams[clientId]) {
-      NAF.log.write("Already had audio for " + clientId);
+      NAF.log.write('Already had audio for ' + clientId);
       return Promise.resolve(this.audioStreams[clientId]);
     } else {
-      NAF.log.write("Waiting on audio for " + clientId);
+      NAF.log.write('Waiting on audio for ' + clientId);
       return new Promise(resolve => {
         self.pendingAudioRequest[clientId] = resolve;
       });
@@ -566,10 +567,10 @@ class WebrtcAdapter {
   updateTimeOffset() {
     const clientSentTime = Date.now() + this.avgTimeOffset;
 
-    return fetch(document.location.href, { method: "HEAD", cache: "no-cache" })
+    return fetch(document.location.href, { method: 'HEAD', cache: 'no-cache' })
       .then(res => {
         const precision = 1000;
-        const serverReceivedTime = new Date(res.headers.get("Date")).getTime() + (precision / 2);
+        const serverReceivedTime = new Date(res.headers.get('Date')).getTime() + (precision / 2);
         const clientReceivedTime = Date.now();
         const serverTime = serverReceivedTime + ((clientReceivedTime - clientSentTime) / 2);
         const timeOffset = serverTime - clientReceivedTime;
@@ -598,5 +599,3 @@ class WebrtcAdapter {
 }
 
 // NAF.adapters.register("native-webrtc", WebrtcAdapter);
-
-module.exports = WebrtcAdapter;

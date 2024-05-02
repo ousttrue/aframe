@@ -1,8 +1,8 @@
-/* global NAF */
-var ChildEntityCache = require('./ChildEntityCache');
+import * as NAF from './NafIndex';
 
-class NetworkEntities {
+import * as ChildEntityCache from './ChildEntityCache';
 
+export class NetworkEntities {
   constructor() {
     this.entities = {};
     this.childCache = new ChildEntityCache();
@@ -58,10 +58,10 @@ class NetworkEntities {
     entity.firstUpdateData = entityData;
   }
 
-  updateEntityMulti(client, dataType, entityDatas, source) {
+  updateEntityMulti(client, dataType, entityData, source) {
     if (NAF.options.syncSource && source !== NAF.options.syncSource) return;
-    for (let i = 0, l = entityDatas.d.length; i < l; i++) {
-      this.updateEntity(client, 'u', entityDatas.d[i], source);
+    for (let i = 0, l = entityData.d.length; i < l; i++) {
+      this.updateEntity(client, 'u', entityData.d[i], source);
     }
   }
 
@@ -155,11 +155,11 @@ class NetworkEntities {
   removeEntitiesOfClient(clientId) {
     const removedEntities = [];
     for (var id in this.entities) {
-      const entity = this.entities[id]
+      const entity = this.entities[id];
       const creator = NAF.utils.getCreator(entity);
       const owner = NAF.utils.getNetworkOwner(entity);
       if (creator === clientId || (!creator && owner === clientId)) {
-        const component = this.entities[id].getAttribute("networked")
+        const component = this.entities[id].getAttribute('networked');
         if (component && component.persistent) {
           // everyone will attempt to take ownership, someone will win, it does not particularly matter who
           NAF.utils.takeOwnership(entity);
@@ -185,16 +185,16 @@ class NetworkEntities {
     }
   }
 
-  forgetEntity(id){
+  forgetEntity(id) {
     delete this.entities[id];
     this.forgetPersistentFirstSync(id);
   }
 
-  getPersistentFirstSync(id){
+  getPersistentFirstSync(id) {
     return this._persistentFirstSyncs[id];
   }
 
-  forgetPersistentFirstSync(id){
+  forgetPersistentFirstSync(id) {
     delete this._persistentFirstSyncs[id];
   }
 
@@ -213,12 +213,10 @@ class NetworkEntities {
     this.childCache = new ChildEntityCache();
 
     for (var id in this.entities) {
-      var owner = this.entities[id].getAttribute('networked').owner;
+      const owner = this.entities[id].getAttribute('networked').owner;
       if (owner != NAF.clientId) {
         this.removeEntity(id);
       }
     }
   }
 }
-
-module.exports = NetworkEntities;

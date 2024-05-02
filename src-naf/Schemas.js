@@ -1,7 +1,6 @@
-/* global NAF */
+import * as NAF from './NafIndex';
 
-class Schemas {
-
+export class Schemas {
   constructor() {
     this.schemaDict = {};
     this.templateCache = {};
@@ -20,7 +19,7 @@ class Schemas {
           requiresNetworkUpdate: NAF.utils.vectorRequiresUpdate(0.5)
         }
       ]
-    }
+    };
   }
 
   add(schema) {
@@ -105,5 +104,3 @@ class Schemas {
     this.schemaDict = {};
   }
 }
-
-module.exports = Schemas;

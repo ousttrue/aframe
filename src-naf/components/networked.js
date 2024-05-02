@@ -1,3 +1,5 @@
+import * as AFRAME from '../../src/index.js';
+
 /* global AFRAME, NAF, THREE */
 var deepEqual = require('../DeepEquals');
 var InterpolationBuffer = require('buffered-interpolation');

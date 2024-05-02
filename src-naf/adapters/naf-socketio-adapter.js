@@ -4,7 +4,7 @@
  * SocketIO Adapter (socketio)
  * networked-scene: serverURL needs to be ws://localhost:8080 when running locally
  */
-class SocketioAdapter {
+export class SocketioAdapter {
   constructor() {
     if (io === undefined)
       console.warn('It looks like socket.io has not been loaded before SocketioAdapter. Please do that.')
@@ -225,5 +225,3 @@ class SocketioAdapter {
 }
 
 // NAF.adapters.register("socketio", SocketioAdapter);
-
-module.exports = SocketioAdapter;

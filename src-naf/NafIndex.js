@@ -1,25 +1,23 @@
-var options = require('./options');
-var utils = require('./utils');
-var NafLogger = require('./NafLogger');
-var Schemas = require('./Schemas');
-var NetworkEntities = require('./NetworkEntities');
-var NetworkConnection = require('./NetworkConnection');
-var AdapterFactory = require('./adapters/AdapterFactory');
+import { NafLogger } from './NafLogger';
+import { Schemas } from './Schemas';
+// import * as NetworkEntities from './NetworkEntities';
+// import * as NetworkConnection from './NetworkConnection';
+import { AdapterFactory } from './adapters/AdapterFactory';
 
-var naf = {};
-naf.app = '';
-naf.room = '';
-naf.clientId = '';
-naf.options = options;
-naf.utils = utils;
-naf.log = new NafLogger();
-naf.schemas = new Schemas();
-naf.version = "0.12.2";
+export { options } from './options';
+export * as utils from './utils';
 
-naf.adapters = new AdapterFactory();
-var entities = new NetworkEntities();
-var connection = new NetworkConnection(entities);
-naf.connection = connection;
-naf.entities = entities;
+// naf.app = '';
+// naf.room = '';
+// naf.clientId = '';
+export const log = new NafLogger();
+export const schemas = new Schemas();
+// naf.version = "0.12.2";
 
-module.exports = window.NAF = naf;
+export const adapters = new AdapterFactory();
+// var entities = new NetworkEntities();
+// var connection = new NetworkConnection(entities);
+// naf.connection = connection;
+// naf.entities = entities;
+//
+// module.exports = window.NAF = naf;

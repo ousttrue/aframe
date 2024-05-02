@@ -1,14 +1,13 @@
-/* global NAF */
-const NoOpAdapter = require('./NoOpAdapter');
+import * as NAF from '../NafIndex';
+import { NoOpAdapter } from './NoOpAdapter';
 
-class EasyRtcAdapter extends NoOpAdapter {
-
+export class EasyRtcAdapter extends NoOpAdapter {
   constructor(easyrtc) {
     super();
 
     this.easyrtc = easyrtc || window.easyrtc;
-    this.app = "default";
-    this.room = "default";
+    this.app = 'default';
+    this.room = 'default';
 
     this.mediaStreams = {};
     this.remoteClients = {};
@@ -27,9 +26,9 @@ class EasyRtcAdapter extends NoOpAdapter {
       delete this.remoteClients[clientId];
       const pendingMediaRequests = this.pendingMediaRequests.get(clientId);
       if (pendingMediaRequests) {
-        const msg = "The user disconnected before the media stream was resolved.";
+        const msg = 'The user disconnected before the media stream was resolved.';
         Object.keys(pendingMediaRequests).forEach((streamName) => {
-         pendingMediaRequests[streamName].reject(msg);
+          pendingMediaRequests[streamName].reject(msg);
         });
         this.pendingMediaRequests.delete(clientId);
       }
@@ -86,10 +85,10 @@ class EasyRtcAdapter extends NoOpAdapter {
   updateTimeOffset() {
     const clientSentTime = Date.now() + this.avgTimeOffset;
 
-    return fetch(document.location.href, { method: "HEAD", cache: "no-cache" })
+    return fetch(document.location.href, { method: 'HEAD', cache: 'no-cache' })
       .then(res => {
         var precision = 1000;
-        var serverReceivedTime = new Date(res.headers.get("Date")).getTime() + (precision / 2);
+        var serverReceivedTime = new Date(res.headers.get('Date')).getTime() + (precision / 2);
         var clientReceivedTime = Date.now();
         var serverTime = serverReceivedTime + ((clientReceivedTime - clientSentTime) / 2);
         var timeOffset = serverTime - clientReceivedTime;
@@ -102,7 +101,7 @@ class EasyRtcAdapter extends NoOpAdapter {
           this.timeOffsets[this.serverTimeRequests % 10] = timeOffset;
         }
 
-        this.avgTimeOffset = this.timeOffsets.reduce((acc, offset) => acc += offset, 0) / this.timeOffsets.length;
+        this.avgTimeOffset = this.timeOffsets.reduce((acc, offset) => acc + offset, 0) / this.timeOffsets.length;
 
         if (this.serverTimeRequests > 10) {
           setTimeout(() => this.updateTimeOffset(), 5 * 60 * 1000); // Sync clock every 5 minutes.
@@ -132,8 +131,8 @@ class EasyRtcAdapter extends NoOpAdapter {
     this.easyrtc.call(
       clientId,
       function(caller, media) {
-        if (media === "datachannel") {
-          NAF.log.write("Successfully started datachannel to ", caller);
+        if (media === 'datachannel') {
+          NAF.log.write('Successfully started datachannel to ', caller);
         }
       },
       function(errorCode, errorText) {
@@ -182,16 +181,16 @@ class EasyRtcAdapter extends NoOpAdapter {
   getConnectStatus(clientId) {
     var status = this.easyrtc.getConnectStatus(clientId);
 
-    if (status == this.easyrtc.IS_CONNECTED) {
+    if (status === this.easyrtc.IS_CONNECTED) {
       return NAF.adapters.IS_CONNECTED;
-    } else if (status == this.easyrtc.NOT_CONNECTED) {
+    } else if (status === this.easyrtc.NOT_CONNECTED) {
       return NAF.adapters.NOT_CONNECTED;
     } else {
       return NAF.adapters.CONNECTING;
     }
   }
 
-  getMediaStream(clientId, streamName = "audio") {
+  getMediaStream(clientId, streamName = 'audio') {
     if (this.mediaStreams[clientId] && this.mediaStreams[clientId][streamName]) {
       NAF.log.write(`Already had ${streamName} for ${clientId}`);
       return Promise.resolve(this.mediaStreams[clientId][streamName]);
@@ -221,7 +220,7 @@ class EasyRtcAdapter extends NoOpAdapter {
       if (!pendingMediaRequests[streamName]) {
         const streamPromise = new Promise((resolve, reject) => {
           pendingMediaRequests[streamName] = { resolve, reject };
-        }).catch(e => NAF.log.warn(`${clientId} getMediaStream "${streamName}" Error`, e))
+        }).catch(e => NAF.log.warn(`${clientId} getMediaStream "${streamName}" Error`, e));
         pendingMediaRequests[streamName].promise = streamPromise;
       }
 
@@ -233,7 +232,7 @@ class EasyRtcAdapter extends NoOpAdapter {
     const pendingMediaRequests = this.pendingMediaRequests.get(clientId); // return undefined if there is no entry in the Map
     const clientMediaStreams = this.mediaStreams[clientId] = this.mediaStreams[clientId] || {};
 
-    if (streamName === "default") {
+    if (streamName === 'default') {
       // Safari doesn't like it when you use a mixed media stream where one of the tracks is inactive, so we
       // split the tracks into two streams.
       // Add mediaStreams audio streamName alias
@@ -243,7 +242,7 @@ class EasyRtcAdapter extends NoOpAdapter {
         try {
           audioTracks.forEach(track => audioStream.addTrack(track));
           clientMediaStreams.audio = audioStream;
-        } catch(e) {
+        } catch (e) {
           NAF.log.warn(`${clientId} setMediaStream "audio" alias Error`, e);
         }
 
@@ -258,7 +257,7 @@ class EasyRtcAdapter extends NoOpAdapter {
         try {
           videoTracks.forEach(track => videoStream.addTrack(track));
           clientMediaStreams.video = videoStream;
-        } catch(e) {
+        } catch (e) {
           NAF.log.warn(`${clientId} setMediaStream "video" alias Error`, e);
         }
 
@@ -358,5 +357,3 @@ class EasyRtcAdapter extends NoOpAdapter {
     return Date.now() + this.avgTimeOffset;
   }
 }
-
-module.exports = EasyRtcAdapter;

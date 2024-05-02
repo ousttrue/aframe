@@ -1,8 +1,9 @@
-/* global NAF */
-var ReservedDataType = { Update: 'u', UpdateMulti: 'um', Remove: 'r' };
+import * as NAF from './NafIndex';
+const ReservedDataType = {
+  Update: 'u', UpdateMulti: 'um', Remove: 'r'
+};
 
-class NetworkConnection {
-
+export class NetworkConnection {
   constructor(networkEntities) {
     this.entities = networkEntities;
     this.setupDefaultDataSubscriptions();
@@ -18,14 +19,11 @@ class NetworkConnection {
   setupDefaultDataSubscriptions() {
     this.dataChannelSubs = {};
 
-    this.dataChannelSubs[ReservedDataType.Update]
-        = this.entities.updateEntity.bind(this.entities);
+    this.dataChannelSubs[ReservedDataType.Update] = this.entities.updateEntity.bind(this.entities);
 
-    this.dataChannelSubs[ReservedDataType.UpdateMulti]
-        = this.entities.updateEntityMulti.bind(this.entities);
+    this.dataChannelSubs[ReservedDataType.UpdateMulti] = this.entities.updateEntityMulti.bind(this.entities);
 
-    this.dataChannelSubs[ReservedDataType.Remove]
-        = this.entities.removeRemoteEntity.bind(this.entities);
+    this.dataChannelSubs[ReservedDataType.Remove] = this.entities.removeRemoteEntity.bind(this.entities);
   }
 
   connect(serverUrl, appName, roomName, enableAudio = false, enableVideo = false) {
@@ -71,12 +69,12 @@ class NetworkConnection {
     NAF.log.write('Networked-Aframe Client ID:', clientId);
     NAF.clientId = clientId;
 
-    var evt = new CustomEvent('connected', {'detail': { clientId: clientId }});
+    var evt = new CustomEvent('connected', { 'detail': { clientId: clientId } });
     document.body.dispatchEvent(evt);
   }
 
   connectFailure(errorCode, message) {
-    NAF.log.error(errorCode, "failure to connect");
+    NAF.log.error(errorCode, 'failure to connect');
   }
 
   occupantsReceived(occupantList) {
@@ -132,7 +130,7 @@ class NetworkConnection {
     this.activeDataChannels[clientId] = true;
     this.entities.completeSync(clientId, true);
 
-    var evt = new CustomEvent('clientConnected', {detail: {clientId: clientId}});
+    var evt = new CustomEvent('clientConnected', { detail: { clientId: clientId } });
     document.body.dispatchEvent(evt);
   }
 
@@ -141,7 +139,7 @@ class NetworkConnection {
     this.activeDataChannels[clientId] = false;
     this.entities.removeEntitiesOfClient(clientId);
 
-    var evt = new CustomEvent('clientDisconnected', {detail: {clientId: clientId}});
+    var evt = new CustomEvent('clientDisconnected', { detail: { clientId: clientId } });
     document.body.dispatchEvent(evt);
   }
 
@@ -191,7 +189,7 @@ class NetworkConnection {
 
   isReservedDataType(dataType) {
     return dataType == ReservedDataType.Update
-        || dataType == ReservedDataType.Remove;
+      || dataType == ReservedDataType.Remove;
   }
 
   receivedData(fromClientId, dataType, data, source) {
@@ -225,5 +223,3 @@ class NetworkConnection {
     document.body.removeEventListener('connected', this.onConnectCallback);
   }
 }
-
-module.exports = NetworkConnection;

@@ -1,7 +1,4 @@
-/*eslint no-console: "off" */
-
-class NafLogger {
-
+export class NafLogger {
   constructor() {
     this.debug = false;
   }
@@ -24,5 +21,3 @@ class NafLogger {
     console.error.apply(this, arguments);
   }
 }
-
-module.exports = NafLogger;
