@@ -1,4 +1,4 @@
-import * as NAF from '../NafIndex';
+import { NAF } from '../NafIndex';
 import { NoOpAdapter } from './NoOpAdapter';
 
 export class WsEasyRtcAdapter extends NoOpAdapter {

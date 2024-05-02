@@ -1,4 +1,4 @@
-import * as NAF from './NafIndex';
+import { NAF } from './NafIndex';
 const ReservedDataType = {
   Update: 'u', UpdateMulti: 'um', Remove: 'r'
 };

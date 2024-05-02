@@ -1,6 +1,6 @@
-import * as NAF from './NafIndex';
+import { NAF } from './NafIndex';
 
-import * as ChildEntityCache from './ChildEntityCache';
+import { ChildEntityCache } from './ChildEntityCache';
 
 export class NetworkEntities {
   constructor() {

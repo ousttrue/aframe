@@ -1,5 +1,5 @@
 import * as AFRAME from '../../src/index.js';
-import * as NAF from '../NafIndex.js';
+import { NAF } from '../NafIndex.js';
 
 AFRAME.registerComponent('networked-scene', {
   schema: {

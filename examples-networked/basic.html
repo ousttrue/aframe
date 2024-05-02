@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
@@ -9,7 +9,7 @@
 
     <!--   NAF basic requirements   -->
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.5.0/socket.io.slim.js"></script> -->
-    <!-- <script src="/easyrtc/easyrtc.js"></script> -->
+    <script src="/easyrtc/api/easyrtc.js"></script>
     <script type="module" src="../src-naf/index.js"></script>
 
     <!--    used for flying in this demo  -->
@@ -22,12 +22,12 @@
     <!-- <script src="/js/spawn-in-circle.component.js"></script> -->
 
     <script type="module">
-      import * as NAF from '../src-naf/index';
+      import { NAF } from "../src-naf/index";
 
       // Called by Networked-Aframe when connected to server (optional)
       // (this api will change in future versions)
       function onConnect() {
-        console.log('onConnect', new Date());
+        console.log("onConnect", new Date());
       }
 
       // Note the way we're establishing the NAF schema here; this is a bit awkward
@@ -39,24 +39,24 @@
       // won't happen unless we tell NAF to keep it in sync, like here.
       NAF.schemas.getComponentsOriginal = NAF.schemas.getComponents;
       NAF.schemas.getComponents = (template) => {
-        if (!NAF.schemas.hasTemplate('#avatar-template')) {
+        if (!NAF.schemas.hasTemplate("#avatar-template")) {
           NAF.schemas.add({
-            template: '#avatar-template',
+            template: "#avatar-template",
             components: [
               // position and rotation are added by default if we don't include a template, but since
               // we also want to sync the color, we need to specify a custom template; if we didn't
               // include position and rotation in this custom template, they'd not be synced.
-              'position',
-              'rotation',
+              "position",
+              "rotation",
 
               // this is how we sync a particular property of a particular component for a particular
               // child element of template instances.
               {
-                selector: '.head',
-                component: 'material',
-                property: 'color' // property is optional; if excluded, syncs everything in the component schema
-              }
-            ]
+                selector: ".head",
+                component: "material",
+                property: "color", // property is optional; if excluded, syncs everything in the component schema
+              },
+            ],
           });
         }
         const components = NAF.schemas.getComponentsOriginal(template);
@@ -87,11 +87,31 @@
             <!-- notice this child sphere, with class .head, has the random-color component; this modifies the material component's color property -->
             <a-sphere class="head" scale="0.2 0.22 0.2" random-color></a-sphere>
             <a-entity class="face" position="0 0.05 0">
-              <a-sphere class="eye" color="white" position="0.06 0.05 -0.16" scale="0.04 0.04 0.04">
-                <a-sphere class="pupil" color="black" position="0 0 -1" scale="0.2 0.2 0.2"></a-sphere>
+              <a-sphere
+                class="eye"
+                color="white"
+                position="0.06 0.05 -0.16"
+                scale="0.04 0.04 0.04"
+              >
+                <a-sphere
+                  class="pupil"
+                  color="black"
+                  position="0 0 -1"
+                  scale="0.2 0.2 0.2"
+                ></a-sphere>
               </a-sphere>
-              <a-sphere class="eye" color="white" position="-0.06 0.05 -0.16" scale="0.04 0.04 0.04">
-                <a-sphere class="pupil" color="black" position="0 0 -1" scale="0.2 0.2 0.2"></a-sphere>
+              <a-sphere
+                class="eye"
+                color="white"
+                position="-0.06 0.05 -0.16"
+                scale="0.04 0.04 0.04"
+              >
+                <a-sphere
+                  class="pupil"
+                  color="black"
+                  position="0 0 -1"
+                  scale="0.2 0.2 0.2"
+                ></a-sphere>
               </a-sphere>
             </a-entity>
           </a-entity>
@@ -110,7 +130,12 @@
              including all applicable child elements. However, because we don't need to see our own avatar, we use the
              `attachTemplateToLocal:false` option. This makes our local copies invisible on our machine, but visible on everyone else's.
       -->
-      <a-entity id="rig" movement-controls="fly:true;" spawn-in-circle="radius:3" networked="template:#rig-template;">
+      <a-entity
+        id="rig"
+        movement-controls="fly:true;"
+        spawn-in-circle="radius:3"
+        networked="template:#rig-template;"
+      >
         <!-- Here we add the camera. Adding the camera within a 'rig' is standard practice.
          We set the camera to head height for e.g. computer users, but otherwise never touch it again; if the user enters VR,
          its rotation and position will be updated by the headset in VR. If we need to touch the user's position
@@ -133,7 +158,7 @@
       // Called by Networked-Aframe when connected to server
       // Optional to use; this API will change in the future
       function onConnect() {
-        console.log('onConnect', new Date());
+        console.log("onConnect", new Date());
       }
     </script>
   </body>

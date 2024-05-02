@@ -1,4 +1,4 @@
-import * as NAF from './NafIndex';
+import { NAF } from './NafIndex';
 
 export class Schemas {
   constructor() {
