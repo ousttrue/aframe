@@ -1,12 +1,13 @@
-import * as AFRAME from '../../src/index.js';
+import { AFRAME } from '../../src/index.js';
+import { NAF } from '../NafIndex.js';
+import * as THREE from 'three';
 
-/* global AFRAME, NAF, THREE */
-var deepEqual = require('../DeepEquals');
-var InterpolationBuffer = require('buffered-interpolation');
+import { deepEqual } from '../DeepEquals';
+import { InterpolationBuffer } from './buffered-interpolation';
 // InterpolationBuffer.MODE_LERP is not exported, it's undefined
-var MODE_LERP = 0;
-var DEG2RAD = THREE.MathUtils.DEG2RAD;
-var OBJECT3D_COMPONENTS = ['position', 'rotation', 'scale'];
+const MODE_LERP = 0;
+const DEG2RAD = THREE.MathUtils.DEG2RAD;
+const OBJECT3D_COMPONENTS = ['position', 'rotation', 'scale'];
 
 // Expose InterpolationBuffer on NAF global
 NAF.InterpolationBuffer = InterpolationBuffer;
@@ -35,6 +36,7 @@ function isValidVector3(v) {
     v.z !== null
   );
 }
+
 function isValidQuaternion(q) {
   return !!(
     q.isQuaternion &&
@@ -49,7 +51,7 @@ function isValidQuaternion(q) {
   );
 }
 
-var throttle = (function () {
+var throttle = (function() {
   var previousLogTime = 0;
   return function throttle(f, milliseconds) {
     var now = Date.now();
@@ -122,13 +124,13 @@ AFRAME.registerSystem("networked", {
 
 AFRAME.registerComponent('networked', {
   schema: {
-    template: {default: ''},
+    template: { default: '' },
     attachTemplateToLocal: { default: true },
     persistent: { default: false },
 
-    networkId: {default: ''},
-    owner: {default: ''},
-    creator: {default: ''}
+    networkId: { default: '' },
+    owner: { default: '' },
+    creator: { default: '' }
   },
 
   init: function() {
@@ -158,7 +160,7 @@ AFRAME.registerComponent('networked', {
     this.onConnected = this.onConnected.bind(this);
 
     this.syncData = {};
-    this.componentSchemas =  NAF.schemas.getComponents(this.data.template);
+    this.componentSchemas = NAF.schemas.getComponents(this.data.template);
     this.cachedElements = new Array(this.componentSchemas.length);
     this.networkUpdatePredicates = this.componentSchemas.map(x => (x.requiresNetworkUpdate && x.requiresNetworkUpdate()) || defaultRequiresUpdate());
 
@@ -171,7 +173,7 @@ AFRAME.registerComponent('networked', {
 
     if (this.data.networkId === '') {
       networkId = NAF.utils.createNetworkId()
-      this.el.setAttribute(this.name, {networkId});
+      this.el.setAttribute(this.name, { networkId });
     } else {
       networkId = this.data.networkId;
     }
@@ -199,7 +201,7 @@ AFRAME.registerComponent('networked', {
     }
 
     document.body.dispatchEvent(this.entityCreatedEvent());
-    this.el.dispatchEvent(new CustomEvent('instantiated', {detail: {el: this.el}}));
+    this.el.dispatchEvent(new CustomEvent('instantiated', { detail: { el: this.el } }));
     this.el.sceneEl.systems.networked.register(this);
   },
 
@@ -277,7 +279,7 @@ AFRAME.registerComponent('networked', {
       this.el.setAttribute(this.name, { owner: NAF.clientId, creator: NAF.clientId });
       setTimeout(() => {
         //a-primitives attach their components on the next frame; wait for components to be attached before calling syncAll
-        if (!this.el.parentNode){
+        if (!this.el.parentNode) {
           NAF.log.warn("Networked element was removed before ever getting the chance to syncAll");
           return;
         }
@@ -474,7 +476,7 @@ AFRAME.registerComponent('networked', {
   networkUpdate: function(entityData) {
     // Avoid updating components if the entity data received did not come from the current owner.
     if (entityData.lastOwnerTime < this.lastOwnerTime ||
-          (this.lastOwnerTime === entityData.lastOwnerTime && this.data.owner > entityData.owner)) {
+      (this.lastOwnerTime === entityData.lastOwnerTime && this.data.owner > entityData.owner)) {
       return;
     }
 
@@ -512,7 +514,7 @@ AFRAME.registerComponent('networked', {
       var componentSchema = this.componentSchemas[componentIndex];
       var componentElement = this.getCachedElement(componentIndex);
 
-      if (componentElement === null || componentData === null || componentData === undefined ) {
+      if (componentElement === null || componentData === null || componentData === undefined) {
         continue;
       }
 
@@ -528,8 +530,8 @@ AFRAME.registerComponent('networked', {
     }
   },
 
-  updateNetworkedComponent: function (el, componentName, data, value) {
-    if(!NAF.options.useLerp || !OBJECT3D_COMPONENTS.includes(componentName)) {
+  updateNetworkedComponent: function(el, componentName, data, value) {
+    if (!NAF.options.useLerp || !OBJECT3D_COMPONENTS.includes(componentName)) {
       if (value === undefined) {
         el.setAttribute(componentName, data);
       } else {
@@ -550,9 +552,11 @@ AFRAME.registerComponent('networked', {
     }
 
     if (!bufferInfo) {
-      bufferInfo = { buffer: new InterpolationBuffer(MODE_LERP, 0.1),
-                     object3D: el.object3D,
-                     componentNames: [componentName] };
+      bufferInfo = {
+        buffer: new InterpolationBuffer(MODE_LERP, 0.1),
+        object3D: el.object3D,
+        componentNames: [componentName]
+      };
       this.bufferInfos.push(bufferInfo);
     } else {
       var componentNames = bufferInfo.componentNames;
@@ -562,7 +566,7 @@ AFRAME.registerComponent('networked', {
     }
     var buffer = bufferInfo.buffer;
 
-    switch(componentName) {
+    switch (componentName) {
       case 'position':
         buffer.setPosition(this.bufferPosition.set(data.x, data.y, data.z));
         return;
@@ -581,7 +585,7 @@ AFRAME.registerComponent('networked', {
     this.bufferInfos = [];
   },
 
-  remove: function () {
+  remove: function() {
     document.body.removeEventListener('connected', this.onConnected, false);
     if (this.isMine() && NAF.connection.isConnected()) {
       var syncData = { networkId: this.data.networkId };
@@ -601,10 +605,10 @@ AFRAME.registerComponent('networked', {
   },
 
   entityCreatedEvent() {
-    return new CustomEvent('entityCreated', {detail: {el: this.el}});
+    return new CustomEvent('entityCreated', { detail: { el: this.el } });
   },
 
   entityRemovedEvent(networkId) {
-    return new CustomEvent('entityRemoved', {detail: {networkId: networkId}});
+    return new CustomEvent('entityRemoved', { detail: { networkId: networkId } });
   }
 });

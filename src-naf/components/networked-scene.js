@@ -1,17 +1,17 @@
-import * as AFRAME from '../../src/index.js';
+import { AFRAME } from '../../src/index.js';
 import { NAF } from '../NafIndex.js';
 
 AFRAME.registerComponent('networked-scene', {
   schema: {
-    serverURL: {default: '/'},
-    app: {default: 'default'},
-    room: {default: 'default'},
-    connectOnLoad: {default: true},
-    onConnect: {default: 'onConnect'},
-    adapter: {default: 'wseasyrtc'}, // See https://github.com/networked-aframe/networked-aframe#adapters for list of adapters
-    audio: {default: false}, // Only if adapter supports audio
-    video: {default: false}, // Only if adapter supports video
-    debug: {default: false},
+    serverURL: { default: '/' },
+    app: { default: 'default' },
+    room: { default: 'default' },
+    connectOnLoad: { default: true },
+    onConnect: { default: 'onConnect' },
+    adapter: { default: 'wseasyrtc' }, // See https://github.com/networked-aframe/networked-aframe#adapters for list of adapters
+    audio: { default: false }, // Only if adapter supports audio
+    video: { default: false }, // Only if adapter supports video
+    debug: { default: false },
   },
 
   init: function() {
@@ -26,7 +26,7 @@ AFRAME.registerComponent('networked-scene', {
   /**
    * Connect to signalling server and begin connecting to other clients
    */
-  connect: function () {
+  connect: function() {
     NAF.log.setDebug(this.data.debug);
     NAF.log.write('Networked-Aframe Connecting...');
 

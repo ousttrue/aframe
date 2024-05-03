@@ -1,33 +1,3 @@
-import * as THREE from 'three';
-import * as  utils from './utils/';
-// Required before `AEntity` so that all components are registered.
-import { AScene } from './core/scene/a-scene';
-import { components, registerComponent } from './core/component';
-import { registerGeometry } from './core/geometry';
-import { primitives as _prim, registerPrimitive } from './extras/primitives/primitives';
-import { shaders, registerShader } from './core/shader';
-import { systems, registerSystem } from './core/system';
-import { readyState } from './core/readyState';
-
-import * as pkg from '../package';
-
-import './components/index'; // Register standard components.
-import './geometries/index'; // Register standard geometries.
-import './shaders/index'; // Register standard shaders.
-import './systems/index'; // Register standard systems.
-import { ANode } from './core/a-node';
-import { AEntity } from './core/a-entity'; // Depends on ANode and core components.
-
-import './core/a-assets';
-import './core/a-cubemap';
-import './core/a-mixin';
-
-// Extras.
-import './extras/components/';
-import './extras/primitives/';
-
-import * as getMeshMixin from './extras/primitives/getMeshMixin';
-
 // WebVR polyfill
 // Check before the polyfill runs.
 window.hasNativeWebVRImplementation = !!window.navigator.getVRDisplays ||
@@ -36,11 +6,11 @@ window.hasNativeWebXRImplementation = navigator.xr !== undefined;
 
 // If native WebXR or WebVR are defined WebVRPolyfill does not initialize.
 if (!window.hasNativeWebXRImplementation && !window.hasNativeWebVRImplementation) {
-  var isIOSOlderThan10 = require('./utils/isIOSOlderThan10');
+  var isIOSOlderThan10 = import('./utils/isIOSOlderThan10');
   // Workaround for iOS Safari canvas sizing issues in stereo (webvr-polyfill/issues/102).
   // Only for iOS on versions older than 10.
   var bufferScale = isIOSOlderThan10(window.navigator.userAgent) ? 1 / window.devicePixelRatio : 1;
-  var WebVRPolyfill = require('webvr-polyfill');
+  var WebVRPolyfill = import('webvr-polyfill');
   var polyfillConfig = {
     BUFFER_SCALE: bufferScale,
     CARDBOARD_UI_DISABLED: true,
@@ -50,9 +20,10 @@ if (!window.hasNativeWebXRImplementation && !window.hasNativeWebVRImplementation
   window.webvrpolyfill = new WebVRPolyfill(polyfillConfig);
 }
 
-var debug = utils.debug;
-var error = debug('A-Frame:error');
-var warn = debug('A-Frame:warn');
+import * as utils from './utils/';
+const debug = utils.debug;
+const error = debug('A-Frame:error');
+const warn = debug('A-Frame:warn');
 
 if (window.document.currentScript && window.document.currentScript.parentNode !==
   window.document.head && !window.debug) {
@@ -76,7 +47,36 @@ if (utils.device.isBrowserEnvironment) {
   import('./style/rStats.css');
 }
 
-console.log('A-Frame Version: 1.5.0 (Date 2024-04-10, Commit #d8ef6575)');
+// Required before `AEntity` so that all components are registered.
+import { AScene } from './core/scene/a-scene';
+import { Component, components, registerComponent } from './core/component';
+import { registerGeometry } from './core/geometry';
+import { registerPrimitive } from './extras/primitives/primitives';
+import { shaders, registerShader } from './core/shader';
+import { systems, registerSystem } from './core/system';
+// Exports THREE to window so three.js can be used without alteration.
+import * as THREE from 'three';
+window.THREE = THREE;
+import { readyState } from './core/readyState';
+
+import * as pkg from '../package';
+
+import './components/index'; // Register standard components.
+import './geometries/index'; // Register standard geometries.
+import './shaders/index'; // Register standard shaders.
+import './systems/index'; // Register standard systems.
+import { ANode } from './core/a-node';
+import { AEntity } from './core/a-entity'; // Depends on ANode and core components.
+
+import './core/a-assets';
+import './core/a-cubemap';
+import './core/a-mixin';
+
+// Extras.
+import './extras/components/';
+import './extras/primitives/';
+
+console.log('A-Frame Version: 1.5.0 (Date 2024-05-03, Commit #9fe641ce)');
 console.log('THREE Version (https://github.com/supermedium/three.js):',
   pkg.dependencies['super-three']);
 console.log('WebVR Polyfill Version:', pkg.dependencies['webvr-polyfill']);
@@ -86,27 +86,37 @@ if (!window.AFRAME_ASYNC) {
   readyState.waitForDocumentReadyState();
 }
 
-export { Component as AComponent } from './core/component';
-export { AEntity };
-export { ANode };
-export * as ANIME from 'super-animejs';
-export { AScene };
-export { components };
-export const coreComponents = Object.keys(components);
-export { geometries } from './core/geometry';
-export { registerComponent };
-export { registerGeometry };
-export { registerPrimitive };
-export { registerShader };
-export { registerSystem };
-export const primitives = {
-  getMeshMixin,
-  primitives: _prim
+import { default as ANIME } from 'super-animejs';
+import { geometries } from './core/geometry';
+import { getMeshMixin } from './extras/primitives/getMeshMixin';
+import { primitives } from './extras/primitives/primitives';
+import { scenes } from './core/scene/scenes';
+import * as schema from './core/schema';
+
+export const AFRAME = window.AFRAME = {
+  AComponent: Component,
+  AEntity: AEntity,
+  ANode: ANode,
+  ANIME: ANIME,
+  AScene: AScene,
+  components: components,
+  coreComponents: Object.keys(components),
+  geometries: geometries,
+  registerComponent: registerComponent,
+  registerGeometry: registerGeometry,
+  registerPrimitive: registerPrimitive,
+  registerShader: registerShader,
+  registerSystem: registerSystem,
+  primitives: {
+    getMeshMixin: getMeshMixin,
+    primitives: primitives
+  },
+  scenes: scenes,
+  schema: schema,
+  shaders: shaders,
+  systems: systems,
+  emitReady: readyState.emitReady,
+  THREE: THREE,
+  utils: utils,
+  version: pkg.version
 };
-export { scenes } from './core/scene/scenes';
-export * as schema from './core/schema';
-export { shaders };
-export { systems };
-export const emitReady = readyState.emitReady;
-export { utils };
-export const version = pkg.version;

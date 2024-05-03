@@ -1,5 +1,5 @@
 import * as schema from './schema';
-import * as scenes from './scene/scenes';
+import { scenes } from './scene/scenes';
 import * as systems from './system';
 import * as utils from '../utils/';
 

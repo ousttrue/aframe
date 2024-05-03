@@ -2,13 +2,12 @@
 // allocate memory via calling Object.keys
 //
 // https://github.com/epoberezkin/fast-deep-equal/blob/master/index.js
-'use strict';
 
 var isArray = Array.isArray;
 var keyList = Object.keys;
 var hasProp = Object.prototype.hasOwnProperty;
 
-module.exports = function equal(a, b) {
+export function deepEqual(a, b) {
   if (a === b) return true;
 
   if (a && b && typeof a == 'object' && typeof b == 'object') {
@@ -22,7 +21,7 @@ module.exports = function equal(a, b) {
       length = a.length;
       if (length != b.length) return false;
       for (i = length; i-- !== 0;)
-        if (!equal(a[i], b[i])) return false;
+        if (!deepEqual(a[i], b[i])) return false;
       return true;
     }
 
@@ -49,11 +48,11 @@ module.exports = function equal(a, b) {
 
     for (i = length; i-- !== 0;) {
       key = keys[i];
-      if (!equal(a[key], b[key])) return false;
+      if (!deepEqual(a[key], b[key])) return false;
     }
 
     return true;
   }
 
-  return a!==a && b!==b;
+  return a !== a && b !== b;
 };
