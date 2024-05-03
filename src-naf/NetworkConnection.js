@@ -27,6 +27,7 @@ export class NetworkConnection {
   }
 
   connect(serverUrl, appName, roomName, enableAudio = false, enableVideo = false) {
+    console.log(`NetworkConnection.connect(${serverUrl})`);
     NAF.app = appName;
     NAF.room = roomName;
 

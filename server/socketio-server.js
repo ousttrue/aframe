@@ -33,7 +33,9 @@ app.use(express.static(path.resolve(__dirname, "..", "examples")));
 
 // Start Express http server
 const webServer = http.createServer(app);
-const io = require("socket.io")(webServer);
+const io = require("socket.io")(webServer, {
+  allowEIO3: true,
+});
 
 const rooms = new Map();
 

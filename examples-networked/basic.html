@@ -8,7 +8,7 @@
     <script type="module" src="../../../src/index.js"></script>
 
     <!--   NAF basic requirements   -->
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.5.0/socket.io.slim.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.5.0/socket.io.slim.js"></script>
     <script src="/easyrtc/api/easyrtc.js"></script>
     <script type="module" src="../src-naf/index.js"></script>
 
@@ -68,9 +68,9 @@
   <body>
     <a-scene
       networked-scene="
+      adapter: socketio;
       room: basic;
       debug: true;
-      adapter: wseasyrtc;
     "
     >
       <a-assets>

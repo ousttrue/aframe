@@ -22,6 +22,7 @@ export class AdapterFactory {
   }
 
   make(adapterName) {
+    console.log(`AdapterFactory.make(${adapterName})`);
     var name = adapterName.toLowerCase();
     if (this.adapters[name]) {
       const AdapterClass = this.adapters[name];

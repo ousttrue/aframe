@@ -10,6 +10,17 @@ export default defineConfig({
     // react(),
     tsconfigPaths(),
   ],
+  server: {
+    proxy: {
+      // Web ソケット か socket.io をプロキシ化: ws://localhost:5173/socket.io -> ws://localhost:5174/socket.io
+      '/socket.io/': {
+        target: 'ws://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      },
+    }
+  },
   test: {
     setupFiles: ['./vitest-setup.js'],
     alias: {

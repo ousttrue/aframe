@@ -1,4 +1,5 @@
-/* global NAF, io */
+/* global io */
+import { NAF } from '../NafIndex';
 
 /**
  * SocketIO Adapter (socketio)
@@ -58,54 +59,54 @@ export class SocketioAdapter {
     const self = this;
 
     this.updateTimeOffset()
-    .then(() => {
-      if (!self.wsUrl || self.wsUrl === "/") {
-        if (location.protocol === "https:") {
-          self.wsUrl = "wss://" + location.host;
-        } else {
-          self.wsUrl = "ws://" + location.host;
+      .then(() => {
+        if (!self.wsUrl || self.wsUrl === "/") {
+          if (location.protocol === "https:") {
+            self.wsUrl = "wss://" + location.host;
+          } else {
+            self.wsUrl = "ws://" + location.host;
+          }
         }
-      }
 
-      NAF.log.write("Attempting to connect to socket.io");
-      const socket = self.socket = io(self.wsUrl);
+        NAF.log.write("Attempting to connect to socket.io");
+        const socket = self.socket = io(self.wsUrl);
 
-      socket.on("connect", () => {
-        NAF.log.write("User connected", socket.id);
-        self.myId = socket.id;
-        self.joinRoom();
-      });
+        socket.on("connect", () => {
+          NAF.log.write("User connected", socket.id);
+          self.myId = socket.id;
+          self.joinRoom();
+        });
 
-      socket.on("connectSuccess", (data) => {
-        const { joinedTime } = data;
+        socket.on("connectSuccess", (data) => {
+          const { joinedTime } = data;
 
-        self.myRoomJoinTime = joinedTime;
-        NAF.log.write("Successfully joined room", self.room, "at server time", joinedTime);
+          self.myRoomJoinTime = joinedTime;
+          NAF.log.write("Successfully joined room", self.room, "at server time", joinedTime);
 
-        self.connectSuccess(self.myId);
-      });
+          self.connectSuccess(self.myId);
+        });
 
-      socket.on("error", err => {
-        console.error("Socket connection failure", err);
-        self.connectFailure();
-      });
+        socket.on("error", err => {
+          console.error("Socket connection failure", err);
+          self.connectFailure();
+        });
 
-      socket.on("occupantsChanged", data => {
-        const { occupants } = data;
-        NAF.log.write('occupants changed', data);
-        self.receivedOccupants(occupants);
-      });
+        socket.on("occupantsChanged", data => {
+          const { occupants } = data;
+          NAF.log.write('occupants changed', data);
+          self.receivedOccupants(occupants);
+        });
 
-      function receiveData(packet) {
-        const from = packet.from;
-        const type = packet.type;
-        const data = packet.data;
-        self.messageListener(from, type, data);
-      }
+        function receiveData(packet) {
+          const from = packet.from;
+          const type = packet.type;
+          const data = packet.data;
+          self.messageListener(from, type, data);
+        }
 
-      socket.on("send", receiveData);
-      socket.on("broadcast", receiveData);
-    })
+        socket.on("send", receiveData);
+        socket.on("broadcast", receiveData);
+      })
   }
 
   joinRoom() {
